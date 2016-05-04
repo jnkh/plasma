@@ -35,8 +35,8 @@ write_shots = 'short_list_cf.txt';
 current_threshold = 750000;
 
 
-formatSpec = '%d %f %f';
-sizeA = [3, Inf];
+formatSpec = '%d %f';
+sizeA = [2, Inf];
 
 fileID = fopen(strcat(shot_dir,read_shots),'r');
 shots = fscanf(fileID,formatSpec,sizeA);
