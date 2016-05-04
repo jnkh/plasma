@@ -68,7 +68,7 @@ include_sigs = [1:7];
 % 1 JET
 % 2 NSTX
 
-include_machines = [2];
+include_machines = [1];
 
 run('signal_paths.m');
 

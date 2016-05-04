@@ -83,7 +83,7 @@ jet_sig_dir(1,:) = [];
 % 2 NSTX
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-nstx_sig_path = '/p/datad/signal_data/nstx/jpf/';
+nstx_sig_path = '../data/signal_data/nstx/jpf/';
 
 % Plasma Current [A]
 isig_dir = char('engineering/ip1/');
