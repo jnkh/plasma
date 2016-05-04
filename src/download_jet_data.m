@@ -87,9 +87,6 @@ for i = nstart:nstop
         y = mdsvalue(char(mdsarg));
         x = mdsvalue('dim_of(_sig)');
 
-        x
-        y
-
         fileID = fopen(strcat(cname_out(j,:),num2str(shots(1,i)),'.txt'),'w');
         if(size(y,1) > 0)
             fprintf(fileID, '%f %f\n', [x'; y']);
