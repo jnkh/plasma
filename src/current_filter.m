@@ -64,7 +64,7 @@ sizeA = [2,Inf];
 for i = 1:ns
 
     % Read current
-    curr_path = strcat(path,num2str(shots(1,i)),'.txt')
+    curr_path = strcat(path,num2str(shots(1,i)),'.txt');
     fileID = fopen(curr_path,'r');
     data = fscanf(fileID,formatSpec,sizeA);
     fclose(fileID);

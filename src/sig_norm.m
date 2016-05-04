@@ -27,8 +27,8 @@
 
 % Load shot numbers
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-shot_dir = '/p/datad/dpfd/shot_lists/';
-read_shots = 'disruptC_times_cf_ece.txt';
+shot_dir = '../data/shot_lists/';
+read_shots = 'short_list_times_cf.txt';
 
 formatSpec = '%d %f %f';
 sizeA = [3, Inf];
