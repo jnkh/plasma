@@ -27,9 +27,13 @@
 
 % Load shot numbers
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-shot_dir = '/p/datad/dpfd/shot_lists/';
-read_shots = 'disrupt_nstx_times.txt';
-write_shots = 'disrupt_nstx_times_cf.txt'
+shot_dir = '../data/shot_lists/';
+read_shots = 'short_list.txt';
+write_shots = 'short_list_cf.txt';
+
+
+current_threshold = 750000;
+
 
 formatSpec = '%d %f %f';
 sizeA = [3, Inf];
@@ -46,7 +50,7 @@ fileID = fopen(strcat(shot_dir,write_shots),'w');
 
 
 % Path to plasma current
-path = '/p/datad/signal_data/nstx/jpf/engineering/ip1/';
+path = '../data/signal_data/jet/jpf/da/c2-ipla/';
 fileIDo = fopen(strcat(shot_dir,write_shots),'w');
 
 
@@ -63,7 +67,7 @@ for i = 1:ns
 
     
     % Find first point where current is more than 750 kA (Ip has +/- direction)
-    it = min(find(abs(data(2,:)) > 750000));
+    it = min(find(abs(data(2,:)) > current_threshold));
     
 
     % Print to out file
