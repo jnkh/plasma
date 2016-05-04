@@ -28,15 +28,15 @@
 % Load shot numbers
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 shot_dir = '../data/shot_lists/';
-read_shots = 'short_list.txt';
-write_shots = 'short_list_cf.txt';
+read_shots = 'short_list_times.txt';
+write_shots = 'short_list_times_cf.txt';
 
 
 current_threshold = 750000;
 
 
-formatSpec = '%d %f';
-sizeA = [2, Inf];
+formatSpec = '%d %f %f';
+sizeA = [3, Inf];
 
 fileID = fopen(strcat(shot_dir,read_shots),'r');
 shots = fscanf(fileID,formatSpec,sizeA);
