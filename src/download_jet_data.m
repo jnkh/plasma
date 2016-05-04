@@ -26,13 +26,13 @@
 
 % % Set up data paths
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% p = 'data/signal_data/jet/';
+% p = '../data/signal_data/jet/';
 
 % %location of jet signals 
 % signals_dirs = {'jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out','jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s','jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s'}
 % 
 % Which shots to choose:
-% shots_filename = 'data/shot_lists/short_list.txt';
+% shots_filename = '../data/shot_lists/short_list.txt';
 
 function download_jet_data(shots_path,save_path,signals_dirs) 
 

@@ -25,7 +25,7 @@
 
 % 1 JET
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-jet_sig_path = '/p/datad/signal_data/jet/jpf/';
+jet_sig_path = '../data/signal_data/jet/jpf/';
 
 % Plasma Current [A]
 isig_dir = char('da/c2_ipla/');

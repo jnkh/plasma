@@ -26,9 +26,9 @@
 
 % Load shot numbers
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-shot_dir = '/p/datad/dpfd/shot_lists/';
-read_shots = 'disrupt_nstx.txt';
-write_shots = 'disrupt_nstx_times.txt';
+shot_dir = '../data/shot_lists/';
+read_shots = 'short_list.txt';
+write_shots = 'short_list_times.txt';
 
 DISRUPTIVE = 1;
 
