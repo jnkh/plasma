@@ -70,7 +70,10 @@ include_sigs = [1:7];
 
 include_machines = [1];
 
-run('signal_paths.m');
+
+[sig_path,all_sig_dir,sig_dir] = get_signal_paths()
+
+% run('signal_paths.m');
 
 nsig = size(sig_dir{1},1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
