@@ -98,7 +98,8 @@ for i = 1:ns
     for j = 1:nsig
 
         % Read in signal data for shot
-        fileID = fopen(strcat(sig_path(1,:),sig_dir{1}(j,:),num2str(shots(1,i)),'.txt'),'r');
+        curr_shot_path = strcat(sig_path(1,:),sig_dir{1}(j,:),num2str(shots(1,i)),'.txt')
+        fileID = fopen(curr_shot_path,'r');
         data = fscanf(fileID,formatSpec,sizeA);
         fclose(fileID);
 
