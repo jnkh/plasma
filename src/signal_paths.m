@@ -22,31 +22,35 @@
 
 
 
+% 
 
 % 1 JET
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 jet_sig_path = '../data/signal_data/jet/jpf/';
 
 % Plasma Current [A]
-isig_dir = char('da/c2_ipla/');
+isig_dir = char('da/c2-ipla/');
 
 % Mode Lock Amplitude [T]
-isig_dir = char(isig_dir, 'da/c2_loca/');
+isig_dir = char(isig_dir, 'da/c2-loca/');
 
 % Plasma Internal Inductance [none]
-isig_dir = char(isig_dir, 'gs/bl_li_s/');
+isig_dir = char(isig_dir, 'gs/bl-li<s/');
 
 % Density [m^-2]
-isig_dir = char(isig_dir, 'df/g1r_lid_003/');
+isig_dir = char(isig_dir, 'df/g1r-lid:003/');
 
 % Radiated Power [W]
-isig_dir = char(isig_dir, 'db/b5r_ptot_out/');
+isig_dir = char(isig_dir, 'db/b5r-ptot>out/');
 
 % Total Input Power [W]
-isig_dir = char(isig_dir, 'gs/bl_ptot_s/');
+isig_dir = char(isig_dir, 'gs/bl-ptot<s/');
 
 % Stored Diamagnetic Energy (time derivative) [W]
-isig_dir = char(isig_dir, 'gs/bl_fdwdt_s/');
+isig_dir = char(isig_dir, 'gs/bl-fdwdt<s/');
+
+% Unkown??
+isig_dir = char(isig_dir, 'gs/bl-wmhd<s/');
 
 % ECE Profiles [K]
 %for i = 1:13 % range [1,13]
