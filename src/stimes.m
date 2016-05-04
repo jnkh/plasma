@@ -71,7 +71,7 @@ include_sigs = [1:7];
 include_machines = [1];
 
 
-[sig_path,all_sig_dir,sig_dir] = get_signal_paths()
+[sig_path,all_sig_dir,sig_dir] = get_signal_paths(include_sigs,include_machines)
 
 % run('signal_paths.m');
 

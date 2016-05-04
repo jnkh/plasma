@@ -20,7 +20,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [sig_path,all_sig_dir,sig_dir] = get_signal_paths()
+function [sig_path,all_sig_dir,sig_dir] = get_signal_paths(include_sigs,include_machines)
 
 % 1 JET
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
