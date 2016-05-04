@@ -42,6 +42,9 @@ fileID = fopen(strcat(shot_dir,read_shots),'r');
 shots = fscanf(fileID,formatSpec,sizeA);
 fclose(fileID);
 
+shots
+size(shots)
+
 ns = size(shots,2);
 
 fileID = fopen(strcat(shot_dir,write_shots),'w');
