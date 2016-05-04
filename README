@@ -1,0 +1,41 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This script is part of the
+% Disruption Predictor Feature Developer tools.
+% These scripts were developed to utilize
+% Support Vector Machines to evaluate diagnostic
+% signals as features for predicting disruptions
+%
+% Developer: Matthew Parsons, mparsons@pppl.gov
+%
+% README
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The following scripts are part of the DPFD tool set:
+%
+% current_filter.m - identifies time where current first exceeds threshold
+% d_analysis.m - analyzes disruptive shots using Support Vector Machines
+% feature_extract.m - extracts features from signals
+% feature_paths.m - gives directory paths for all features
+% get_jet_data.m - extracts signal data from MDSPlus
+% get_nstx_data.m - extracts signal data from MDSPlus
+% nd_analysis.m - analyzes nondisruptive shots using Support Vector Machines
+% plots.m - plots outputs of the SVM analysis
+% setup.m - collects feature data to output into training/testing vectors
+% signal_paths.m  - gives directory paths for all signals
+% sig_norm.m - gets normalization info for signal
+% stimes.m - identifies time intervals for shots
+% test.m - performs the SVM analysis
+% vars.m - specifies variables and initiates SVM analysis 
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% The following describes the general workflow from raw data to SVM results
+%
+% (1) Pull data from MDSPlus to /p/datad/signal_data (get_*_data.m)
+% (2) Preprocess data (stimes.m, current_filter.m, sig_norm.m)
+% (3) Extract features (feature_extract.m, derived_sig.m)
+% (4) Setup feature vectors (setup.m)
+% (5) SVM training/testing (vars.m)
+
+
