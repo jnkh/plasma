@@ -8,10 +8,10 @@
 #PBS -l nodes=2:ppn=2
 
 # --- specify the memory required for a job (in mb)
-#PBS -l mem=2000mb
+#PBS -l mem=4000mb
 
 #     hh:mm:ss (ex. 72 hours is 72:00:00)
-#PBS -l walltime=72:00:00
+#PBS -l walltime=1:00:00
 
 # --- do not rerun this job if it fails
 #PBS -r n
