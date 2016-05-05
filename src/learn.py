@@ -149,8 +149,12 @@ dt = 0.001
 T_max = 100
 
 #length of LSTM memory
-length = 100
+length = 50
 skip = 1
+
+#training params
+batch_size = 100
+num_epochs = 5
 
 
 
@@ -181,7 +185,7 @@ print('...done')
 
 
 print('training model')
-model.fit(X_train,y_train,batch_size=100,nb_epoch=20,verbose=1,validation_split=0.0)
+model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=num_epochs,verbose=1,validation_split=0.0)
 print('...done')
 
 print('evaluating model')
