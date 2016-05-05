@@ -14,6 +14,7 @@ current_index = 0
 shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
 shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
 read_minmax_from_file = False
+plotting = False
 
 #train/validate split
 train_frac = 0.85
@@ -81,20 +82,26 @@ res = model.evaluate(X_test,y_test)
 print(res)
 
 
-print('plotting results')
+print('saving results')
 ttd_prime = model.predict(X)
 ttd_prime_test = model.predict(X_test)
 ttd_prime_train = model.predict(X_train)
 
-plot(ttd)
-indices_train = range(length,len(y_train)+length)
-indices_test = range(len(y_train)+length-1,len(ttd))
-plot(ttd_prime)
-plot(indices_test,ttd_prime_test,'g')
-plot(indices_train,ttd_prime_train,'r')
-savefig('plot.png')
-#plot(y_train,'.')
-#show()
+indices_train = range(length-1,len(y_train)+length-1)
+indices_test = range(len(y_train)+length-1,len(y_train)+length-1+len(y_test))
 
-savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,indices_train = indices_train,indices_test = indices_test)
+
+savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
+    ttd_prime_train = ttd_prime_train, indices_train = indices_train,indices_test = indices_test)
+
+if plotting 
+    print('plotting results')
+    plot(ttd)
+    plot(ttd_prime)
+    plot(indices_test,ttd_prime_test,'g')
+    plot(indices_train,ttd_prime_train,'r')
+    savefig('plot.png')
+    #plot(y_train,'.')
+    #show()
+
 
