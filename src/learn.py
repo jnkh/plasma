@@ -13,6 +13,7 @@ current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
 shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
+
 read_minmax_from_file = False
 plotting = False
 
@@ -32,12 +33,12 @@ T_max = 2
 length = 100
 skip = 1
 
-rnn_size = 20
+rnn_size = 30
 dropout_prob = 0.05
 
 #training params
-batch_size = 200
-num_epochs = 20
+batch_size = 128
+num_epochs = 30
 
 
 
