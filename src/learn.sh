@@ -71,7 +71,6 @@ echo -n 'Started job at : ' ; date
 
 python learn.py
  
-$MPIPATH -np $NPROCS $EXEPATH $ARGS
  
 echo -n 'Ended job at  : ' ; date
 echo " " 
