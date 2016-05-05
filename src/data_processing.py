@@ -125,7 +125,7 @@ def get_shots_and_times(shots_and_times_path):
     return shots,min_times,max_times
 
 def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
-              shots,current_index = 0,use_shots=-1,write_to_file=True,shots_and_minmax_times_path=None):
+              current_index = 0,use_shots=-1,write_to_file=True,shots_and_minmax_times_path=None):
     shots,disruption_times = get_shots_and_disruption_times(shots_and_disruption_times_path)
     min_times = []
     max_times = []
