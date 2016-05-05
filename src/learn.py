@@ -96,3 +96,5 @@ savefig('plot.png')
 #plot(y_train,'.')
 #show()
 
+savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,indices_train = indices_train,indices_test = indices_test)
+
