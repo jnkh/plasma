@@ -25,7 +25,7 @@ use_shots = 50
 dt = 0.001
 
 #maximum TTD considered
-T_max = 100
+T_max = 2
 
 #length of LSTM memory
 length = 100
@@ -35,7 +35,7 @@ rnn_size = 20
 dropout_prob = 0.05
 
 #training params
-batch_size = 500
+batch_size = 200
 num_epochs = 20
 
 
