@@ -12,10 +12,10 @@ num_signals = len(signals_dirs)
 shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 
 #train/validate split
-train_frac = 0.8
+train_frac = 0.85
 
 #how many shots to use
-use_shots = 10
+use_shots = 50
 
 #normalization timescale
 dt = 0.001
@@ -24,11 +24,14 @@ dt = 0.001
 T_max = 100
 
 #length of LSTM memory
-length = 50
+length = 100
 skip = 1
 
+rnn_size = 20
+dropout_prob = 0.05
+
 #training params
-batch_size = 400
+batch_size = 500
 num_epochs = 20
 
 
@@ -51,8 +54,8 @@ print("...done")
 
 print('Build model...')
 model = Sequential()
-model.add(SimpleRNN(20, return_sequences=False, input_shape=(length, num_signals)))
-model.add(Dropout(0.05))
+model.add(SimpleRNN(rnn_size, return_sequences=False, input_shape=(length, num_signals)))
+model.add(Dropout(dropout_prob))
 model.add(Dense(1))
 #model.add(Activation('tanh'))
 model.compile(loss='mean_squared_error', optimizer='sgd')
