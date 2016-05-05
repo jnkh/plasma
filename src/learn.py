@@ -37,7 +37,7 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T
         signals,ttd = get_signal_and_ttd(signal_prepath,signals_dirs,shot,t_min,t_max,T_max,dt)
         all_signals.append(signals)
         all_ttd.append(ttd)
-        print(1.0*j/len(shots))
+        print(1.0*j/use_shots)
 
     signals = vstack(all_signals)
     ttd = hstack(all_ttd)
@@ -177,13 +177,18 @@ model.add(Dropout(0.05))
 model.add(Dense(1))
 #model.add(Activation('tanh'))
 model.compile(loss='mean_squared_error', optimizer='sgd')
+print('...done')
 
 
+print('training model')
 model.fit(X_train,y_train,batch_size=100,nb_epoch=20,verbose=1,validation_split=0.0)
+print('...done')
 
+print('evaluating model')
 model.evaluate(X_test,y_test)
 
 
+print('plotting results')
 ttd_prime = model.predict(X)
 ttd_prime_test = model.predict(X_test)
 ttd_prime_train = model.predict(X_train)
