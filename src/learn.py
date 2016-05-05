@@ -88,7 +88,7 @@ ttd_prime_train = model.predict(X_train)
 
 plot(ttd)
 indices_train = range(length,len(y_train)+length)
-indices_test = range(len(y_train)+length,len(y)+1)
+indices_test = range(len(y_train)+length-1,len(y))
 plot(ttd_prime)
 plot(indices_test,ttd_prime_test,'g')
 plot(indices_train,ttd_prime_train,'r')
