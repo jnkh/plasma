@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 from pylab import *
 from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
@@ -153,8 +155,8 @@ length = 50
 skip = 1
 
 #training params
-batch_size = 100
-num_epochs = 5
+batch_size = 200
+num_epochs = 10
 
 
 
@@ -189,7 +191,8 @@ model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=num_epochs,verbose=1,va
 print('...done')
 
 print('evaluating model')
-model.evaluate(X_test,y_test)
+res = model.evaluate(X_test,y_test)
+print(res)
 
 
 print('plotting results')
@@ -200,9 +203,10 @@ ttd_prime_train = model.predict(X_train)
 plot(ttd)
 indices_train = range(length,len(y_train)+length)
 indices_test = range(len(y_train)+length,len(y)+1)
-#plot(ttd_prime)
-plot(indices_test,ttd_prime_test,'r')
+plot(ttd_prime)
+plot(indices_test,ttd_prime_test,'g')
 plot(indices_train,ttd_prime_test,'r')
+savefig('plot.png')
 #plot(y_train,'.')
-show()
+#show()
 
