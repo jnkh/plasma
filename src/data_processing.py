@@ -117,9 +117,75 @@ def train_test_split(x,frac):
     return x[mask],x[~mask]
 
 def get_shots_and_times(shots_and_times_path):
-    data = loadtxt(shots_and_times_path,dtype={'names':('num','timemin','timemax'),
+    data = loadtxt(shots_and_times_path,npmin=1,dtype={'names':('num','timemin','timemax'),
                                                               'formats':('i4','f4','f4')})
     shots = array(zip(*data)[0])
     min_times = array(zip(*data)[1])
     max_times = array(zip(*data)[2])
     return shots,min_times,max_times
+
+def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
+              shots,current_index = 0,use_shots=-1,write_to_file=True,shots_and_minmax_times_path=None):
+    shots,disruption_times = get_shots_and_disruption_times(shots_and_disruption_times_path)
+    min_times = []
+    max_times = []
+    current_dir = signals_dirs[current_index]
+    use_shots = min([use_shots,len(shots)-1])
+    shots = shots[:use_shots]
+    
+    for (j,shot) in enumerate(shots):
+        t_min,t_max = get_t_minmax(signal_prepath,signals_dirs,shot) 
+        t_thresh = get_current_threshold_time(signal_prepath,current_dir,shot)
+        t_disrupt = disruption_times[j]
+        assert(t_thresh >= t_min)
+        assert(t_disrupt <= t_max)
+        assert(t_thresh < t_disrupt)
+        min_times.append(t_thresh)
+        max_times.append(t_disrupt)
+        print(1.0*j/use_shots)
+    min_times = array(min_times)
+    max_times = array(max_times)
+    if write_to_file:
+        if shots_and_minmax_times_path == None:
+            print("Not writing out file, no path given.")
+        else:
+            write_shots_and_minmax_times_to_file(shots,min_times,max_times,shots_and_minmax_times_path)
+    return shots,array(min_times),array(max_times)
+
+def write_shots_and_minmax_times_to_file(shots,min_times,max_times,shots_and_minmax_times_path):
+    savetxt(shots_and_minmax_times_path,vstack((shots,min_times,max_times)).transpose(), fmt='%i %f %f')   
+    
+def read_shots_and_minmax_times_from_file(shots_and_minmax_times_path):
+    data = loadtxt(shots_and_minmax_times_path,ndmin=1,dtype={'names':('num','min_times','max_times'),
+                                                              'formats':('i4','f4','f4')})
+    shots = array(zip(*data)[0])
+    min_times = array(zip(*data)[1])
+    max_times = array(zip(*data)[2])
+    return shots, min_times, max_times 
+
+def get_t_minmax(signal_prepath,signals_dirs,shot):
+    t_min = -1
+    t_max = Inf
+    for (i,dirname) in enumerate(signals_dirs):
+        data = loadtxt(signal_prepath+dirname + '/' + str(shot) + '.txt')
+        t = data[:,0]
+        t_min = max(t_min,t[0])
+        t_max = min(t_max,t[-1])
+    return t_min, t_max
+
+def get_current_threshold_time(signal_prepath,current_dir,shot):
+    current_thresh = 750000
+    data = loadtxt(signal_prepath+current_dir + '/' + str(shot) + '.txt')
+    t = data[:,0]
+    I = data[:,1]
+    assert(any(abs(I) > current_thresh))
+    index_thresh = argwhere(abs(I) > current_thresh)[0][0]
+    t_thresh = t[index_thresh]
+    return t_thresh
+
+def get_shots_and_disruption_times(shots_and_disruption_times_path):
+    data = loadtxt(shots_and_disruption_times_path,ndmin=1,dtype={'names':('num','disrupt_times'),
+                                                              'formats':('i4','f4')})
+    shots = array(zip(*data)[0])
+    disrupt_times = array(zip(*data)[1])
+    return shots, disrupt_times
