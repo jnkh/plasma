@@ -45,7 +45,7 @@ print("Generating usable data")
 if not read_minmax_from_file:
     shots,min_times,max_times = get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
                shots,current_index,use_shots,True,shots_and_minmax_times_path)
-else
+else:
     shots,min_times,max_times = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
 
 print("Reading and cutting signal data")
