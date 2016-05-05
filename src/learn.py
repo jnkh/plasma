@@ -3,23 +3,19 @@ matplotlib.use('Agg')
 
 from data_processing import *
 
-
 ############Script###########
-
 signal_prepath = '../data/signal_data/jet/';
-
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                 'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
                 'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
 num_signals = len(signals_dirs)
-
 shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 
 #train/validate split
 train_frac = 0.8
 
 #how many shots to use
-use_shots = 5
+use_shots = 10
 
 #normalization timescale
 dt = 0.001
@@ -32,8 +28,8 @@ length = 50
 skip = 1
 
 #training params
-batch_size = 200
-num_epochs = 10
+batch_size = 400
+num_epochs = 20
 
 
 
