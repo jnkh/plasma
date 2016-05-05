@@ -9,7 +9,11 @@ signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                 'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
                 'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
 num_signals = len(signals_dirs)
-shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
+current_index = 0
+#shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
+shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
+shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
+read_minmax_from_file = False
 
 #train/validate split
 train_frac = 0.85
@@ -36,15 +40,21 @@ num_epochs = 20
 
 
 
-print("Read in data")
+print("Generating usable data")
 #get shot information from preprocessed files
-shots,min_times,max_times = get_shots_and_times(shots_and_times_path)
+if not read_minmax_from_file:
+    shots,min_times,max_times = get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
+               shots,current_index,use_shots,True,shots_and_minmax_times_path)
+else
+    shots,min_times,max_times = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
 
+print("Reading and cutting signal data")
 #read signals from data files
 signals,ttd = get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T_max,dt,use_shots)
 signals_train,signals_test = train_test_split(signals,train_frac)
 ttd_train,ttd_test = train_test_split(ttd,train_frac)
 
+print("Converting to training data format")
 #convert to usable training data format
 X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
 X_train,y_train = array_to_path_and_external_pred(signals_train,ttd_train,length,skip)
@@ -85,4 +95,6 @@ plot(indices_train,ttd_prime_train,'r')
 savefig('plot.png')
 #plot(y_train,'.')
 #show()
+
+savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,indices_train = indices_train,indices_test = indices_test)
 
