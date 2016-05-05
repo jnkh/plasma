@@ -19,6 +19,9 @@
 # export all my environment variables to the job
 #PBS -V
 
+#Use the gpu queue!
+#PBS -q gque 
+
 # --- define standard output and error files for the job
 ##PBS -o test.out
 ##PBS -e test.err
