@@ -31,12 +31,12 @@ T_max = 2
 length = 100
 skip = 1
 
-rnn_size = 20
+rnn_size = 30
 dropout_prob = 0.05
 
 #training params
 batch_size = 128
-num_epochs = 20
+num_epochs = 30
 
 
 
