@@ -13,7 +13,7 @@ current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
 shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
-read_minmax_from_file = False
+read_minmax_from_file = True
 
 #train/validate split
 train_frac = 0.85
@@ -35,7 +35,7 @@ rnn_size = 20
 dropout_prob = 0.05
 
 #training params
-batch_size = 200
+batch_size = 128
 num_epochs = 20
 
 
