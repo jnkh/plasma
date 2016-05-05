@@ -3,6 +3,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM, SimpleRNN
 from keras.utils.data_utils import get_file
+from scipy.cluster.vq import whiten
 import numpy as np
 import random
 import sys
