@@ -121,8 +121,8 @@ ttd_prime = [model.predict(_X) for _X in X_by_shot]
 ttd_prime_test = [model.predict(_X) for _X in X_test_by_shot]
 ttd_prime_train = [model.predict(_X) for _X in X_train_by_shot]
 
-indices_train = [range(length-1,len(y_train)) for _y in y_train_by_shot]
-indices_test = [range(length-1,len(y_test) ) for _y in y_test_by_shot]
+indices_train = [range(length-1,len(_y) + length - 1) for _y in y_train_by_shot]
+indices_test = [range(length-1,len(_y)+length-1 ) for _y in y_test_by_shot]
 
 
 savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
