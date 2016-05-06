@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 
 from data_processing import *
 
-############Script###########
+#paths#
 signal_prepath = '../data/signal_data/jet/';
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                 'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
@@ -28,17 +28,18 @@ dt = 0.001
 
 #maximum TTD considered
 T_max = 2
+T_warning = 0.1
 
 #length of LSTM memory
 length = 100
 skip = 1
 
 rnn_size = 20
-dropout_prob = 0.05
+dropout_prob = 0.1
 
 #training params
-batch_size = 128
-num_epochs = 30
+batch_size = 256
+num_epochs = 10
 
 
 
@@ -53,6 +54,14 @@ else:
 print("Reading and cutting signal data")
 #read signals from data files
 signals,ttd = get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T_max,dt,use_shots)
+
+#ttd remapping: binary -- are we less than thresh away from disruption?
+binary_ttd = 0*ttd
+mask = ttd < log10(T_warning)
+binary_ttd[mask] = 1.0
+binary_ttd[~mask] = 0.0
+ttd = binary_ttd
+
 signals_train,signals_test = train_test_split(signals,train_frac)
 ttd_train,ttd_test = train_test_split(ttd,train_frac)
 
@@ -69,8 +78,9 @@ model = Sequential()
 model.add(SimpleRNN(rnn_size, return_sequences=False, input_shape=(length, num_signals)))
 model.add(Dropout(dropout_prob))
 model.add(Dense(1))
-#model.add(Activation('tanh'))
-model.compile(loss='mean_squared_error', optimizer='sgd')
+model.add(Activation('sigmoid')) #add if probabilistic output
+model.compile(loss='binary_crossentropy', optimizer='sgd')
+#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 print('...done')
 
 
