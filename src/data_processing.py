@@ -1,9 +1,5 @@
 from pylab import *
-from keras.models import Sequential
-from keras.layers.core import Dense, Activation, Dropout
-from keras.layers.recurrent import LSTM, SimpleRNN
-from keras.utils.data_utils import get_file
-from scipy.cluster.vq import whiten
+
 import numpy as np
 import random
 import sys
@@ -27,7 +23,8 @@ def cut_and_resample_signal(t,sig,tmin,tmax,dt):
     return resample_signal(t,sig,tmin,tmax,dt)
 
 
-def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,min_times,max_times,T_max,dt,use_shots=3,recompute = False):
+def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,
+    min_times,max_times,T_max,dt,use_shots=3,recompute = False,as_array_of_shots=True):
     all_signals = []
     all_ttd = []
     use_shots = min([use_shots,len(shots)-1])
@@ -40,9 +37,12 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,min
         all_ttd.append(ttd)
         print(1.0*j/use_shots)
 
-    signals = vstack(all_signals)
-    ttd = hstack(all_ttd)
-    return signals,ttd
+    if as_array_of_shots:
+        return array(all_signals),array(all_ttd)
+    else:
+        signals = vstack(all_signals)
+        ttd = hstack(all_ttd)
+        return signals,ttd
 
 def get_individual_shot_file(prepath,shot_num,ext='.txt'):
     return prepath + str(shot_num) + ext 

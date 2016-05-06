@@ -2,6 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 from data_processing import *
+from model_builder import build_model
 
 #paths#
 signal_prepath = '../data/signal_data/jet/';
@@ -23,10 +24,11 @@ read_minmax_from_file = True
 plotting = False
 
 #train/validate split
+as_array_of_shots=True
 train_frac = 0.85
 
 #how many shots to use
-use_shots = 50
+use_shots = 10
 
 #normalization timescale
 dt = 0.001
@@ -58,53 +60,69 @@ else:
 
 print("Reading and cutting signal data")
 #read signals from data files
-signals,ttd = get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,min_times,max_times,T_max,dt,use_shots,recompute)
+signals_by_shot,ttd_by_shot = get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,
+    shots,min_times,max_times,T_max,dt,use_shots,recompute,as_array_of_shots)
 
 #ttd remapping: binary -- are we less than thresh away from disruption?
-binary_ttd = 0*ttd
-mask = ttd < log10(T_warning)
-binary_ttd[mask] = 1.0
-binary_ttd[~mask] = 0.0
-ttd = binary_ttd
 
-signals_train,signals_test = train_test_split(signals,train_frac)
-ttd_train,ttd_test = train_test_split(ttd,train_frac)
+
+def remap_target(ttd,as_array_of_shots=True):
+    binary_ttd = 0*ttd
+    mask = ttd < log10(T_warning)
+    binary_ttd[mask] = 1.0
+    binary_ttd[~mask] = 0.0
+    return binary_ttd
+
+if as_array_of_shots:
+    ttd_by_shot = array([remap_target(_t) for _t in ttd_by_shot])
+else:
+    ttd_by_shot = remap_target(ttd_by_shot)
+
+signals_train_by_shot,signals_test_by_shot = train_test_split(signals_by_shot,train_frac)
+ttd_train_by_shot,ttd_test_by_shot = train_test_split(ttd_by_shot,train_frac)
+
+num_shots = len(ttd_by_shot)
+num_shots_train = len(ttd_train_by_shot)
+num_shots_test = len(ttd_test_by_shot)
 
 print("Converting to training data format")
 #convert to usable training data format
-X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
-X_train,y_train = array_to_path_and_external_pred(signals_train,ttd_train,length,skip)
-X_test,y_test = array_to_path_and_external_pred(signals_test,ttd_test,length,skip)
+X_by_shot,y_by_shot = \
+    zip(*[array_to_path_and_external_pred(signals_by_shot[i],ttd_by_shot[i],length,skip) for i in range(num_shots)])
+X_train_by_shot,y_train_by_shot = \
+    zip(*[array_to_path_and_external_pred(signals_train_by_shot[i],ttd_train_by_shot[i],length,skip) for i in range(num_shots_train)])
+X_test_by_shot,y_test_by_shot = \
+    zip(*[array_to_path_and_external_pred(signals_test_by_shot[i],ttd_test_by_shot[i],length,skip) for i in range(num_shots_test)])
 print("...done")
 
 
 print('Build model...')
-model = Sequential()
-model.add(SimpleRNN(rnn_size, return_sequences=False, input_shape=(length, num_signals)))
-model.add(Dropout(dropout_prob))
-model.add(Dense(1))
-model.add(Activation('sigmoid')) #add if probabilistic output
-model.compile(loss='binary_crossentropy', optimizer='sgd')
-#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
+model = build_model(rnn_size,dropout_prob,length,num_signals)
 print('...done')
 
 
 print('training model')
-model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=num_epochs,verbose=1,validation_split=0.0)
+for e in range(num_epochs):
+    print('Epoch {}/{}'.format(e+1,num_epochs))
+    for shot_idx in range(num_shots_train):
+        print('Shot {}/{}'.format(shot_idx,num_shots_train))
+        model.fit(X_train_by_shot[shot_idx],y_train_by_shot[shot_idx],batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
 print('evaluating model')
-res = model.evaluate(X_test,y_test)
-print(res)
+for shot_idx in range(num_shots_test):
+    print('Shot {}/{}'.format(shot_idx,num_shots_test))
+    res = model.evaluate(X_test_by_shot,y_test_by_shot)
+    print(res)
 
 
 print('saving results')
-ttd_prime = model.predict(X)
-ttd_prime_test = model.predict(X_test)
-ttd_prime_train = model.predict(X_train)
+ttd_prime = [model.predict(_X) for _X in X_by_shot]
+ttd_prime_test = [model.predict(_X) for _X in X_test_by_shot]
+ttd_prime_train = [model.predict(_X) for _X in X_train_by_shot]
 
-indices_train = range(length-1,len(y_train)+length-1)
-indices_test = range(len(y_train)+length-1,len(y_train)+length-1+len(y_test))
+indices_train = [range(length-1,len(y_train)) for _y in y_train_by_shot]
+indices_test = [range(length-1,len(y_test) ) for _y in y_test_by_shot]
 
 
 savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
