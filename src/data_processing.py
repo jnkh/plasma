@@ -127,9 +127,24 @@ def array_to_path_and_external_pred(arr,res,length,skip,return_sequences=False):
         y = expand_dims(y,axis=len(shape(y)))
     return X,y
 
-def train_test_split(x,frac):
+def train_test_split(x,frac,shuffle_data=False):
     mask = array(range(len(x))) < frac*len(x)
+    if shuffle_data:
+        shuffle(mask)
     return x[mask],x[~mask]
+
+def train_test_split_all(x,frac,shuffle_data=True):
+    groups = []
+    length = len(x[0])
+    mask = array(range(length)) < frac*length
+    if shuffle_data:
+        shuffle(mask)
+    for item in x:
+        groups.append((item[mask],item[~mask]))
+    return groups
+
+
+
 
 def get_shots_and_times(shots_and_times_path):
     data = loadtxt(shots_and_times_path,npmin=1,dtype={'names':('num','timemin','timemax'),

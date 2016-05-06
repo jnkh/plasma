@@ -26,6 +26,7 @@ plotting = False
 #train/validate split
 as_array_of_shots=True
 train_frac = 0.85
+shuffle_training = True
 
 #how many shots to use
 use_shots = 50
@@ -78,8 +79,11 @@ if as_array_of_shots:
 else:
     ttd_by_shot = remap_target(ttd_by_shot)
 
-signals_train_by_shot,signals_test_by_shot = train_test_split(signals_by_shot,train_frac)
-ttd_train_by_shot,ttd_test_by_shot = train_test_split(ttd_by_shot,train_frac)
+
+split_groups = train_test_split_all((signals_by_shot,ttd_by_shot),train_frac,shuffle_training)
+signals_train_by_shot,signals_test_by_shot = split_groups[0]
+ttd_train_by_shot,ttd_test_by_shot = split_groups[1]
+
 
 num_shots = len(ttd_by_shot)
 num_shots_train = len(ttd_train_by_shot)
@@ -125,7 +129,7 @@ indices_train = [range(length-1,len(_y) + length - 1) for _y in y_train_by_shot]
 indices_test = [range(length-1,len(_y)+length-1 ) for _y in y_test_by_shot]
 
 
-savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
+savez('ttd_results',ttd=ttd_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
     ttd_prime_train = ttd_prime_train, indices_train = indices_train,indices_test = indices_test)
 
 if plotting:
