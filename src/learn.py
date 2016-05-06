@@ -14,7 +14,7 @@ current_index = 0
 shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
 shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
 
-read_minmax_from_file = False
+read_minmax_from_file = True
 plotting = False
 
 #train/validate split
@@ -95,7 +95,7 @@ indices_test = range(len(y_train)+length-1,len(y_train)+length-1+len(y_test))
 savez('ttd_results',ttd=ttd,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
     ttd_prime_train = ttd_prime_train, indices_train = indices_train,indices_test = indices_test)
 
-if plotting 
+if plotting:
     print('plotting results')
     plot(ttd)
     plot(ttd_prime)
