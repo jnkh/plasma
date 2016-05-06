@@ -28,7 +28,7 @@ as_array_of_shots=True
 train_frac = 0.85
 
 #how many shots to use
-use_shots = 10
+use_shots = 50
 
 #normalization timescale
 dt = 0.001
