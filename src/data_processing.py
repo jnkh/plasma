@@ -7,6 +7,7 @@ from scipy.cluster.vq import whiten
 import numpy as np
 import random
 import sys
+import os.path
 
 
 
@@ -26,7 +27,7 @@ def cut_and_resample_signal(t,sig,tmin,tmax,dt):
     return resample_signal(t,sig,tmin,tmax,dt)
 
 
-def get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T_max,dt,use_shots=3):
+def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,min_times,max_times,T_max,dt,use_shots=3,recompute = False):
     all_signals = []
     all_ttd = []
     use_shots = min([use_shots,len(shots)-1])
@@ -34,7 +35,7 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T
         shot = shots[j]
         t_min = min_times[j]
         t_max = max_times[j]
-        signals,ttd = get_signal_and_ttd(signal_prepath,signals_dirs,shot,t_min,t_max,T_max,dt)
+        signals,ttd = get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,T_max,dt,recompute)
         all_signals.append(signals)
         all_ttd.append(ttd)
         print(1.0*j/use_shots)
@@ -43,21 +44,35 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T
     ttd = hstack(all_ttd)
     return signals,ttd
 
-def get_signal_and_ttd(signal_prepath,signals_dirs,shot,t_min,t_max,T_max,dt):
-    signals = []
-    times = []
-    for (i,dirname) in enumerate(signals_dirs):
-        data = loadtxt(signal_prepath+dirname + '/' + str(shot) + '.txt')
-        t = data[:,0]
-        sig = data[:,1]
-        tr,sigr = cut_and_resample_signal(t,sig,t_min,t_max,dt)
-        signals.append(sigr)
-        times.append(tr)
-    signals = np.column_stack(signals)
-    signals = whiten(signals)
-    ttd = max(tr) - tr
-    ttd = clip(ttd,0,T_max)
-    ttd = log10(ttd + 1.0*dt/10)
+def get_individual_shot_file(prepath,shot_num,ext='.txt'):
+    return prepath + str(shot_num) + ext 
+
+def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,T_max,dt,recompute = False):
+    load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
+    if os.path.isfile(load_file_path) and not recompute:
+        print('loading shot {}'.format(shot))
+        dat = load(load_file_path)
+        signals = dat['signals']
+        ttd = dat ['ttd']
+    else:
+        print('(re)computing shot {}'.format(shot))
+        signals = []
+        times = []
+        for (i,dirname) in enumerate(signals_dirs):
+            data = loadtxt(get_individual_shot_file(signal_prepath+dirname + '/',shot))
+            t = data[:,0]
+            sig = data[:,1]
+            tr,sigr = cut_and_resample_signal(t,sig,t_min,t_max,dt)
+            signals.append(sigr)
+            times.append(tr)
+        signals = np.column_stack(signals)
+        signals = whiten(signals)
+        ttd = max(tr) - tr
+        ttd = clip(ttd,0,T_max)
+        ttd = log10(ttd + 1.0*dt/10)
+        savez(load_file_path,signals = signals,ttd = ttd)
+        print('saved shot {}'.format(shot))
+
     return signals,ttd
 
 def array_to_path_and_next(arr,length,skip):

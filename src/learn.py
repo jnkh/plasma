@@ -13,6 +13,11 @@ current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
 shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
+#processed data
+processed_prepath = '../data/processed_shots/'
+recompute = False
+
+
 
 read_minmax_from_file = True
 plotting = False
@@ -53,7 +58,7 @@ else:
 
 print("Reading and cutting signal data")
 #read signals from data files
-signals,ttd = get_signals_and_ttds(signal_prepath,signals_dirs,shots,min_times,max_times,T_max,dt,use_shots)
+signals,ttd = get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,min_times,max_times,T_max,dt,use_shots,recompute)
 
 #ttd remapping: binary -- are we less than thresh away from disruption?
 binary_ttd = 0*ttd
