@@ -33,7 +33,7 @@ T_max = 2
 length = 100
 skip = 1
 
-rnn_size = 30
+rnn_size = 20
 dropout_prob = 0.05
 
 #training params
