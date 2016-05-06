@@ -112,7 +112,7 @@ print('...done')
 print('evaluating model')
 for shot_idx in range(num_shots_test):
     print('Shot {}/{}'.format(shot_idx,num_shots_test))
-    res = model.evaluate(X_test_by_shot,y_test_by_shot)
+    res = model.evaluate(X_test_by_shot[shot_idx],y_test_by_shot[shot_idx])
     print(res)
 
 
