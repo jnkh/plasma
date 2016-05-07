@@ -4,6 +4,7 @@ import numpy as np
 import random
 import sys
 import os.path
+from scipy.cluster.vq import whiten
 
 
 
@@ -27,7 +28,7 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,
     min_times,max_times,T_max,dt,use_shots=3,recompute = False,as_array_of_shots=True):
     all_signals = []
     all_ttd = []
-    use_shots = min([use_shots,len(shots)-1])
+    use_shots = min([use_shots,len(shots)])
     for (j,shot_num) in enumerate(shots[:use_shots]):
         shot = shots[j]
         t_min = min_times[j]
@@ -160,7 +161,7 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
     min_times = []
     max_times = []
     current_dir = signals_dirs[current_index]
-    use_shots = min([use_shots,len(shots)-1])
+    use_shots = min([use_shots,len(shots)])
     shots = shots[:use_shots]
     
     for (j,shot) in enumerate(shots):

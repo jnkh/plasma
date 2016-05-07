@@ -2,7 +2,6 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation, Dropout
 from keras.layers.recurrent import LSTM, SimpleRNN
 from keras.utils.data_utils import get_file
-from scipy.cluster.vq import whiten
 
 def build_model(rnn_size,dropout_prob,length,num_signals):
 	model = Sequential()
