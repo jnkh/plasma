@@ -104,15 +104,19 @@ print('Build model...')
 model = build_model(rnn_size,dropout_prob,length,num_signals)
 print('...done')
 
+num_shots_at_once = 10
+
+shots_arrays = array_split(array(range(num_shots_train)),int(round(1.0*num_shots_train/num_shots_at_once)))
+
 
 print('training model')
 for e in range(num_epochs):
     print('Epoch {}/{}'.format(e+1,num_epochs))
-    for shot_idx in range(num_shots_train):
-        X_train,y_train = array_to_path_and_external_pred( \
-            signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip)
+    for shots_array in shots_arrays:
+        X_train,y_train = zip(*[array_to_path_and_external_pred( \
+            signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip) for shot_idx in shots_array])
         print('Shot {}/{}'.format(shot_idx,num_shots_train))
-        model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
+        model.fit(vstack(X_train),hstack(y_train),batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
 print('evaluating model')
