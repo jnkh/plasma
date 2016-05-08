@@ -122,7 +122,9 @@ print('...done')
 print('evaluating model')
 for shot_idx in range(num_shots_test):
     print('Shot {}/{}'.format(shot_idx,num_shots_test))
-    res = model.evaluate(X_test_by_shot[shot_idx],y_test_by_shot[shot_idx])
+    X,y = array_to_path_and_external_pred(signals_test_by_shot[shot_idx],\
+        ttd_test_by_shot[shot_idx],length,skip)
+    res = model.evaluate(X,y)
     print(res)
 
 
