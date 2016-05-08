@@ -46,7 +46,7 @@ rnn_size = 20
 dropout_prob = 0.1
 
 #training params
-batch_size = 2048
+batch_size = 4096
 num_epochs = 10
 
 
@@ -104,7 +104,7 @@ print('Build model...')
 model = build_model(rnn_size,dropout_prob,length,num_signals)
 print('...done')
 
-num_shots_at_once = 10
+num_shots_at_once = 30
 
 shots_arrays = array_split(array(range(num_shots_train)),int(round(1.0*num_shots_train/num_shots_at_once)))
 
