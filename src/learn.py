@@ -89,15 +89,15 @@ num_shots = len(ttd_by_shot)
 num_shots_train = len(ttd_train_by_shot)
 num_shots_test = len(ttd_test_by_shot)
 
-print("Converting to training data format")
-#convert to usable training data format
-X_by_shot,y_by_shot = \
-    zip(*[array_to_path_and_external_pred(signals_by_shot[i],ttd_by_shot[i],length,skip) for i in range(num_shots)])
-X_train_by_shot,y_train_by_shot = \
-    zip(*[array_to_path_and_external_pred(signals_train_by_shot[i],ttd_train_by_shot[i],length,skip) for i in range(num_shots_train)])
-X_test_by_shot,y_test_by_shot = \
-    zip(*[array_to_path_and_external_pred(signals_test_by_shot[i],ttd_test_by_shot[i],length,skip) for i in range(num_shots_test)])
-print("...done")
+# print("Converting to training data format")
+# #convert to usable training data format
+# X_by_shot,y_by_shot = \
+#     zip(*[array_to_path_and_external_pred(signals_by_shot[i],ttd_by_shot[i],length,skip) for i in range(num_shots)])
+# X_train_by_shot,y_train_by_shot = \
+#     zip(*[array_to_path_and_external_pred(signals_train_by_shot[i],ttd_train_by_shot[i],length,skip) for i in range(num_shots_train)])
+# X_test_by_shot,y_test_by_shot = \
+#     zip(*[array_to_path_and_external_pred(signals_test_by_shot[i],ttd_test_by_shot[i],length,skip) for i in range(num_shots_test)])
+# print("...done")
 
 
 print('Build model...')
@@ -109,8 +109,10 @@ print('training model')
 for e in range(num_epochs):
     print('Epoch {}/{}'.format(e+1,num_epochs))
     for shot_idx in range(num_shots_train):
+        X_train,y_train = array_to_path_and_external_pred( \
+            signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip)
         print('Shot {}/{}'.format(shot_idx,num_shots_train))
-        model.fit(X_train_by_shot[shot_idx],y_train_by_shot[shot_idx],batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
+        model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
 print('evaluating model')
@@ -121,12 +123,26 @@ for shot_idx in range(num_shots_test):
 
 
 print('saving results')
-ttd_prime = [model.predict(_X) for _X in X_by_shot]
-ttd_prime_test = [model.predict(_X) for _X in X_test_by_shot]
-ttd_prime_train = [model.predict(_X) for _X in X_train_by_shot]
+ttd_prime = []
+ttd_prime_test = []
+ttd_prime_train = []
+for i in range(num_shots_train):
+    X,y = array_to_path_and_external_pred( \
+        signals_train_by_shot[i],ttd_train_by_shot[i],length,skip)
+    ttd_prime_train.append(model.predict(X))
 
-indices_train = [range(length-1,len(_y) + length - 1) for _y in y_train_by_shot]
-indices_test = [range(length-1,len(_y)+length-1 ) for _y in y_test_by_shot]
+for i in range(num_shots_test):
+    X,y = array_to_path_and_external_pred( \
+        signals_test_by_shot[i],ttd_test_by_shot[i],length,skip)
+    ttd_prime_test.append(model.predict(X))
+
+for i in range(num_shots):
+    X,y = array_to_path_and_external_pred( \
+        signals_by_shot[i],ttd_by_shot[i],length,skip)
+    ttd_prime.append(model.predict(X))
+
+indices_train = [range(length-1,len(_y) + length - 1) for _y in ttd_prime_train]
+indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
 
 
 savez('ttd_results',ttd=ttd_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
