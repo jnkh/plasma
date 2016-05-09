@@ -6,6 +6,7 @@ from keras.utils.data_utils import get_file
 def build_model(rnn_size,dropout_prob,length,num_signals):
 
 	rnn_model = LSTM
+	optimizer_name = 'adam'
 
 
 	model = Sequential()
@@ -13,6 +14,6 @@ def build_model(rnn_size,dropout_prob,length,num_signals):
 	model.add(Dropout(dropout_prob))
 	model.add(Dense(1))
 	model.add(Activation('sigmoid')) #add if probabilistic output
-	model.compile(loss='binary_crossentropy', optimizer='sgd')
+	model.compile(loss='binary_crossentropy', optimizer=optimizer_name)
 	#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 	return model

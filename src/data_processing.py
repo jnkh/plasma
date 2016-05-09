@@ -10,9 +10,18 @@ from scipy.cluster.vq import whiten
 
 from scipy.interpolate import interp1d,UnivariateSpline
 def resample_signal(t,sig,tmin,tmax,dt):
+    order = argsort(t)
+    t = t[order]
+    sig = sig[order]
     tt = arange(tmin,tmax,dt)
     f = UnivariateSpline(t,sig,s=0,k=1,ext=0)
     sig_interp = f(tt)
+    if(any(isnan(sig_interp))): print("signals contains nan")
+    if(any(t[1:] - t[:-1] <= 0)):
+	print("non increasing")
+	idx = where(t[1:] - t[:-1] <= 0)[0][0]
+	print(t[idx-10:idx+10])
+
     return tt,sig_interp
 
 def cut_signal(t,sig,tmin,tmax):

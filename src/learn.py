@@ -13,15 +13,15 @@ signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
 num_signals = len(signals_dirs)
 current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
-shots_and_disruption_times_path = '../data/shot_lists/short_list.txt'
-shots_and_minmax_times_path = '../data/shot_lists/short_list_minmax_times.txt'
+shots_and_disruption_times_path = '../data/shot_lists/long_list_C.txt' #'short_list.txt' 'long_list_C.txt'
+shots_and_minmax_times_path = '../data/shot_lists/long_list_C_minmax_times.txt' #short_list_minmax_times.txt' 'long_list_C_minmax_times.txt'
+read_minmax_from_file = True
 #processed data
 processed_prepath = '../data/processed_shots/'
 recompute = False
 
 
 
-read_minmax_from_file = True
 plotting = False
 
 #train/validate split
@@ -30,7 +30,7 @@ train_frac = 0.85
 shuffle_training = True
 
 #how many shots to use
-use_shots = 50
+use_shots = 400
 
 #normalization timescale
 dt = 0.001
@@ -49,11 +49,12 @@ dropout_prob = 0.1
 #training params
 batch_size_large = 2048
 batch_size_small = 128
-num_epochs = 10
+batch_size = 128
+num_epochs = 4
 
 
 
-print("Generating usable data")
+print("Generating minmax times")
 #get shot information from preprocessed files
 if not read_minmax_from_file:
     shots,min_times,max_times = get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
