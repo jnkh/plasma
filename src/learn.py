@@ -116,7 +116,7 @@ for e in range(num_epochs):
     for shots_array in shots_arrays:
         X_train,y_train = zip(*[array_to_path_and_external_pred( \
             signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip) for shot_idx in shots_array])
-        print('Shot {}/{}'.format(shot_idx,num_shots_train))
+        print('Shot {}/{}'.format(len(y_train),num_shots_train))
         model.fit(vstack(X_train),hstack(y_train),batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
