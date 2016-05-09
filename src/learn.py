@@ -47,7 +47,8 @@ rnn_size = 20
 dropout_prob = 0.1
 
 #training params
-batch_size = 256
+batch_size_large = 2048
+batch_size_small = 128
 num_epochs = 10
 
 
@@ -111,12 +112,18 @@ num_shots_at_once = 30
 
 print('training model')
 for e in range(num_epochs):
+    #train on small batches in first and last epoch
+    if e == 0 or e == num_epochs - 1:
+        batch_size = batch_size_small
+    #otherwise train on large batches
+    else:
+        batch_size = batch_size_large 
     shots_arrays = array_split(np.random.permutation(array(range(num_shots_train))),int(round(1.0*num_shots_train/num_shots_at_once)))
     print('Epoch {}/{}'.format(e+1,num_epochs))
-    for shots_array in shots_arrays:
+    for i,shots_array in enumerate(shots_arrays):
         X_train,y_train = zip(*[array_to_path_and_external_pred( \
             signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip) for shot_idx in shots_array])
-        print('Shot {}/{}'.format(len(y_train),num_shots_train))
+        print('Shot {}/{}'.format(len(y_train)*(i+1),num_shots_train))
         model.fit(vstack(X_train),hstack(y_train),batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
