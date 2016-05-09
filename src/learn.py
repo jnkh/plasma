@@ -104,7 +104,7 @@ print('Build model...')
 model = build_model(rnn_size,dropout_prob,length,num_signals)
 print('...done')
 
-num_shots_at_once = 10
+num_shots_at_once = 30
 
 shots_arrays = array_split(array(range(num_shots_train)),int(round(1.0*num_shots_train/num_shots_at_once)))
 
@@ -151,7 +151,7 @@ indices_train = [range(length-1,len(_y) + length - 1) for _y in ttd_prime_train]
 indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
 
 
-savez('ttd_results',ttd=ttd_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
+savez('ttd_results',ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
     ttd_prime_train = ttd_prime_train, indices_train = indices_train,indices_test = indices_test)
 
 if plotting:
