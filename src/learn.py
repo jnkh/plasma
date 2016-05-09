@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 
 from data_processing import *
 from model_builder import build_model
+import numpy as np
 
 #paths#
 signal_prepath = '../data/signal_data/jet/';
@@ -106,11 +107,11 @@ print('...done')
 
 num_shots_at_once = 30
 
-shots_arrays = array_split(array(range(num_shots_train)),int(round(1.0*num_shots_train/num_shots_at_once)))
 
 
 print('training model')
 for e in range(num_epochs):
+    shots_arrays = array_split(np.random.permutation(array(range(num_shots_train))),int(round(1.0*num_shots_train/num_shots_at_once)))
     print('Epoch {}/{}'.format(e+1,num_epochs))
     for shots_array in shots_arrays:
         X_train,y_train = zip(*[array_to_path_and_external_pred( \
