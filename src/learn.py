@@ -47,7 +47,7 @@ rnn_size = 20
 dropout_prob = 0.1
 
 #training params
-batch_size = 4096
+batch_size = 128
 num_epochs = 10
 
 
