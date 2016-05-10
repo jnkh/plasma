@@ -197,7 +197,7 @@ def load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,sign
         shot_and_minmax_times_path = append_to_filename(shot_path,'_minmax_times')
         if os.path.isfile(shot_and_minmax_times_path) and not recompute_minmax:
             print('minmax previously generated for {}, reading file'.format(shot_path))
-            shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
+            shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shot_and_minmax_times_path)
         else:
             print('generating minmax for {}'.format(shot_path))
             shots,min_times,max_times,disruptive = get_shots_and_minmax_times(signal_prepath,signals_dirs,shot_path,
