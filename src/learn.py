@@ -166,7 +166,7 @@ indices_train = [range(length-1,len(_y) + length - 1) for _y in ttd_prime_train]
 indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
 
 
-savez('ttd_results',ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
+savez('ttd_results2',ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
     ttd_prime_train = ttd_prime_train, disruptive_train=disruptive_train, disruptive_test=disruptive_test,indices_train = indices_train,indices_test = indices_test)
 
 if plotting:
