@@ -187,15 +187,36 @@ def train_test_split_all(x,frac,shuffle_data=True):
     return groups
 
 
+def load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots):
+    all_shots = []
+    all_min_times = []
+    all_max_times = []
+    all_disruptive = []
+    for shot_filename in shot_files:
+        shot_path = join(shot_list_dir,shot_filename)
+        shot_and_minmax_times_path = append_to_filename(shot_path,'_minmax_times')
+        if os.path.isfile(shot_and_minmax_times_path) and not recompute_minmax:
+            print('minmax previously generated for {}, reading file'.format(shot_path))
+            shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
+        else:
+            print('generating minmax for {}'.format(shot_path))
+            shots,min_times,max_times,disruptive = get_shots_and_minmax_times(signal_prepath,signals_dirs,shot_path,
+                   current_index,use_shots,True,shot_and_minmax_times_path)
+        all_shots.append(shots)
+        all_min_times.append(min_times)
+        all_max_times.append(max_times)
+        all_disruptive.append(disruptive)
+    return hstack(all_shots), hstack(all_min_times), hstack(all_max_times), hstack(all_disruptive)
 
 
-def get_shots_and_times(shots_and_times_path):
-    data = loadtxt(shots_and_times_path,npmin=1,dtype={'names':('num','timemin','timemax'),
-                                                              'formats':('i4','f4','f4')})
-    shots = array(zip(*data)[0])
-    min_times = array(zip(*data)[1])
-    max_times = array(zip(*data)[2])
-    return shots,min_times,max_times
+
+# def get_shots_and_times(shots_and_times_path):
+#     data = loadtxt(shots_and_times_path,npmin=1,dtype={'names':('num','timemin','timemax'),
+#                                                               'formats':('i4','f4','f4')})
+#     shots = array(zip(*data)[0])
+#     min_times = array(zip(*data)[1])
+#     max_times = array(zip(*data)[2])
+#     return shots,min_times,max_times
 
 def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
               current_index = 0,use_shots=-1,write_to_file=True,shots_and_minmax_times_path=None):

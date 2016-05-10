@@ -16,7 +16,7 @@ current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 shot_list_dir = '../data/shot_lists/'
 shot_files = ['short_list.txt','mixed_list_test.txt']#['long_list_C.txt','short_list.txt','BeWall_clear.txt']
-recompute_minmax = True
+recompute_minmax = False
 #processed data
 processed_prepath = '../data/processed_shots/'
 recompute = False
@@ -58,17 +58,11 @@ clean_shots_lists(shot_list_dir)
 print("...done")
 
 print("Generating minmax times")
+shots,min_times,max_times,disruptive = load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots)
 #get shot information from preprocessed files
-for shot_filename in shot_files:
-    shot_path = join(shot_list_dir,shot_filename)
-    shot_and_minmax_times_path = append_to_filename(shot_path,'_minmax_times')
-    if os.path.isfile(shot_and_minmax_times_path) and not recompute_minmax:
-        print('minmax previously generated for {}, reading file'.format(shot_path))
-        shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
-    else:
-        print('generating minmax for {}'.format(shot_path))
-        shots,min_times,max_times,disruptive = get_shots_and_minmax_times(signal_prepath,signals_dirs,shot_path,
-               current_index,use_shots,True,shot_and_minmax_times_path)
+print("...done")
+
+
 
 print("Reading and cutting signal data")
 #read signals from data files
