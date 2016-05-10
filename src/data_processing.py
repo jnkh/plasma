@@ -215,7 +215,6 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
         assert(t_disrupt <= t_max)
         assert(t_thresh < t_disrupt)
         min_times.append(t_thresh)
-        max_times.append(t_disrupt)
         if t_disrupt < 0:
             disruptive.append(0)
             max_times.append(t_max)
