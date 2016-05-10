@@ -13,10 +13,9 @@ signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
 num_signals = len(signals_dirs)
 current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
-shot_lists_dir = '../data/shot_lists/'
-shots_and_disruption_times_path = 'long_list_C.txt'  #'short_list.txt' 'long_list_C.txt'
-shots_and_minmax_times_path = shot_lists_dir + 'long_list_C_minmax_times.txt' #short_list_minmax_times.txt' 'long_list_C_minmax_times.txt'
-read_minmax_from_file = True
+shot_list_dir = '../data/shot_lists/'
+shot_files = ['long_list_C.txt','short_list.txt','BeWall_clear.txt']
+recompute_minmax = True
 #processed data
 processed_prepath = '../data/processed_shots/'
 recompute = False
@@ -54,25 +53,31 @@ batch_size = 256
 num_epochs = 4
 
 print("Clean Shot Lists")
-clean_shots_lists(shot_lists_dir)
+clean_shots_lists(shot_list_dir)
+print("...done")
 
 print("Generating minmax times")
 #get shot information from preprocessed files
-if not read_minmax_from_file:
-    shots,min_times,max_times = get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
+for shot_filename in shot_files:
+    shot_path = join(shot_list_dir,shot_filename)
+    shot_and_minmax_times_path = append_to_filename(shot_path,'_minmax_times')
+    if os.isfile(shots_and_minmax_times_path) and not recompute_minmax:
+        print('minmax previously generated for {}, reading file'.format(shot_path))
+        shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
+    else:
+        print('generating minmax for {}'.format(shot_path))
+        shots,min_times,max_times,disruptive = get_shots_and_minmax_times(signal_prepath,signals_dirs,shot_path,
                current_index,use_shots,True,shots_and_minmax_times_path)
-else:
-    shots,min_times,max_times = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
 
 print("Reading and cutting signal data")
 #read signals from data files
 signals_by_shot,ttd_by_shot = get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,
-    shots,min_times,max_times,T_max,dt,use_shots,recompute,as_array_of_shots)
+    shots,min_times,max_times,disruptive,T_max,dt,use_shots,recompute,as_array_of_shots)
 
 #ttd remapping: binary -- are we less than thresh away from disruption?
 
 
-def remap_target(ttd,as_array_of_shots=True):
+def remap_target(ttd,T_warning,as_array_of_shots=True):
     binary_ttd = 0*ttd
     mask = ttd < log10(T_warning)
     binary_ttd[mask] = 1.0
@@ -80,14 +85,15 @@ def remap_target(ttd,as_array_of_shots=True):
     return binary_ttd
 
 if as_array_of_shots:
-    ttd_by_shot = array([remap_target(_t) for _t in ttd_by_shot])
+    ttd_by_shot = array([remap_target(_t,T_warning) for _t in ttd_by_shot])
 else:
-    ttd_by_shot = remap_target(ttd_by_shot)
+    ttd_by_shot = remap_target(ttd_by_shot,T_warning)
 
 
-split_groups = train_test_split_all((signals_by_shot,ttd_by_shot),train_frac,shuffle_training)
+split_groups = train_test_split_all((signals_by_shot,ttd_by_shot,disruptive),train_frac,shuffle_training)
 signals_train_by_shot,signals_test_by_shot = split_groups[0]
 ttd_train_by_shot,ttd_test_by_shot = split_groups[1]
+disruptive_train,disruptive_test = split_groups[2]
 
 
 num_shots = len(ttd_by_shot)
@@ -126,7 +132,7 @@ for e in range(num_epochs):
     for i,shots_array in enumerate(shots_arrays):
         X_train,y_train = zip(*[array_to_path_and_external_pred( \
             signals_train_by_shot[shot_idx],ttd_train_by_shot[shot_idx],length,skip) for shot_idx in shots_array])
-        print('Shot {}/{}'.format(len(y_train)*(i+1),num_shots_train))
+        print('Shots {}/{}'.format(len(y_train)*(i+1),num_shots_train))
         model.fit(vstack(X_train),hstack(y_train),batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
@@ -163,7 +169,7 @@ indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
 
 
 savez('ttd_results',ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
-    ttd_prime_train = ttd_prime_train, indices_train = indices_train,indices_test = indices_test)
+    ttd_prime_train = ttd_prime_train, disruptive_train=disruptive_train, disruptive_test=disruptive_test,indices_train = indices_train,indices_test = indices_test)
 
 if plotting:
     print('plotting results')

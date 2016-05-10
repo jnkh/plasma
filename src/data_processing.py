@@ -18,11 +18,16 @@ def clean_shots_lists(shots_lists_dir):
         clean_shots_list(path)
 
 
+def append_to_filename(path,to_append):
+    ending_idx = path.rfind('.')
+    new_path = path[:ending_idx] + to_append + path[ending_idx:]
+    return new_path
+
 
 def clean_shots_list(path):
     data = loadtxt(path)
     ending_idx = path.rfind('.')
-    new_path = path[:ending_idx] + '_clear' + path[ending_idx:]
+    new_path = append_to_filename(path,'_clear')
     if len(shape(data)) < 2:
         #nondisruptive
         nd_times = -1.0*ones_like(data)
@@ -58,7 +63,7 @@ def cut_and_resample_signal(t,sig,tmin,tmax,dt):
 
 
 def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,
-    min_times,max_times,T_max,dt,use_shots=3,recompute = False,as_array_of_shots=True):
+    min_times,max_times,disruptive,T_max,dt,use_shots=3,recompute = False,as_array_of_shots=True):
     all_signals = []
     all_ttd = []
     use_shots = min([use_shots,len(shots)])
@@ -66,7 +71,8 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,
         shot = shots[j]
         t_min = min_times[j]
         t_max = max_times[j]
-        signals,ttd = get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,T_max,dt,recompute)
+        disruptive_shot = disruptive[j]
+        signals,ttd = get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,disruptive_shot,T_max,dt,recompute)
         all_signals.append(signals)
         all_ttd.append(ttd)
         print(1.0*j/use_shots)
@@ -81,7 +87,7 @@ def get_signals_and_ttds(signal_prepath,signals_dirs,processed_prepath,shots,
 def get_individual_shot_file(prepath,shot_num,ext='.txt'):
     return prepath + str(shot_num) + ext 
 
-def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,T_max,dt,recompute = False):
+def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,t_max,disruptive,T_max,dt,recompute = False):
     load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
     if os.path.isfile(load_file_path) and not recompute:
         print('loading shot {}'.format(shot))
@@ -101,8 +107,11 @@ def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,
             times.append(tr)
         signals = np.column_stack(signals)
         signals = whiten(signals)
-        ttd = max(tr) - tr
-        ttd = clip(ttd,0,T_max)
+        if disruptive:
+            ttd = max(tr) - tr
+            ttd = clip(ttd,0,T_max)
+        else
+            ttd = T_max*np.ones_like(tr)
         ttd = log10(ttd + 1.0*dt/10)
         savez(load_file_path,signals = signals,ttd = ttd)
         print('saved shot {}'.format(shot))
@@ -193,6 +202,7 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
     shots,disruption_times = get_shots_and_disruption_times(shots_and_disruption_times_path)
     min_times = []
     max_times = []
+    disruptive = []
     current_dir = signals_dirs[current_index]
     use_shots = min([use_shots,len(shots)])
     shots = shots[:use_shots]
@@ -206,9 +216,16 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
         assert(t_thresh < t_disrupt)
         min_times.append(t_thresh)
         max_times.append(t_disrupt)
+        if t_disrupt < 0:
+            disruptive.append(0)
+            max_times.append(t_max)
+        else:
+            disruptive.append(1)
+            max_times.append(t_disrupt)
         print(1.0*j/use_shots)
     min_times = array(min_times)
     max_times = array(max_times)
+    disruptive = array(disruptive)
     if write_to_file:
         if shots_and_minmax_times_path == None:
             print("Not writing out file, no path given.")
@@ -216,15 +233,16 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
             write_shots_and_minmax_times_to_file(shots,min_times,max_times,shots_and_minmax_times_path)
     return shots,array(min_times),array(max_times)
 
-def write_shots_and_minmax_times_to_file(shots,min_times,max_times,shots_and_minmax_times_path):
-    savetxt(shots_and_minmax_times_path,vstack((shots,min_times,max_times)).transpose(), fmt='%i %f %f')   
+def write_shots_and_minmax_times_to_file(shots,min_times,max_times,disruptive,shots_and_minmax_times_path):
+    savetxt(shots_and_minmax_times_path,vstack((shots,min_times,max_times,disruptive)).transpose(), fmt='%i %f %f %i')   
     
 def read_shots_and_minmax_times_from_file(shots_and_minmax_times_path):
     data = loadtxt(shots_and_minmax_times_path,ndmin=1,dtype={'names':('num','min_times','max_times'),
-                                                              'formats':('i4','f4','f4')})
+                                                              'formats':('i4','f4','f4','i4')})
     shots = array(zip(*data)[0])
     min_times = array(zip(*data)[1])
     max_times = array(zip(*data)[2])
+    disruptive = array(zip(*data)[3])
     return shots, min_times, max_times 
 
 def get_t_minmax(signal_prepath,signals_dirs,shot):
