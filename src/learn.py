@@ -1,6 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 
+import datetime
 from data_processing import *
 from model_builder import build_model
 import numpy as np
@@ -48,8 +49,8 @@ rnn_size = 20
 dropout_prob = 0.1
 
 #training params
-batch_size_large = 512
-batch_size_small = 256
+batch_size_large = 2048
+batch_size_small = 128
 batch_size = 256
 num_epochs = 4
 
@@ -165,8 +166,8 @@ for i in range(num_shots):
 indices_train = [range(length-1,len(_y) + length - 1) for _y in ttd_prime_train]
 indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
 
-
-savez('ttd_results2',ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
+save_str = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+savez(save_str,ttd=ttd_by_shot,ttd_train=ttd_train_by_shot,ttd_test=ttd_test_by_shot,ttd_prime = ttd_prime,ttd_prime_test = ttd_prime_test,
     ttd_prime_train = ttd_prime_train, disruptive_train=disruptive_train, disruptive_test=disruptive_test,indices_train = indices_train,indices_test = indices_test)
 
 if plotting:
