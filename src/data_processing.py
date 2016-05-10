@@ -264,7 +264,7 @@ def read_shots_and_minmax_times_from_file(shots_and_minmax_times_path):
     min_times = array(zip(*data)[1])
     max_times = array(zip(*data)[2])
     disruptive = array(zip(*data)[3])
-    return shots, min_times, max_times 
+    return shots, min_times, max_times,disruptive
 
 def get_t_minmax(signal_prepath,signals_dirs,shot):
     t_min = -1

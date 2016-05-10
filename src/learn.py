@@ -31,7 +31,7 @@ train_frac = 0.85
 shuffle_training = True
 
 #how many shots to use
-use_shots = 400
+use_shots = 1000
 
 #normalization timescale
 dt = 0.001
