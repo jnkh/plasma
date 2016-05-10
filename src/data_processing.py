@@ -5,10 +5,32 @@ import random
 import sys
 import os.path
 from scipy.cluster.vq import whiten
-
-
-
 from scipy.interpolate import interp1d,UnivariateSpline
+
+from os import listdir
+from os.path import isfile, join
+
+
+def clean_shots_lists(shots_lists_dir):
+    shots_lists_dir = '../data/shot_lists/'
+    paths = [f for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
+    for path in paths:
+        clean_shots_list(path)
+
+
+
+def clean_shots_list(path):
+    data = loadtxt(path)
+    ending_idx = path.rfind('.')
+    new_path = path[:ending_idx] + '_clear' + path[ending_idx:]
+    if len(shape(data)) < 2:
+        #nondisruptive
+        nd_times = -1.0*ones_like(data)
+        data_two_column = vstack((data,nd_times)).tranpose()
+        savetxt(new_path,data_two_column,fmt = '%d %f')
+        print('created new file: {}'.format(new_path))
+
+
 def resample_signal(t,sig,tmin,tmax,dt):
     order = argsort(t)
     t = t[order]
