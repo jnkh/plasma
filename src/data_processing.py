@@ -13,7 +13,7 @@ from os.path import isfile, join
 
 def clean_shots_lists(shots_lists_dir):
     shots_lists_dir = '../data/shot_lists/'
-    paths = [f for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
+    paths = [join(shots_lists_dir, f) for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
     for path in paths:
         clean_shots_list(path)
 
