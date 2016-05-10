@@ -7,7 +7,7 @@ import os.path
 from scipy.cluster.vq import whiten
 from scipy.interpolate import interp1d,UnivariateSpline
 
-from os import listdir
+from os import listdir,remove
 from os.path import isfile, join
 
 
@@ -29,6 +29,8 @@ def clean_shots_list(path):
         data_two_column = vstack((data,nd_times)).tranpose()
         savetxt(new_path,data_two_column,fmt = '%d %f')
         print('created new file: {}'.format(new_path))
+        print('deleting old file: {}'.format(path))
+        os.remove(path)
 
 
 def resample_signal(t,sig,tmin,tmax,dt):
