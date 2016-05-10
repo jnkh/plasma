@@ -148,19 +148,19 @@ for i in range(num_shots_train):
     print('Shot {}/{}'.format(i,2*num_shots))
     X,y = array_to_path_and_external_pred( \
         signals_train_by_shot[i],ttd_train_by_shot[i],length,skip)
-    ttd_prime_train.append(model.predict(X))
+    ttd_prime_train.append(model.predict(X,batch_size=batch_size_large))
 
 for i in range(num_shots_test):
     print('Shot {}/{}'.format(i + num_shots_train,2*num_shots))
     X,y = array_to_path_and_external_pred( \
         signals_test_by_shot[i],ttd_test_by_shot[i],length,skip)
-    ttd_prime_test.append(model.predict(X))
+    ttd_prime_test.append(model.predict(X,batch_size=batch_size_large))
 
 for i in range(num_shots):
     print('Shot {}/{}'.format(i + num_shots,2*num_shots))
     X,y = array_to_path_and_external_pred( \
         signals_by_shot[i],ttd_by_shot[i],length,skip)
-    ttd_prime.append(model.predict(X))
+    ttd_prime.append(model.predict(X,batch_size=batch_size_large))
 
 indices_train = [range(length-1,len(_y) + length - 1) for _y in ttd_prime_train]
 indices_test = [range(length-1,len(_y)+length-1 ) for _y in ttd_prime_test]
