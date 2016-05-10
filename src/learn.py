@@ -13,8 +13,9 @@ signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
 num_signals = len(signals_dirs)
 current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
-shots_and_disruption_times_path = '../data/shot_lists/long_list_C.txt' #'short_list.txt' 'long_list_C.txt'
-shots_and_minmax_times_path = '../data/shot_lists/long_list_C_minmax_times.txt' #short_list_minmax_times.txt' 'long_list_C_minmax_times.txt'
+shot_lists_dir = '../data/shot_lists/'
+shots_and_disruption_times_path =  #'short_list.txt' 'long_list_C.txt'
+shots_and_minmax_times_path = shot_lists_dir + 'long_list_C_minmax_times.txt' #short_list_minmax_times.txt' 'long_list_C_minmax_times.txt'
 read_minmax_from_file = True
 #processed data
 processed_prepath = '../data/processed_shots/'
@@ -52,7 +53,8 @@ batch_size_small = 256
 batch_size = 256
 num_epochs = 4
 
-
+print("Clean Shot Lists")
+clean_shot_lists(shot_lists_dir)
 
 print("Generating minmax times")
 #get shot information from preprocessed files
