@@ -110,7 +110,7 @@ def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,
         if disruptive:
             ttd = max(tr) - tr
             ttd = clip(ttd,0,T_max)
-        else
+        else:
             ttd = T_max*np.ones_like(tr)
         ttd = log10(ttd + 1.0*dt/10)
         savez(load_file_path,signals = signals,ttd = ttd)

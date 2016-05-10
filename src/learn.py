@@ -4,6 +4,7 @@ matplotlib.use('Agg')
 from data_processing import *
 from model_builder import build_model
 import numpy as np
+import os.path
 
 #paths#
 signal_prepath = '../data/signal_data/jet/';
@@ -61,13 +62,13 @@ print("Generating minmax times")
 for shot_filename in shot_files:
     shot_path = join(shot_list_dir,shot_filename)
     shot_and_minmax_times_path = append_to_filename(shot_path,'_minmax_times')
-    if os.isfile(shots_and_minmax_times_path) and not recompute_minmax:
+    if os.path.isfile(shot_and_minmax_times_path) and not recompute_minmax:
         print('minmax previously generated for {}, reading file'.format(shot_path))
         shots,min_times,max_times,disruptive = read_shots_and_minmax_times_from_file(shots_and_minmax_times_path)
     else:
         print('generating minmax for {}'.format(shot_path))
         shots,min_times,max_times,disruptive = get_shots_and_minmax_times(signal_prepath,signals_dirs,shot_path,
-               current_index,use_shots,True,shots_and_minmax_times_path)
+               current_index,use_shots,True,shot_and_minmax_times_path)
 
 print("Reading and cutting signal data")
 #read signals from data files
