@@ -187,7 +187,7 @@ def train_test_split_all(x,frac,shuffle_data=True):
     return groups
 
 
-def load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots):
+def load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots,recompute_minmax):
     all_shots = []
     all_min_times = []
     all_max_times = []

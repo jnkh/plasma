@@ -58,7 +58,7 @@ clean_shots_lists(shot_list_dir)
 print("...done")
 
 print("Generating minmax times")
-shots,min_times,max_times,disruptive = load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots)
+shots,min_times,max_times,disruptive = load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,signals_dirs,current_index,use_shots,recompute_minmax)
 #get shot information from preprocessed files
 print("...done")
 
