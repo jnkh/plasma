@@ -15,7 +15,7 @@ num_signals = len(signals_dirs)
 current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 shot_list_dir = '../data/shot_lists/'
-shot_files = ['long_list_C.txt','short_list.txt','BeWall_clear.txt']
+shot_files = ['short_list.txt','mixed_list_test.txt']#['long_list_C.txt','short_list.txt','BeWall_clear.txt']
 recompute_minmax = True
 #processed data
 processed_prepath = '../data/processed_shots/'
