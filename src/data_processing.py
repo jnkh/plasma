@@ -26,7 +26,7 @@ def clean_shots_list(path):
     if len(shape(data)) < 2:
         #nondisruptive
         nd_times = -1.0*ones_like(data)
-        data_two_column = vstack((data,nd_times)).tranpose()
+        data_two_column = vstack((data,nd_times)).transpose()
         savetxt(new_path,data_two_column,fmt = '%d %f')
         print('created new file: {}'.format(new_path))
         print('deleting old file: {}'.format(path))
