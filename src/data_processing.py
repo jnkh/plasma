@@ -230,8 +230,8 @@ def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_
         if shots_and_minmax_times_path == None:
             print("Not writing out file, no path given.")
         else:
-            write_shots_and_minmax_times_to_file(shots,min_times,max_times,shots_and_minmax_times_path)
-    return shots,array(min_times),array(max_times)
+            write_shots_and_minmax_times_to_file(shots,min_times,max_times,disruptive,shots_and_minmax_times_path)
+    return shots,min_times,max_times,disruptive
 
 def write_shots_and_minmax_times_to_file(shots,min_times,max_times,disruptive,shots_and_minmax_times_path):
     savetxt(shots_and_minmax_times_path,vstack((shots,min_times,max_times,disruptive)).transpose(), fmt='%i %f %f %i')   
