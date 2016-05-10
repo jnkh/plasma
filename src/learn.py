@@ -47,9 +47,9 @@ rnn_size = 20
 dropout_prob = 0.1
 
 #training params
-batch_size_large = 2048
-batch_size_small = 128
-batch_size = 128
+batch_size_large = 512
+batch_size_small = 256
+batch_size = 256
 num_epochs = 4
 
 
