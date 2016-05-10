@@ -258,7 +258,7 @@ def write_shots_and_minmax_times_to_file(shots,min_times,max_times,disruptive,sh
     savetxt(shots_and_minmax_times_path,vstack((shots,min_times,max_times,disruptive)).transpose(), fmt='%i %f %f %i')   
     
 def read_shots_and_minmax_times_from_file(shots_and_minmax_times_path):
-    data = loadtxt(shots_and_minmax_times_path,ndmin=1,dtype={'names':('num','min_times','max_times'),
+    data = loadtxt(shots_and_minmax_times_path,ndmin=1,dtype={'names':('num','min_times','max_times','disruptive'),
                                                               'formats':('i4','f4','f4','i4')})
     shots = array(zip(*data)[0])
     min_times = array(zip(*data)[1])
