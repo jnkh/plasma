@@ -8,18 +8,22 @@ import numpy as np
 import os.path
 
 #paths#
-signal_prepath = '../data/signal_data/jet/';
+
+base_path = '/p/datad/jkatesha/'
+#base_path = '../'
+
+signal_prepath = base_path + 'data/signal_data/jet/';
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                 'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
                 'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
 num_signals = len(signals_dirs)
 current_index = 0
 #shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
-shot_list_dir = '../data/shot_lists/'
+shot_list_dir = base_path + 'data/shot_lists/'
 shot_files = ['mixed_list.txt']#['long_list_C.txt','short_list.txt','BeWall_clear.txt']
 recompute_minmax = False
 #processed data
-processed_prepath = '../data/processed_shots/'
+processed_prepath = base_path + 'data/processed_shots/'
 recompute = False
 
 
@@ -39,7 +43,7 @@ dt = 0.001
 
 #maximum TTD considered
 T_max = 2
-T_warning = 0.1
+T_warning = 0.4
 
 #length of LSTM memory
 length = 100

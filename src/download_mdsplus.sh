@@ -17,7 +17,7 @@
 #PBS -V
 
 #Use the gpu queue!
-#PBS -q gque 
+#PBS -q dawson
 
 # --- define standard output and error files for the job
 ##PBS -o download.out
