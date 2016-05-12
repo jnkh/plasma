@@ -10,7 +10,6 @@ from model_builder import build_model
 import numpy as np
 import os.path
 from conf import conf
-#shots_and_times_path = '../data/shot_lists/short_list_times_cf.txt'
 
 
 shot_list_dir = conf['paths']['shot_list_dir']
