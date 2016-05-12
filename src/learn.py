@@ -7,7 +7,10 @@ from model_builder import build_model
 import numpy as np
 import os.path
 
-#paths#
+
+
+
+
 signal_prepath = '../data/signal_data/jet/';
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                 'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
