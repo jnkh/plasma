@@ -1,3 +1,6 @@
+
+from __future__ import print_function
+
 import matplotlib
 matplotlib.use('Agg')
 
@@ -12,13 +15,13 @@ from conf import conf
 
 shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
-print("Clean Shot Lists",end="")
+print("Clean Shot Lists",end='')
 clean_shots_lists(shot_list_dir)
 print("...done")
 
 #signals_by_shot,ttd_by_shot,disruptive = load_all_shots(conf)
 
-print("preprocessing shots",end="")
+print("preprocessing shots",end='')
 preprocess_all_shots(conf)
 print("...done")
 
@@ -46,7 +49,7 @@ num_shots_test = len(shots_test)
 
 
 
-print('Build model...',end="")
+print('Build model...',end='')
 model = build_model(conf)
 print('...done')
 
