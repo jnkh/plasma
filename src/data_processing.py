@@ -220,7 +220,7 @@ def time_is_disruptive(t):
 def times_are_disruptive(ts):
     return array([time_is_disruptive(t) for t in ts])
 
-def load_shot_as_X_y(conf,shot):
+def load_shot_as_X_y(conf,shot,verbose=False):
     dt = conf['data']['dt']
     length = conf['model']['length']
     skip = conf['model']['skip']
@@ -234,7 +234,8 @@ def load_shot_as_X_y(conf,shot):
     
     load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
     if os.path.isfile(load_file_path) and not recompute:
-        print('loading shot {}'.format(shot))
+        if verbose:
+            print('loading shot {}'.format(shot))
         dat = load(load_file_path)
         signals = dat['signals']
         ttd = dat ['ttd']
