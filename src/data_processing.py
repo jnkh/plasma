@@ -118,6 +118,186 @@ def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,
 
     return signals,ttd
 
+
+
+
+def get_signals_and_times_from_file(shot,t_disrupt,conf):
+    t_min = -1
+    t_max = Inf
+    t_thresh = -1
+    signals = []
+    times = []
+    signal_prepath = conf['paths']['signal_prepath']
+    signals_dirs = conf['paths']['signals_dirs']
+    current_index = conf['data']['current_index']
+    current_thresh = conf['data']['current_thresh']
+    for (i,dirname) in enumerate(signals_dirs):
+        data = loadtxt(get_individual_shot_file(signal_prepath+dirname + '/',shot))
+        t = data[:,0]
+        sig = data[:,1]
+        t_min = max(t_min,t[0])
+        t_max = min(t_max,t[-1])
+        if i == current_index:
+            assert(any(abs(sig) > current_thresh))
+            index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
+            t_thresh = t[index_thresh]
+        signals.append(sig)
+        times.append(t)
+    assert(t_thresh >= t_min)
+    assert(t_disrupt <= t_max)
+    if t_disrupt >= 0:
+        assert(t_thresh < t_disrupt)
+        t_max = t_disrupt
+    t_min = t_thresh
+
+    return signals,times,t_min,t_max,t_thresh
+
+
+
+def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
+    dt = conf['data']['dt']
+    T_max = conf['data']['T_max']
+
+    #resample signals
+    signals_processed = []
+    assert(len(signals) == len(times) and len(signals) > 0)
+    tr = 0
+    for i in range(len(signals)):
+        tr,sigr = cut_and_resample_signal(times[i],signals[i],t_min,t_max,dt)
+        signals_processed.append(sigr)
+
+    signals = signals_processed
+    signals = np.column_stack(signals)
+    signals = whiten(signals)
+    if is_disruptive:
+        ttd = max(tr) - tr
+        ttd = np.clip(ttd,0,T_max)
+    else:
+        ttd = T_max*np.ones_like(tr)
+    ttd = log10(ttd + 1.0*dt/10)
+    return signals,ttd
+
+
+
+def preprocess_all_shots(conf):
+    shot_files = conf['paths']['shot_files']
+    shot_list_dir = conf['paths']['shot_list_dir']
+    return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files)
+
+
+def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
+    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+
+    dt = conf['data']['dt']
+    processed_prepath = conf['paths']['processed_prepath']
+    recompute = conf['data']['recompute']
+    use_shots = min([conf['data']['use_shots'],len(shots)])
+    all_signals = []
+    all_ttd = []
+    disruptive = []
+    for (j,shot) in enumerate(shots[:use_shots]):
+        shot = shots[j]
+        load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
+        if recompute or not os.path.isfile(load_file_path):
+            print('(re)computing shot {}'.format(shot))
+            t_disrupt = disruption_times[j]
+            is_disruptive =  t_disrupt >= 0
+          #get minmax times
+            signals,times,t_min,t_max,t_thresh = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+            #cut and resample
+            signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf)
+
+            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive)
+            print('saved shot {}'.format(shot))
+
+
+
+def time_is_disruptive(t):
+    return 1 if t >= 0 else 0 
+
+def times_are_disruptive(ts):
+    return array([time_is_disruptive(t) for t in ts])
+
+def load_shot_as_X_y(conf,shot):
+    dt = conf['data']['dt']
+    length = conf['model']['length']
+    skip = conf['model']['skip']
+    processed_prepath = conf['paths']['processed_prepath']
+    recompute = conf['data']['recompute']
+    remapper = conf['data']['ttd_remapper']
+
+    all_signals = []
+    all_ttd = []
+    disruptive = []
+    
+    load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
+    if os.path.isfile(load_file_path) and not recompute:
+        print('loading shot {}'.format(shot))
+        dat = load(load_file_path)
+        signals = dat['signals']
+        ttd = dat ['ttd']
+        is_disruptive = dat ['is_disruptive']
+
+    ttd = remapper(ttd,conf['data']['T_warning'])
+    X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
+    return  X,y 
+
+
+    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+
+def load_shots_as_X_y(conf,shots):
+    X,y = zip(*[load_shot_as_X_y(conf,shot) for shot in shots])
+    return vstack(X),hstack(y)
+
+
+def load_or_preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
+   
+    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+
+    dt = conf['data']['dt']
+    processed_prepath = conf['paths']['processed_prepath']
+    recompute = conf['data']['recompute']
+    use_shots = min([conf['data']['use_shots'],len(shots)])
+
+    all_signals = []
+    all_ttd = []
+    disruptive = []
+    
+    for (j,shot) in enumerate(shots[:use_shots]):
+        shot = shots[j]
+        load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
+        if os.path.isfile(load_file_path) and not recompute:
+            print('loading shot {}'.format(shot))
+            dat = load(load_file_path)
+            signals = dat['signals']
+            ttd = dat ['ttd']
+            is_disruptive = dat ['is_disruptive']
+        else:
+            print('(re)computing shot {}'.format(shot))
+            t_disrupt = disruption_times[j]
+            is_disruptive =  t_disrupt >= 0
+          #get minmax times
+            signals,times,t_min,t_max,t_thresh = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+            #cut and resample
+            signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf)
+
+            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive)
+            print('saved shot {}'.format(shot))
+
+        disruptive.append(1 if is_disruptive else 0)
+        all_signals.append(signals)
+        all_ttd.append(ttd)
+        print(1.0*j/use_shots)
+
+    return array(all_signals),array(all_ttd),array(disruptive)
+
+
+def load_or_preprocess_all_shots(conf):
+    shot_files = conf['paths']['shot_files']
+    shot_list_dir = conf['paths']['shot_list_dir']
+    return load_all_shots_from_files(conf,shot_list_dir,shot_files)
+    
+
 def array_to_path_and_next(arr,length,skip):
     X = []
     y = []
@@ -218,7 +398,7 @@ def load_all_shots_and_minmax_times(shot_list_dir,shot_files,signal_prepath,sign
 #     max_times = array(zip(*data)[2])
 #     return shots,min_times,max_times
 
-def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path,
+def get_shots_and_minmax_times(signal_prepath,signals_dirs,shots_and_disruption_times_path, 
               current_index = 0,use_shots=-1,write_to_file=True,shots_and_minmax_times_path=None):
     shots,disruption_times = get_shots_and_disruption_times(shots_and_disruption_times_path)
     min_times = []
@@ -292,3 +472,22 @@ def get_shots_and_disruption_times(shots_and_disruption_times_path):
     shots = array(zip(*data)[0])
     disrupt_times = array(zip(*data)[1])
     return shots, disrupt_times
+
+
+def get_multiple_shots_and_disruption_times(base_path,endings):
+    all_shots = []
+    all_disruption_times = []
+    for ending in endings:
+        path = base_path + ending
+        shots,disruption_times = get_shots_and_disruption_times(path)
+        all_shots.append(shots)
+        all_disruption_times.append(disruption_times)
+    return concatenate(all_shots),concatenate(all_disruption_times)
+
+
+
+
+
+
+
+
