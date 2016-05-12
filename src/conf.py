@@ -14,7 +14,6 @@ def remap_target(ttd,T_warning,as_array_of_shots=True):
     return binary_ttd
 
 
-print(base_path)
 conf = {
     'paths': {
         'base_path' : base_path,

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from pylab import *
 
 import numpy as np
@@ -198,6 +200,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
         shot = shots[j]
         load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
         if recompute or not os.path.isfile(load_file_path):
+            print('({}/{}): '.format(j,use_shots),end='')
             print('(re)computing shot {}'.format(shot))
             t_disrupt = disruption_times[j]
             is_disruptive =  t_disrupt >= 0

@@ -65,7 +65,7 @@ for e in range(num_epochs):
     print('Epoch {}/{}'.format(e+1,num_epochs))
     for i,shots_array in enumerate(shots_arrays):
         X_train,y_train = load_shots_as_X_y(conf,shots_array)
-        print('Shots {}/{}'.format(len(y_train)*(i+1),num_shots_train))
+        print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
         model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
