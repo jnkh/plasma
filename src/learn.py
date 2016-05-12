@@ -24,8 +24,10 @@ print("preprocessing shots",end='')
 preprocess_all_shots(conf)
 print("...done")
 
+use_shots = conf['data']['use_shots']
 shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
-disruptive = times_are_disruptive(disruption_times)
+shots = shots[:use_shots]
+disruptive = times_are_disruptive(disruption_times)[:use_shots]
 
 
 T_warning = conf['data']['T_warning']
