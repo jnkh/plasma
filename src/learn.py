@@ -25,7 +25,7 @@ shots,disruption_times = preprocess_all_shots(conf)
 print("...done")
 
 use_shots = min(conf['data']['use_shots'],len(shots))
-shots = shots[:use_shots]
+shots = np.random.choice(shots,use_shots,replace=False)
 disruptive = times_are_disruptive(disruption_times)[:use_shots]
 
 
