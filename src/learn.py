@@ -23,7 +23,7 @@ print("...done")
 #signals_by_shot,ttd_by_shot,disruptive = load_all_shots(conf)
 
 #only one list of shots -- split randomly
-if len(conf['paths']['test_shot_files']) == 0:
+if len(shot_files_test) == 0:
     print("preprocessing all shots",end='')
     shots,disruption_times = preprocess_all_shots(conf)
     print("...done")
@@ -67,7 +67,6 @@ num_shots_at_once = conf['training']['num_shots_at_once']
 length = conf['model']['length']
 skip = conf['model']['skip']
 
-if len(conf['paths']['test_shot_files']) == 0:
     
 num_shots_train = len(shots_train)
 num_shots_test = len(shots_test)
