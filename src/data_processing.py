@@ -187,7 +187,7 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
 
 
 def preprocess_all_shots(conf):
-    shot_files = conf['paths']['shot_files']
+    shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
     shot_list_dir = conf['paths']['shot_list_dir']
     return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files)
 
