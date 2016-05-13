@@ -14,19 +14,47 @@ from conf import conf
 
 shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
+shot_files_test = conf['paths']['shot_files_test']
+
 print("Clean Shot Lists",end='')
 clean_shots_lists(shot_list_dir)
 print("...done")
 
 #signals_by_shot,ttd_by_shot,disruptive = load_all_shots(conf)
 
-print("preprocessing shots",end='')
-shots,disruption_times = preprocess_all_shots(conf)
-print("...done")
+#only one list of shots -- split randomly
+if len(conf['paths']['test_shot_files']) == 0:
+    print("preprocessing all shots",end='')
+    shots,disruption_times = preprocess_all_shots(conf)
+    print("...done")
 
-use_shots = min(conf['data']['use_shots'],len(shots))
-shots = np.random.choice(shots,use_shots,replace=False)
-disruptive = times_are_disruptive(disruption_times)[:use_shots]
+    use_shots = min(conf['data']['use_shots'],len(shots))
+    shots = np.random.choice(shots,use_shots,replace=False)
+    disruptive = times_are_disruptive(disruption_times)[:use_shots]
+
+    split_groups = train_test_split_all((shots,disruptive),train_frac,shuffle_training)
+    shots_train,shots_test = split_groups[0]
+    disruptive_train,disruptive_test = split_groups[1]
+
+#train and test list given
+else:
+    print("preprocessing training shots",end='')
+    shots_train,disruptions_times_train = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
+    print("preprocessing testing shots",end='')
+    shots_test,disruptions_times_test = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files_test):
+    print("...done")
+
+    use_shots_train = min(int(round(train_frac*conf['data']['use_shots'])),len(shots_train))
+    use_shots_test = min(int(round((1-train_frac)*conf['data']['use_shots'])),len(shots_test))
+
+    shots_train = np.random.choice(shots_train,use_shots_train,replace=False)
+    shots_test = np.random.choice(shots_test,use_shots_test,replace=False)
+
+    disruptive_train = times_are_disruptive(disruption_times_train)[:use_shots_train]
+    disruptive_test = times_are_disruptive(disruption_times_test)[:use_shots_test]
+
+    shots = np.concatenate((shots_train,shots_test))
+    disruptive = np.concatenate((disruptive_train,disruptive_test))
 
 
 T_warning = conf['data']['T_warning']
@@ -39,13 +67,11 @@ num_shots_at_once = conf['training']['num_shots_at_once']
 length = conf['model']['length']
 skip = conf['model']['skip']
 
-split_groups = train_test_split_all((shots,disruptive),train_frac,shuffle_training)
-shots_train,shots_test = split_groups[0]
-disruptive_train,disruptive_test = split_groups[1]
-
-num_shots = len(shots)
+if len(conf['paths']['test_shot_files']) == 0:
+    
 num_shots_train = len(shots_train)
 num_shots_test = len(shots_test)
+num_shots = num_shots_train + num_shots_test
 
 
 
