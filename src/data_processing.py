@@ -223,7 +223,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
     print('Omitted {} shots of {} total.'.format(len(shots) - len(used_shots),len(shots)))
-    return used_shots,disruption_times
+    return array(used_shots),disruption_times
 
 
 
@@ -255,15 +255,12 @@ def load_shot_as_X_y(conf,shot,verbose=False):
     ttd = dat ['ttd']
     is_disruptive = dat ['is_disruptive']
     valid = dat['valid']
-    if not valid:
-        print('Warning: shot {} not valid, omitting.'.format(shot))
+    assert(valid)
 
     ttd = remapper(ttd,conf['data']['T_warning'])
     X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
-    return  X,y,valid 
+    return  X,y
 
-
-    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
 
 def load_shots_as_X_y(conf,shots):
     X,y = zip(*[load_shot_as_X_y(conf,shot) for shot in shots])
