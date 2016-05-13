@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                         'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
                         'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
