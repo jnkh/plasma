@@ -15,6 +15,7 @@ from conf import conf
 shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
+train_frac = conf['training']['train_frac']
 
 print("Clean Shot Lists",end='')
 clean_shots_lists(shot_list_dir)
