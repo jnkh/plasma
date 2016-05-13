@@ -21,11 +21,10 @@ print("...done")
 #signals_by_shot,ttd_by_shot,disruptive = load_all_shots(conf)
 
 print("preprocessing shots",end='')
-preprocess_all_shots(conf)
+shots,disruption_times = preprocess_all_shots(conf)
 print("...done")
 
-use_shots = conf['data']['use_shots']
-shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+use_shots = min(conf['data']['use_shots'],len(shots))
 shots = shots[:use_shots]
 disruptive = times_are_disruptive(disruption_times)[:use_shots]
 
