@@ -222,7 +222,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
             used_shots.append(shot)
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
-    print('Omitted {} shots of {} total.'.format(len(shots) - len(used_shots),len(shots)))
+    print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),len(shots)))
     return array(used_shots),disruption_times
 
 
