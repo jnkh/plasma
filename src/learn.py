@@ -72,7 +72,7 @@ print('...done')
 
 print('evaluating model')
 for (i,shot) in enumerate(shots_test):
-    print('Shot {}/{}'.format(shot_idx,num_shots_test))
+    print('Shot {}/{}'.format(i,num_shots_test))
     X,y = load_shot_as_X_y(conf,shot)
     res = model.evaluate(X,y)
     print(res)
