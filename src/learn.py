@@ -39,9 +39,9 @@ if len(conf['paths']['test_shot_files']) == 0:
 #train and test list given
 else:
     print("preprocessing training shots",end='')
-    shots_train,disruptions_times_train = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
+    shots_train,disruptions_times_train = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files)
     print("preprocessing testing shots",end='')
-    shots_test,disruptions_times_test = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files_test):
+    shots_test,disruptions_times_test = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files_test)
     print("...done")
 
     use_shots_train = min(int(round(train_frac*conf['data']['use_shots'])),len(shots_train))
@@ -72,6 +72,8 @@ if len(conf['paths']['test_shot_files']) == 0:
 num_shots_train = len(shots_train)
 num_shots_test = len(shots_test)
 num_shots = num_shots_train + num_shots_test
+
+print('Training on {} shots, testing on {} shots'.format(num_shots_train,num_shots_test))
 
 
 
