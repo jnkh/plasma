@@ -139,6 +139,8 @@ def get_signals_and_times_from_file(shot,t_disrupt,conf):
         t_min = max(t_min,t[0])
         t_max = min(t_max,t[-1])
         if i == current_index:
+            if not (any(abs(sig) > current_thresh)):
+                print(sig)
             assert(any(abs(sig) > current_thresh))
             index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
             t_thresh = t[index_thresh]
