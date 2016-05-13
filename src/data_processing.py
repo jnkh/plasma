@@ -123,6 +123,7 @@ def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,
 
 
 def get_signals_and_times_from_file(shot,t_disrupt,conf):
+    valid = True
     t_min = -1
     t_max = Inf
     t_thresh = -1
@@ -140,10 +141,12 @@ def get_signals_and_times_from_file(shot,t_disrupt,conf):
         t_max = min(t_max,t[-1])
         if i == current_index:
             if not (any(abs(sig) > current_thresh)):
-                print(sig)
-            assert(any(abs(sig) > current_thresh))
-            index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
-            t_thresh = t[index_thresh]
+                valid = False
+                print('Shot {} does not exceed current threshold... invalid.'.format(shot))
+                t_thresh = t_min
+            else:
+                index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
+                t_thresh = t[index_thresh]
         signals.append(sig)
         times.append(t)
     assert(t_thresh >= t_min)
@@ -153,7 +156,7 @@ def get_signals_and_times_from_file(shot,t_disrupt,conf):
         t_max = t_disrupt
     t_min = t_thresh
 
-    return signals,times,t_min,t_max,t_thresh
+    return signals,times,t_min,t_max,t_thresh,valid
 
 
 
@@ -195,24 +198,33 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
     processed_prepath = conf['paths']['processed_prepath']
     recompute = conf['data']['recompute']
     use_shots = min([conf['data']['use_shots'],len(shots)])
-    all_signals = []
-    all_ttd = []
-    disruptive = []
+    used_shots = []
     for (j,shot) in enumerate(shots[:use_shots]):
+        print('({}/{}): '.format(j,use_shots))
         shot = shots[j]
         load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
         if recompute or not os.path.isfile(load_file_path):
-            print('({}/{}): '.format(j,use_shots),end='')
             print('(re)computing shot {}'.format(shot))
             t_disrupt = disruption_times[j]
             is_disruptive =  t_disrupt >= 0
           #get minmax times
-            signals,times,t_min,t_max,t_thresh = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+            signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
             #cut and resample
             signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf)
 
-            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive)
+            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
             print('saved shot {}'.format(shot))
+        else:
+            dat = load(load_file_path)
+            valid = dat['valid']
+        if valid:
+            print('valid')
+            used_shots.append(shot)
+        else:
+            print('Warning: shot {} not valid, omitting'.format(shot))
+    print('Omitted {} shots of {} total.'.format(len(shots) - len(used_shots),len(shots)))
+    return used_shots,disruption_times
+
 
 
 
@@ -227,25 +239,28 @@ def load_shot_as_X_y(conf,shot,verbose=False):
     length = conf['model']['length']
     skip = conf['model']['skip']
     processed_prepath = conf['paths']['processed_prepath']
-    recompute = conf['data']['recompute']
     remapper = conf['data']['ttd_remapper']
 
     all_signals = []
     all_ttd = []
     disruptive = []
+    used_shots = []
     
     load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
-    if os.path.isfile(load_file_path) and not recompute:
-        if verbose:
-            print('loading shot {}'.format(shot))
-        dat = load(load_file_path)
-        signals = dat['signals']
-        ttd = dat ['ttd']
-        is_disruptive = dat ['is_disruptive']
+    assert(os.path.isfile(load_file_path))
+    if verbose:
+        print('loading shot {}'.format(shot))
+    dat = load(load_file_path)
+    signals = dat['signals']
+    ttd = dat ['ttd']
+    is_disruptive = dat ['is_disruptive']
+    valid = dat['valid']
+    if not valid:
+        print('Warning: shot {} not valid, omitting.'.format(shot))
 
     ttd = remapper(ttd,conf['data']['T_warning'])
     X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
-    return  X,y 
+    return  X,y,valid 
 
 
     shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
@@ -267,6 +282,7 @@ def load_or_preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
     all_signals = []
     all_ttd = []
     disruptive = []
+    used_shots = []
     
     for (j,shot) in enumerate(shots[:use_shots]):
         shot = shots[j]
@@ -277,24 +293,28 @@ def load_or_preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
             signals = dat['signals']
             ttd = dat ['ttd']
             is_disruptive = dat ['is_disruptive']
+            valid = dat['valid']
         else:
             print('(re)computing shot {}'.format(shot))
             t_disrupt = disruption_times[j]
             is_disruptive =  t_disrupt >= 0
           #get minmax times
-            signals,times,t_min,t_max,t_thresh = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+            signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
             #cut and resample
             signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf)
 
-            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive)
+            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid = valid)
             print('saved shot {}'.format(shot))
 
-        disruptive.append(1 if is_disruptive else 0)
-        all_signals.append(signals)
-        all_ttd.append(ttd)
-        print(1.0*j/use_shots)
-
-    return array(all_signals),array(all_ttd),array(disruptive)
+        if valid:
+            disruptive.append(1 if is_disruptive else 0)
+            all_signals.append(signals)
+            all_ttd.append(ttd)
+            used_shots.append(shot)
+            print(1.0*j/use_shots)
+        else:
+            print('Shot {} not valid, omitting.'.format(shot))
+    return array(all_signals),array(all_ttd),array(disruptive),array(used_shots)
 
 
 def load_or_preprocess_all_shots(conf):
