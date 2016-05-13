@@ -19,7 +19,8 @@ conf = {
         'base_path' : base_path,
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['all_shots.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'test_shot_files' : ['BeWall_clear.txt','ILW_unint.txt']
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
