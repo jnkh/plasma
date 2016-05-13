@@ -19,7 +19,7 @@ conf = {
         'base_path' : base_path,
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['short_list.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['all_shots.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
@@ -34,7 +34,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 1000,
+        'use_shots' : 10000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -60,9 +60,9 @@ conf = {
         'shuffle_training' : True,
         'train_frac' : 0.85,
         'batch_size_large' : 2048,
-        'batch_size_small' : 128,
+        'batch_size_small' : 1024,
         'batch_size' : 256,
-        'num_shots_at_once' :  1,
+        'num_shots_at_once' :  50,
         'num_epochs' : 4,
    },
 }
