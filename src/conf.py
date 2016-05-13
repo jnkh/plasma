@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
                         'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
                         'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
@@ -34,7 +34,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 10000,
+        'use_shots' : 2000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -58,7 +58,7 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.85,
+        'train_frac' : 0.80,
         'batch_size_large' : 2048,
         'batch_size_small' : 1024,
         'batch_size' : 256,
