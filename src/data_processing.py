@@ -202,7 +202,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     use_shots = min(use_shots,len(shots))
     used_shots = []
     disruptive = []
-    indices = np.random.choice(arange(len(shots)),replace=False)
+    indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
     for j in indices:
         print('({}/{}): '.format(j,use_shots))
         shot = shots[j]
