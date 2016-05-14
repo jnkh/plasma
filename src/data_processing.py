@@ -189,18 +189,21 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
 def preprocess_all_shots(conf):
     shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
     shot_list_dir = conf['paths']['shot_list_dir']
-    return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files)
+    use_shots = conf['data']['use_shots']
+    return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots)
 
 
-def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
+def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
 
     dt = conf['data']['dt']
     processed_prepath = conf['paths']['processed_prepath']
     recompute = conf['data']['recompute']
-    use_shots = min([conf['data']['use_shots'],len(shots)])
+    use_shots = min(use_shots,len(shots)])
     used_shots = []
-    for (j,shot) in enumerate(shots[:use_shots]):
+    disruptive = []
+    indices = np.random.choice(arange(len(shots)),replace=False)
+    for j in indices:
         print('({}/{}): '.format(j,use_shots))
         shot = shots[j]
         load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
@@ -218,16 +221,19 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
         else:
             dat = load(load_file_path)
             valid = dat['valid']
+            is_disruptive = dat['is_disruptive']
         if valid:
             print('valid')
             used_shots.append(shot)
+            disruptive.append(bool_to_int(is_disruptive))
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
-    return array(used_shots),disruption_times
+    return array(used_shots), array(is_disruptive)
 
 
-
+def bool_to_int(predicate):
+    return 1 if predicate else 0
 
 def time_is_disruptive(t):
     return 1 if t >= 0 else 0 
