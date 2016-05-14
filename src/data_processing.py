@@ -231,6 +231,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
+    print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
     return array(used_shots), array(disruptive)
 
 
