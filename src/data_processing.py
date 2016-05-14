@@ -203,8 +203,10 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     used_shots = []
     disruptive = []
     indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
+    num_processed = 0
     for j in indices:
-        print('({}/{}): '.format(j,use_shots))
+        num_processed += 1
+        print('({}/{}): '.format(num_processed,use_shots))
         shot = shots[j]
         load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
         if recompute or not os.path.isfile(load_file_path):
@@ -229,7 +231,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
-    return array(used_shots), array(is_disruptive)
+    return array(used_shots), array(disruptive)
 
 
 def bool_to_int(predicate):
