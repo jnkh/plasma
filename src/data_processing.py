@@ -199,7 +199,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     dt = conf['data']['dt']
     processed_prepath = conf['paths']['processed_prepath']
     recompute = conf['data']['recompute']
-    use_shots = min(use_shots,len(shots)])
+    use_shots = min(use_shots,len(shots))
     used_shots = []
     disruptive = []
     indices = np.random.choice(arange(len(shots)),replace=False)
