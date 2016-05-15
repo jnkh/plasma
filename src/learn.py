@@ -87,13 +87,14 @@ for e in range(num_epochs):
         model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
-print('evaluating model')
-for (i,shot) in enumerate(shots_test):
-    print('Shot {}/{}'.format(i,num_shots_test))
-    X,y = load_shot_as_X_y(conf,shot)
-    res = model.evaluate(X,y)
-    print(res)
-print('...done')
+if conf['training']['evaluate']:
+    print('evaluating model')
+    for (i,shot) in enumerate(shots_test):
+        print('Shot {}/{}'.format(i,num_shots_test))
+        X,y = load_shot_as_X_y(conf,shot)
+        res = model.evaluate(X,y,batch_size=batch_size_large)
+        print(res)
+    print('...done')
 
 
 print('saving results')
@@ -128,7 +129,8 @@ save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 savez(conf['paths']['results_prepath']+save_str,
     y_gold=y_gold,y_gold_train=y_gold_train,y_gold_test=y_gold_test,
     y_prime=y_prime,y_prime_train=y_prime_train,y_prime_test=y_prime_test,
-    disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test)
+    disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test,
+    conf = conf)
 
 
 if plotting:

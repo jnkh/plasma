@@ -65,5 +65,6 @@ conf = {
         'batch_size' : 256,
         'num_shots_at_once' :  30,
         'num_epochs' : 1,
+        'evaluate' : False,
    },
 }
