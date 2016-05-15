@@ -87,13 +87,14 @@ for e in range(num_epochs):
         model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
 print('...done')
 
-print('evaluating model')
-for (i,shot) in enumerate(shots_test):
-    print('Shot {}/{}'.format(i,num_shots_test))
-    X,y = load_shot_as_X_y(conf,shot)
-    res = model.evaluate(X,y)
-    print(res)
-print('...done')
+if conf['training']['evaluate']:
+    print('evaluating model')
+    for (i,shot) in enumerate(shots_test):
+        print('Shot {}/{}'.format(i,num_shots_test))
+        X,y = load_shot_as_X_y(conf,shot)
+        res = model.evaluate(X,y,batch_size=batch_size_large)
+        print(res)
+    print('...done')
 
 
 print('saving results')
