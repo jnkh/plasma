@@ -3,7 +3,7 @@ from matplotlib import pyplot
 import os
 
 
-def load_ith_file(i,mode='test'):
+def load_ith_file(i,mode='test',verbose=True):
     results_dir = '/p/datad/jkatesha/data/results/'
     results_files = os.listdir(results_dir)
     print(results_files)
@@ -18,6 +18,9 @@ def load_ith_file(i,mode='test'):
     disruptive=dat['disruptive']
     disruptive_train=dat['disruptive_train']
     disruptive_test=dat['disruptive_test']
+
+    if verbose:
+        print('configuration: {} '.format(dat['conf']))
 
     if mode == 'test':
         pred = y_prime_test
