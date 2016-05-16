@@ -107,23 +107,21 @@ y_gold_test = []
 y_gold_train = []
 
 for (i,shot) in enumerate(shots_train):
-    print('Shot {}/{}'.format(i,2*num_shots))
+    print('Shot {}/{}'.format(i,num_shots))
     X,y = load_shot_as_X_y(conf,shot)
     y_prime_train.append(model.predict(X,batch_size=batch_size_large))
     y_gold_train.append(y)
 
 for (i,shot) in enumerate(shots_test):
-    print('Shot {}/{}'.format(i,2*num_shots))
+    print('Shot {}/{}'.format(i + len(shots_train),num_shots))
     X,y = load_shot_as_X_y(conf,shot)
     y_prime_test.append(model.predict(X,batch_size=batch_size_large))
     y_gold_test.append(y)
 
-for (i,shot) in enumerate(shots):
-    print('Shot {}/{}'.format(i,2*num_shots))
-    X,y = load_shot_as_X_y(conf,shot)
-    y_prime.append(model.predict(X,batch_size=batch_size_large))
-    y_gold.append(y)
 
+disruptive = concatenate((disruptive_train,disruptive_test))
+y_gold = concatenate((y_gold_train,y_gold_test))
+y_prime = concatenate((y_prime_train,y_prime_test))
 
 save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 savez(conf['paths']['results_prepath']+save_str,
@@ -133,15 +131,15 @@ savez(conf['paths']['results_prepath']+save_str,
     conf = conf)
 
 
-if plotting:
-    print('plotting results')
-    plot(ttd)
-    plot(ttd_prime)
-    plot(indices_test,ttd_prime_test,'g')
-    plot(indices_train,ttd_prime_train,'r')
-    savefig('plot.png')
-    #plot(y_train,'.')
-    #show()
+# if plotting:
+#     print('plotting results')
+#     plot(ttd)
+#     plot(ttd_prime)
+#     plot(indices_test,ttd_prime_test,'g')
+#     plot(indices_train,ttd_prime_train,'r')
+#     savefig('plot.png')
+#     #plot(y_train,'.')
+#     #show()
 
 print('finished.')
 
