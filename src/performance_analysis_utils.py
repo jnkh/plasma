@@ -321,7 +321,7 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
     for fp_thresh in fp_threshs: 
 
         print('============= TRAINING FP RATE < {} ============='.format(fp_thresh))
-        print('============= TEST PERFORMANCE: ============='.format(missed_thresh))
+        print('============= TEST PERFORMANCE: =============')
         if(any(fp_range < fp_thresh)):
             idx = where(fp_range <= fp_thresh)[0][0]
             P_thresh_opt = P_thresh_range[idx]
@@ -335,7 +335,7 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
     for missed_thresh in missed_threshs: 
 
         print('============= TRAINING MISSED RATE < {} ============='.format(missed_thresh))
-        print('============= TEST PERFORMANCE: ============='.format(missed_thresh))
+        print('============= TEST PERFORMANCE: =============')
         if(any(missed_range < missed_thresh)):
             idx = where(missed_range <= missed_thresh)[0][-1]
             P_thresh_opt = P_thresh_range[idx]
