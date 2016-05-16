@@ -274,7 +274,7 @@ def get_metrics_vs_p_thresh(P_thresh_range,ttd_prime_by_shot,ttd_by_shot,disr,le
 #         return fp_rate
 
 
-def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=True):
+def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn):
     correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = get_metrics_vs_p_thresh(P_thresh_range, \
             pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
@@ -290,7 +290,7 @@ def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length
             idx = where(fp_range <= fp_thresh)[0][0]
             P_thresh_opt = P_thresh_range[idx]
             summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
-            print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
+            print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
         print('')
@@ -303,11 +303,47 @@ def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length
             idx = where(missed_range <= missed_thresh)[0][-1]
             P_thresh_opt = P_thresh_range[idx]
             summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
-            print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
+            print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
         print('')
 
+
+def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_train,disruptive_curr_train,pred_test,truth_test,disruptive_curr_test,length,T_min_warn,T_max_warn):
+    correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = get_metrics_vs_p_thresh(P_thresh_range, \
+            pred_train,truth_train,disruptive_curr_train,length,T_min_warn,T_max_warn)
+
+    fp_threshs = [0.01,0.05,0.1]
+    missed_threshs = [0.01,0.05,0.0]
+
+
+    #first index where...
+    for fp_thresh in fp_threshs: 
+
+        print('============= TRAINING FP RATE < {} ============='.format(fp_thresh))
+        print('============= TEST PERFORMANCE: ============='.format(missed_thresh))
+        if(any(fp_range < fp_thresh)):
+            idx = where(fp_range <= fp_thresh)[0][0]
+            P_thresh_opt = P_thresh_range[idx]
+            summarize_shot_prediction_stats(P_thresh_opt,pred_test,truth_test,disruptive_curr_test,length,T_min_warn,T_max_warn,verbose=True)
+            print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
+        else:
+            print('No such P_thresh found')
+        print('')
+
+    #last index where
+    for missed_thresh in missed_threshs: 
+
+        print('============= TRAINING MISSED RATE < {} ============='.format(missed_thresh))
+        print('============= TEST PERFORMANCE: ============='.format(missed_thresh))
+        if(any(missed_range < missed_thresh)):
+            idx = where(missed_range <= missed_thresh)[0][-1]
+            P_thresh_opt = P_thresh_range[idx]
+            summarize_shot_prediction_stats(P_thresh_opt,pred_test,truth_test,disruptive_curr_test,length,T_min_warn,T_max_warn,verbose=True)
+            print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
+        else:
+            print('No such P_thresh found')
+        print('')
 
 
 
