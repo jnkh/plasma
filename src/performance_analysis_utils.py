@@ -39,7 +39,7 @@ def load_ith_file(i,mode='test'):
     
     
 
-def hist_alarms(alarms,T_min_warn,T_max_warn,title_str='alarms'):
+def hist_alarms(alarms,T_min_warn,T_max_warn,title_str='alarms',save_figure=False):
     if len(alarms) > 0:
         alarms /= 1000.0
         alarms = sort(alarms)
@@ -63,6 +63,8 @@ def hist_alarms(alarms,T_min_warn,T_max_warn,title_str='alarms'):
         grid()
         title(title_str)
         show()
+	if save_figure:
+	    savefig('accum_disruptions.png',bbox_inches='tight')
     else:
         print(title_str + ": No alarms!")
 
