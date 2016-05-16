@@ -8,7 +8,7 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 0
+file_num = 1
 save_figure = True
 
 P_thresh_range = logspace(-4,0,100) 

@@ -34,9 +34,12 @@ def load_ith_file(i,mode='test',verbose=True):
     
     disruptive_curr = get_disruptive(truth) 
     print('loaded {} files ({}) disruptive in mode {}'.format(len(disruptive_curr),sum(disruptive_curr),mode))
-    
-    idx = where(disruptive_curr)[0][0]
-    length = 1 + len(truth[idx]) - len(pred[idx])
+   
+    if any(disruptive_curr): 
+        idx = where(disruptive_curr)[0][0]
+        length = 1 + len(truth[idx]) - len(pred[idx])
+    else:
+	length = 1
     
     return pred,truth,disruptive_curr,length
     
@@ -131,11 +134,18 @@ def get_accuracy_and_fp_rate_from_stats(tp,fp,fn,tn,early,late,verbose=False):
     disr = early + late + tp + fn 
     nondisr = fp + tn
     
-    
-    fp_rate = 1.0*fp/nondisr
-    early_alarm_rate = 1.0*early/disr
-    missed = 1.0*(late + fn)/disr
-    accuracy = 1.0*tp/disr
+    if disr == 0:
+	early_alarm_rate = 0
+	missed = 0
+	accuracy = 0 
+    else:
+	early_alarm_rate = 1.0*early/disr
+	missed = 1.0*(late + fn)/disr
+	accuracy = 1.0*tp/disr
+    if nondisr == 0:
+	fp_rate = 0
+    else: 
+        fp_rate = 1.0*fp/nondisr
     correct = 1.0*(tp + tn)/total
     
     if verbose:
