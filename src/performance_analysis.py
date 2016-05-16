@@ -1,8 +1,6 @@
 from pylab import *
 from matplotlib import pyplot
 import os
-%load_ext autoreload
-%autoreload 2
 
 from performance_analysis_utils import *
 
