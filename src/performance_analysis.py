@@ -18,8 +18,11 @@ P_thresh_opt = 0.04
 
 pred,truth,disruptive_curr,length = load_ith_file(file_num,mode)
 
-compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=True)
+pred_train,truth_train,disruptive_curr_train,length = load_ith_file(file_num,'train')
 
+#compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
+
+compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_train,disruptive_curr_train,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
 
 compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=save_figure)
