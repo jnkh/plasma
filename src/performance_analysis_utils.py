@@ -293,7 +293,7 @@ def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length
             print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
-        print()
+        print('')
 
     #last index where
     for missed_thresh in missed_threshs: 
@@ -306,7 +306,7 @@ def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length
             print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
-        print()
+        print('')
 
 
 
