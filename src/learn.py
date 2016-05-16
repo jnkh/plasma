@@ -79,7 +79,7 @@ for e in range(num_epochs):
     #otherwise train on large batches
     else:
         batch_size = batch_size_large 
-    shots_arrays = array_split(np.random.permutation(shots_train),int(round(1.0*num_shots_train/num_shots_at_once)))
+    shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
     print('Epoch {}/{}'.format(e+1,num_epochs))
     for i,shots_array in enumerate(shots_arrays):
         X_train,y_train = load_shots_as_X_y(conf,shots_array)
