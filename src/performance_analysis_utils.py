@@ -328,6 +328,8 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
 
     fp_threshs = [0.01,0.05,0.1]
     missed_threshs = [0.01,0.05,0.0]
+    P_thresh_default = 0.03
+    P_thresh_ret = P_thresh_default
 
 
     #first index where...
@@ -342,6 +344,7 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
             print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
+	    P_thresh_opt = P_thresh_default
         print('')
 
     #last index where
@@ -353,10 +356,14 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
             idx = where(missed_range <= missed_thresh)[0][-1]
             P_thresh_opt = P_thresh_range[idx]
             summarize_shot_prediction_stats(P_thresh_opt,pred_test,truth_test,disruptive_curr_test,length,T_min_warn,T_max_warn,verbose=True)
+	    if missed_thresh == 0.05:
+		P_thresh_ret = P_thresh_opt
             print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
+	    P_thresh_opt = P_thresh_default
         print('')
+    return P_thresh_ret
 
 
 

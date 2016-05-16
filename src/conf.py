@@ -35,7 +35,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 1000000,
+        'use_shots' : 2000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -59,7 +59,7 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.50,
+        'train_frac' : 0.004,
         'batch_size_large' : 2048,
         'batch_size_small' : 2048,
         'batch_size' : 256,
