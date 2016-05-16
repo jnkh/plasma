@@ -287,24 +287,26 @@ def compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length
 
         print('============= FP RATE < {} ============='.format(fp_thresh))
         if(any(fp_range < fp_thresh)):
-            idx = where(fp_range < fp_thresh)[0][0]
+            idx = where(fp_range <= fp_thresh)[0][0]
             P_thresh_opt = P_thresh_range[idx]
             summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
             print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
+        print()
 
     #last index where
     for missed_thresh in missed_threshs: 
 
         print('============= MISSED RATE < {} ============='.format(missed_thresh))
         if(any(missed_range < missed_thresh)):
-            idx = where(missed_range < missed_thresh)[0][-1]
+            idx = where(missed_range <= missed_thresh)[0][-1]
             P_thresh_opt = P_thresh_range[idx]
             summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
             print('============= AT P_THRESH < {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
+        print()
 
 
 
