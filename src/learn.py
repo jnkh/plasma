@@ -29,7 +29,7 @@ if len(shot_files_test) == 0:
     shots,disruptive = preprocess_all_shots(conf)
     print("...done")
 
-    split_groups = train_test_split_all((shots,disruptive),train_frac,shuffle_training)
+    split_groups = train_test_split_all((shots,disruptive),train_frac,conf['training']['shuffle_training'])
     shots_train,shots_test = split_groups[0]
     disruptive_train,disruptive_test = split_groups[1]
 

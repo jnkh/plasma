@@ -161,7 +161,7 @@ def get_signals_and_times_from_file(shot,t_disrupt,conf):
 
 
 
-def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
+def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations = None):
     dt = conf['data']['dt']
     T_max = conf['data']['T_max']
 
@@ -175,7 +175,11 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
 
     signals = signals_processed
     signals = np.column_stack(signals)
-    signals = whiten(signals)
+    if standard_deviations is None:
+        signals = whiten(signals)
+        print('warning: whitening each signal individually')
+    else:
+        signals /= standard_deviations
     if is_disruptive:
         ttd = max(tr) - tr
         ttd = np.clip(ttd,0,T_max)
@@ -183,6 +187,23 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf):
         ttd = T_max*np.ones_like(tr)
     ttd = log10(ttd + 1.0*dt/10)
     return signals,ttd
+
+def get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf):
+    dt = conf['data']['dt']
+    T_max = conf['data']['T_max']
+
+    #resample signals
+    signals_processed = []
+    assert(len(signals) == len(times) and len(signals) > 0)
+    tr = 0
+    for i in range(len(signals)):
+        tr,sigr = cut_and_resample_signal(times[i],signals[i],t_min,t_max,dt)
+        signals_processed.append(sigr)
+
+    signals = signals_processed
+    signals = np.column_stack(signals)
+    standard_deviations = std(signals,0)
+    return standard_deviations
 
 
 
@@ -195,6 +216,8 @@ def preprocess_all_shots(conf):
 
 def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+
+    standard_deviations = preprocess_data_whitener(conf)
 
     dt = conf['data']['dt']
     processed_prepath = conf['paths']['processed_prepath']
@@ -216,7 +239,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
           #get minmax times
             signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
             #cut and resample
-            signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf)
+            signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
 
             savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
             print('saved shot {}'.format(shot))
@@ -233,6 +256,54 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
     print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
     return array(used_shots), array(disruptive)
+
+
+def preprocess_data_whitener(conf):
+    shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
+    shot_list_dir = conf['paths']['shot_list_dir']
+    use_shots = max(100,conf['data']['use_shots'])
+    return preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
+
+
+def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots):
+    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+
+    dt = conf['data']['dt']
+    normalizer_path = conf['paths']['normalizer_path']
+    recompute = conf['data']['recompute']
+    use_shots = min(use_shots,len(shots))
+    used_shots = []
+    disruptive = []
+    indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
+    num_processed = 0
+    standard_deviations = zeros(conf['data']['num_signals'])
+    num_disruptive = 0
+    if recompute or not os.path.isfile(normalizer_path):
+        for j in indices:
+            print('({}/{}): '.format(num_processed,use_shots))
+            shot = shots[j]
+            print('(re)computing shot {} for normalization'.format(shot))
+            t_disrupt = disruption_times[j]
+            is_disruptive =  t_disrupt >= 0
+          #get minmax times
+            signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+            #cut and resample
+            standard_deviations_curr = get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
+            if valid:
+                standard_deviations += standard_deviations_curr
+                num_processed += 1
+                num_disruptive += (1 if is_disruptive else 0)
+
+        standard_deviations /= num_processed
+        np.savez(normalizer_path,standard_deviations = standard_deviations,num_processed = num_processed,num_disruptive = num_disruptive)
+        print('saving normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
+    else:
+        dat = load(normalizer_path)
+        standard_deviations = dat['standard_deviations']
+        num_processed = dat['num_processed']
+        num_disruptive = dat['num_disruptive']
+        print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
+    return standard_deviations
 
 
 def bool_to_int(predicate):
