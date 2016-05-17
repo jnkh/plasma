@@ -259,7 +259,8 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
 
 
 def preprocess_data_whitener(conf):
-    shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
+    #only use training shots here!! "Don't touch testing shots"
+    shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
     shot_list_dir = conf['paths']['shot_list_dir']
     use_shots = max(100,conf['data']['use_shots'])
     return preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
