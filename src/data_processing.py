@@ -179,6 +179,18 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standa
         signals = whiten(signals)
         print('warning: whitening each signal individually')
     else:
+        print('STD GLOBAL')
+        print(standard_deviations)
+        print('STD')
+        print(std(signals,0))
+        print('MEAN')
+        print(mean(signals,0))
+        print('MEAN ABS')
+        print(mean(np.abs(signals),0))
+        print('MIN')
+        print(np.min(signals,0))
+        print('MAX')
+        print(np.max(signals,0))
         signals /= standard_deviations
     if is_disruptive:
         ttd = max(tr) - tr
