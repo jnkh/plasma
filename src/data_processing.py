@@ -250,7 +250,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     #     return preprocess_single_shot_from_file(idx,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations)
 
     print('running in parallel on {} processes'.format(pool._processes))
-    return_data = zip(*pool.map(mapping_fn,indices))
+    return_data = pool.map(mapping_fn,indices)
 
     for j in range(len(indices)):
         valid,is_disruptive,shot = return_data[j] 
@@ -268,11 +268,10 @@ def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,pro
     # num_processed += 1
     # print('({}/{}): '.format(num_processed,use_shots))
     shot = shots[j]
-    print('Processing shot {}'.format(shot))
     t_disrupt = disruption_times[j]
     load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
     if recompute or not os.path.isfile(load_file_path):
-        print('(re)computing shot {}'.format(shot))
+        print('(re)computing shot {}'.format(shot),end='')
         is_disruptive =  t_disrupt >= 0
       	#get minmax times
         signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
@@ -280,8 +279,9 @@ def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,pro
         signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
 
         savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
-        print('saved shot {}'.format(shot))
+        print('...saved shot {}'.format(shot))
     else:
+        print('shot {} exists.'.format(shot))
         dat = load(load_file_path)
         valid = dat['valid']
         is_disruptive = dat['is_disruptive']
