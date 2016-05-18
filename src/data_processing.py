@@ -8,6 +8,8 @@ import sys
 import os.path
 from scipy.cluster.vq import whiten
 from scipy.interpolate import interp1d,UnivariateSpline
+import multiprocessing as mp
+from functools import partial
 
 from os import listdir,remove
 from os.path import isfile, join
@@ -179,18 +181,18 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standa
         signals = whiten(signals)
         print('warning: whitening each signal individually')
     else:
-        print('STD GLOBAL')
-        print(standard_deviations)
-        print('STD')
-        print(std(signals,0))
-        print('MEAN')
-        print(mean(signals,0))
-        print('MEAN ABS')
-        print(mean(np.abs(signals),0))
-        print('MIN')
-        print(np.min(signals,0))
-        print('MAX')
-        print(np.max(signals,0))
+        # print('STD GLOBAL')
+        # print(standard_deviations)
+        # print('STD')
+        # print(std(signals,0))
+        # print('MEAN')
+        # print(mean(signals,0))
+        # print('MEAN ABS')
+        # print(mean(np.abs(signals),0))
+        # print('MIN')
+        # print(np.min(signals,0))
+        # print('MAX')
+        # print(np.max(signals,0))
         signals /= standard_deviations
     if is_disruptive:
         ttd = max(tr) - tr
@@ -239,26 +241,19 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     disruptive = []
     indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
     num_processed = 0
-    for j in indices:
-        num_processed += 1
-        print('({}/{}): '.format(num_processed,use_shots))
-        shot = shots[j]
-        load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
-        if recompute or not os.path.isfile(load_file_path):
-            print('(re)computing shot {}'.format(shot))
-            t_disrupt = disruption_times[j]
-            is_disruptive =  t_disrupt >= 0
-          #get minmax times
-            signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
-            #cut and resample
-            signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
+    pool = mp.Pool()
 
-            savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
-            print('saved shot {}'.format(shot))
-        else:
-            dat = load(load_file_path)
-            valid = dat['valid']
-            is_disruptive = dat['is_disruptive']
+
+    mapping_fn = partial(preprocess_single_shot_from_file,conf=conf,shots=shots,disruption_times=disruption_times,recompute=recompute,processed_prepath=processed_prepath,standard_deviations=standard_deviations)
+
+    # def mapping_fn(idx):
+    #     return preprocess_single_shot_from_file(idx,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations)
+
+    print('running in parallel on {} processes'.format(pool._processes))
+    return_data = zip(*pool.map(mapping_fn,indices))
+
+    for j in range(len(indices)):
+        valid,is_disruptive,shot = return_data[j] 
         if valid:
             print('valid')
             used_shots.append(shot)
@@ -269,6 +264,29 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
     return array(used_shots), array(disruptive)
 
+def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations):
+    # num_processed += 1
+    # print('({}/{}): '.format(num_processed,use_shots))
+    shot = shots[j]
+    print('Processing shot {}'.format(shot))
+    t_disrupt = disruption_times[j]
+    load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
+    if recompute or not os.path.isfile(load_file_path):
+        print('(re)computing shot {}'.format(shot))
+        is_disruptive =  t_disrupt >= 0
+      #get minmax times
+        signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+        #cut and resample
+        signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
+
+        savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
+        print('saved shot {}'.format(shot))
+    else:
+        dat = load(load_file_path)
+        valid = dat['valid']
+        is_disruptive = dat['is_disruptive']
+    return valid,is_disruptive,shot
+    
 
 def preprocess_data_whitener(conf):
     #only use training shots here!! "Don't touch testing shots"
