@@ -2,9 +2,8 @@ from __future__ import print_function
 
 from pylab import *
 
+import time,random,sys
 import numpy as np
-import random
-import sys
 import os.path
 from scipy.cluster.vq import whiten
 from scipy.interpolate import interp1d,UnivariateSpline
@@ -242,24 +241,20 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
     num_processed = 0
     pool = mp.Pool()
-
-
     mapping_fn = partial(preprocess_single_shot_from_file,conf=conf,shots=shots,disruption_times=disruption_times,recompute=recompute,processed_prepath=processed_prepath,standard_deviations=standard_deviations)
 
-    # def mapping_fn(idx):
-    #     return preprocess_single_shot_from_file(idx,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations)
-
     print('running in parallel on {} processes'.format(pool._processes))
-    return_data = pool.map(mapping_fn,indices)
-
-    for j in range(len(indices)):
-        valid,is_disruptive,shot = return_data[j] 
+    start_time = time.time()
+    for (i,return_data) in enumerate(pool.imap_unordered(mapping_fn,indices)):
+        print('{}/{}'.format(i,len(indices)))
+        valid,is_disruptive,shot = return_data
         if valid:
-            print('valid')
             used_shots.append(shot)
             disruptive.append(bool_to_int(is_disruptive))
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
+
+    print('Finished Preprocessing {} files in {} seconds'.format(len(indices),time.time()-start_time))
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
     print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
     return array(used_shots), array(disruptive)
