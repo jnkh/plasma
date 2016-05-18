@@ -271,7 +271,7 @@ def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,pro
     t_disrupt = disruption_times[j]
     load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
     if recompute or not os.path.isfile(load_file_path):
-        print('(re)computing shot {}'.format(shot),end='')
+        # print('(re)computing shot {}'.format(shot),end='')
         is_disruptive =  t_disrupt >= 0
       #get minmax times
         signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
