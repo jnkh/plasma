@@ -24,8 +24,8 @@ conf = {
         'base_path' : base_path,
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
-        'shot_files_test' : [],# ['BeWall_clear.txt','ILW_unint.txt'],
+        'shot_files' : ['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files_test' : ['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
@@ -41,7 +41,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2000,
+        'use_shots' : 400,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -65,11 +65,11 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.004,
+        'train_frac' : 0.25,
         'batch_size_large' : 2048,
         'batch_size_small' : 2048,
         'batch_size' : 256,
-        'num_shots_at_once' :  30,
+        'num_shots_at_once' :  25,
         'num_epochs' : 1,
         'evaluate' : False,
    },

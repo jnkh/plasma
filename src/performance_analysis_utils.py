@@ -368,7 +368,7 @@ def compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_tr
 
 
 
-def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False):
+def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
     figure()
     semilogx(P_thresh_range,accuracy_range,label="accuracy")
     plot(P_thresh_range,missed_range,'r',label="missed")
@@ -378,15 +378,15 @@ def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alar
     xlabel('Alarm threshold')
     grid()
     if save_figure:
-        savefig('metrics.png',bbox_inches='tight')
+        savefig('metrics{}.png'.format(plot_string),bbox_inches='tight')
 
 
 
-def compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=True):
+def compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=True,plot_string=''):
     correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = get_metrics_vs_p_thresh(P_thresh_range, \
             pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
-    tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure)
+    tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
 
 
