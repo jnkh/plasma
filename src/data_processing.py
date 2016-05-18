@@ -283,7 +283,7 @@ def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
 
     dt = conf['data']['dt']
     normalizer_path = conf['paths']['normalizer_path']
-    recompute = conf['data']['recompute']
+    recompute = conf['data']['recompute_normalization']
     use_shots = min(use_shots,len(shots))
     used_shots = []
     disruptive = []
