@@ -1,9 +1,14 @@
 from numpy import log10
 #paths#
 base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
-signals_dirs = ['jpf/da/c2-ipla','jpf/da/c2-loca','jpf/db/b5r-ptot>out',
-                        'jpf/df/g1r-lid:003','jpf/gs/bl-li<s','jpf/gs/bl-fdwdt<s',
-                        'jpf/gs/bl-ptot<s','jpf/gs/bl-wmhd<s']
+signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
+                'jpf/da/c2-loca', # Mode Lock Amplitude [A]
+                'jpf/db/b5r-ptot>out', #Radiated Power [W]
+                'jpf/df/g1r-lid:003', #Density [m^-2]
+                'jpf/gs/bl-li<s', #Plasma Internal Inductance
+                'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W]
+                'jpf/gs/bl-ptot<s', #total input power [W]
+                'jpf/gs/bl-wmhd<s'] #unkown
 
 
 def remap_target(ttd,T_warning,as_array_of_shots=True):
