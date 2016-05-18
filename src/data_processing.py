@@ -254,6 +254,8 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
         else:
             print('Warning: shot {} not valid, omitting'.format(shot))
 
+    pool.close()
+    pool.join()
     print('Finished Preprocessing {} files in {} seconds'.format(len(indices),time.time()-start_time))
     print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
     print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
@@ -307,10 +309,10 @@ def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
     maxs = []
     num_disruptive = 0
 
-    pool = mp.Pool()
-    mapping_fn = partial(preprocess_data_whitener_from_single_file,conf=conf,shots=shots,disruption_times=disruption_times)
 
     if recompute or not os.path.isfile(normalizer_path):
+        pool = mp.Pool()
+        mapping_fn = partial(preprocess_data_whitener_from_single_file,conf=conf,shots=shots,disruption_times=disruption_times)
         print('running in parallel on {} processes'.format(pool._processes))
         start_time = time.time()
         for (i,return_data) in enumerate(pool.imap_unordered(mapping_fn,indices)):
@@ -323,6 +325,8 @@ def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
             else:
                 print('Warning: shot {} not valid, omitting'.format(shot))
 
+        pool.close()
+        pool.join()
         print('Finished Preprocessing {} files in {} seconds for normalization'.format(len(indices),time.time()-start_time))
         standard_deviations = np.row_stack(standard_deviations)
         standard_deviations = np.median(standard_deviations,0)
