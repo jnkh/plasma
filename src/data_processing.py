@@ -274,7 +274,7 @@ def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,pro
     if recompute or not os.path.isfile(load_file_path):
         print('(re)computing shot {}'.format(shot))
         is_disruptive =  t_disrupt >= 0
-      #get minmax times
+      	#get minmax times
         signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
         #cut and resample
         signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
