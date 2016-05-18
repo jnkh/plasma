@@ -8,7 +8,7 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 2
+file_num = 0
 save_figure = True
 
 P_thresh_range = logspace(-4,0,100) 
@@ -26,8 +26,9 @@ pred_train,truth_train,disruptive_curr_train,length = load_ith_file(file_num,'tr
 
 P_thresh_opt = compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_train,disruptive_curr_train,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
+compute_tradeoffs_and_plot(P_thresh_range,pred_train,truth_train,disruptive_curr_train,length,T_min_warn,T_max_warn,save_figure=save_figure,plot_string='_train')
 
-compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=save_figure)
+compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=save_figure,plot_string='_test')
 
 summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
 
