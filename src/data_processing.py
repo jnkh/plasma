@@ -306,22 +306,24 @@ def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
     mins = []
     maxs = []
     num_disruptive = 0
+
+    pool = mp.Pool()
+    mapping_fn = partial(preprocess_data_whitener_from_single_file,conf=conf,shots=shots,disruption_times=disruption_times)
+
     if recompute or not os.path.isfile(normalizer_path):
-        for j in indices:
-            print('({}/{}): '.format(num_processed,use_shots))
-            shot = shots[j]
-            print('(re)computing shot {} for normalization'.format(shot))
-            t_disrupt = disruption_times[j]
-            is_disruptive =  t_disrupt >= 0
-          #get minmax times
-            signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
-            #cut and resample
-            standard_deviations_curr = get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
+        print('running in parallel on {} processes'.format(pool._processes))
+        start_time = time.time()
+        for (i,return_data) in enumerate(pool.imap_unordered(mapping_fn,indices)):
+            print('{}/{}'.format(i,len(indices)))
+            valid,is_disruptive,standard_deviations_curr = return_data
             if valid:
                 standard_deviations.append(standard_deviations_curr)
                 num_processed += 1
                 num_disruptive += (1 if is_disruptive else 0)
+            else:
+                print('Warning: shot {} not valid, omitting'.format(shot))
 
+        print('Finished Preprocessing {} files in {} seconds for normalization'.format(len(indices),time.time()-start_time))
         standard_deviations = np.row_stack(standard_deviations)
         standard_deviations = np.median(standard_deviations,0)
         np.savez(normalizer_path,standard_deviations = standard_deviations,num_processed = num_processed,num_disruptive = num_disruptive)
@@ -334,6 +336,18 @@ def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
         print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
     return standard_deviations
 
+
+def preprocess_data_whitener_from_single_file(j,conf,shots,disruption_times):
+    shot = shots[j]
+    print('(re)computing shot {} for normalization'.format(shot))
+    t_disrupt = disruption_times[j]
+    is_disruptive =  t_disrupt >= 0
+  #get minmax times
+    signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
+    #cut and resample
+    standard_deviations_curr = get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
+
+    return valid, is_disruptive, standard_deviations_curr
 
 def bool_to_int(predicate):
     return 1 if predicate else 0
