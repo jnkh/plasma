@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 import datetime
+import time
 from data_processing import *
 from model_builder import build_model
 import numpy as np
@@ -85,18 +86,23 @@ for e in range(num_epochs):
     # else:
     #     batch_size = batch_size_large 
     batch_size = length
-    shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
+    shots_array = np.random.permutation(shots_train)
+    # shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
     print('Epoch {}/{}'.format(e+1,num_epochs))
-    for i,shots_array in enumerate(shots_arrays):
-        X_y_train_list = load_shots_as_X_y_list(conf,shots_array,stateful=True)
+    # for i,shots_array in enumerate(shots_arrays):
+    for (i,shot) in shots_array:
+        start = time.time()
+        X_train,y_train = load_shot_as_X_y(conf,shot,stateful=True)
+        print('loaded shot in {} seconds'.format(time.time() - start))
         pbar =  Progbar(len(shots_array))
 
-        print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
-        for (X_train,y_train) in X_y_train_list:
-            train_model.reset_states()
-            history = LossHistory()
-            train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
-            pbar.add(1, values=[("train loss", history.losses[-1])])
+        # print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
+        # for (X_train,y_train) in X_y_train_list:
+        train_model.reset_states()
+        history = LossHistory()
+        train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
+        pbar.add(1, values=[("train loss", history.losses[-1])])
+
     train_model.save_weights('./tmp/train_model.%d.h5' % e,overwrite=True)
 
 print('...done')
