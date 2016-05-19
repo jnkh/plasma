@@ -162,7 +162,7 @@ def get_signals_and_times_from_file(shot,t_disrupt,conf):
 
 
 
-def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations = None):
+def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations = None,whiten=True):
     dt = conf['data']['dt']
     T_max = conf['data']['T_max']
 
@@ -176,10 +176,10 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standa
 
     signals = signals_processed
     signals = np.column_stack(signals)
-    if standard_deviations is None:
+    if standard_deviations is None and whiten:
         signals = whiten(signals)
         print('warning: whitening each signal individually')
-    else:
+    elif whiten:
         # print('STD GLOBAL')
         # print(standard_deviations)
         # print('STD')
@@ -193,6 +193,10 @@ def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standa
         # print('MAX')
         # print(np.max(signals,0))
         signals /= standard_deviations
+    if not whiten:
+        print('not whitening at all')
+
+
     if is_disruptive:
         ttd = max(tr) - tr
         ttd = np.clip(ttd,0,T_max)
@@ -227,7 +231,7 @@ def preprocess_all_shots(conf):
     return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots)
 
 
-def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
+def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots,whiten=True):
     shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
 
     standard_deviations = preprocess_data_whitener(conf)
@@ -241,7 +245,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
     num_processed = 0
     pool = mp.Pool()
-    mapping_fn = partial(preprocess_single_shot_from_file,conf=conf,shots=shots,disruption_times=disruption_times,recompute=recompute,processed_prepath=processed_prepath,standard_deviations=standard_deviations)
+    mapping_fn = partial(preprocess_single_shot_from_file,conf=conf,shots=shots,disruption_times=disruption_times,recompute=recompute,processed_prepath=processed_prepath,standard_deviations=standard_deviations,whiten=whiten)
 
     print('running in parallel on {} processes'.format(pool._processes))
     start_time = time.time()
@@ -261,7 +265,7 @@ def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots):
     print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
     return array(used_shots), array(disruptive)
 
-def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations):
+def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations,whiten=whiten):
     # num_processed += 1
     # print('({}/{}): '.format(num_processed,use_shots))
     shot = shots[j]
@@ -273,7 +277,7 @@ def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,pro
       #get minmax times
         signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
         #cut and resample
-        signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations)
+        signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations,whiten=whiten)
 
         savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
         print('...saved shot {}'.format(shot))
