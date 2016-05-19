@@ -13,6 +13,9 @@ from functools import partial
 from os import listdir,remove
 from os.path import isfile, join
 
+from keras.callbacks import Callback
+
+
 
 def clean_shots_lists(shots_lists_dir):
     paths = [join(shots_lists_dir, f) for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
@@ -366,7 +369,7 @@ def time_is_disruptive(t):
 def times_are_disruptive(ts):
     return array([time_is_disruptive(t) for t in ts])
 
-def load_shot_as_X_y(conf,shot,verbose=False):
+def load_shot_as_X_y(conf,shot,verbose=False,stateful=True,prediction_mode=False):
     dt = conf['data']['dt']
     length = conf['model']['length']
     skip = conf['model']['skip']
@@ -390,14 +393,20 @@ def load_shot_as_X_y(conf,shot,verbose=False):
     assert(valid)
 
     ttd = remapper(ttd,conf['data']['T_warning'])
-    X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
+    if not stateful:
+        X,y = array_to_path_and_external_pred(signals,ttd,length,skip)
+    else:
+        X,y = array_to_path_and_external_pred_cut(signals,ttd,length,skip,return_sequences=True,prediction_mode=prediction_mode)
+
     return  X,y
 
 
-def load_shots_as_X_y(conf,shots):
-    X,y = zip(*[load_shot_as_X_y(conf,shot) for shot in shots])
+def load_shots_as_X_y(conf,shots,verbose=False,stateful=True,prediction_mode=False):
+    X,y = zip(*[load_shot_as_X_y(conf,shot,verbose,stateful,prediction_mode) for shot in shots])
     return vstack(X),hstack(y)
 
+def load_shots_as_X_y_list(conf,shots,verbose=False,stateful=True,prediction_mode=False):
+    return [load_shot_as_X_y(conf,shot,verbose,stateful,prediction_mode) for shot in shots]
 
 def load_or_preprocess_all_shots_from_files(conf,shot_list_dir,shot_files):
    
@@ -503,6 +512,42 @@ def array_to_path_and_external_pred(arr,res,length,skip,return_sequences=False):
     if return_sequences and len(shape(y)) == 1:
         y = expand_dims(y,axis=len(shape(y)))
     return X,y
+
+
+def array_to_path_and_external_pred_cut(arr,res,length,skip,return_sequences=False,prediction_mode=False):
+    if prediction_mode:
+        length = 1
+        skip = 1
+    assert(shape(arr)[0] == shape(res)[0])
+    num_chunks = len(arr) // length
+    arr = arr[-num_chunks*length:]
+    res = res[-num_chunks*length:]
+    assert(shape(arr)[0] == shape(res)[0])
+    X = []
+    y = []
+    i = 0
+    for chunk in range(num_chunks-1):
+        for i in range(1,length+1,skip):
+            start = chunk*length + i
+            assert(start + length <= len(arr))
+            if prediction_mode:
+                X.append(arr[start:start+1,:])
+                y.append(res[start:start+1])
+            else:
+                X.append(arr[start:start+length,:])
+                if return_sequences:
+                    y.append(res[start:start+length])
+                else:
+                    y.append(res[start+length-1:start+length])
+    X = array(X)
+    y = array(y)
+    if len(shape(X)) == 1:
+        X = expand_dims(X,axis=len(shape(X)))
+    if return_sequences:
+        y = expand_dims(y,axis=len(shape(y)))
+    return X,y
+
+
 
 def train_test_split(x,frac,shuffle_data=False):
     mask = array(range(len(x))) < frac*len(x)
@@ -641,7 +686,10 @@ def get_multiple_shots_and_disruption_times(base_path,endings):
 
 
 
+class LossHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
 
-
-
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
 

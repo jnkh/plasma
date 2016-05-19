@@ -12,6 +12,10 @@ import os.path
 from conf import conf
 
 
+from keras.utils.generic_utils import Progbar 
+from keras.callbacks import Callback
+
+
 shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
@@ -67,32 +71,45 @@ print('Training on {} shots, testing on {} shots'.format(num_shots_train,num_sho
 
 
 print('Build model...',end='')
-model = build_model(conf)
+train_model = build_model(conf,False)
+test_model = build_model(conf,True)
 print('...done')
 
 
 print('training model')
 for e in range(num_epochs):
-    #train on small batches in first and last epoch
-    if e == 0 or e == num_epochs - 1:
-        batch_size = batch_size_small
-    #otherwise train on large batches
-    else:
-        batch_size = batch_size_large 
+    # #train on small batches in first and last epoch
+    # if e == 0 or e == num_epochs - 1:
+    #     batch_size = batch_size_small
+    # #otherwise train on large batches
+    # else:
+    #     batch_size = batch_size_large 
+    batch_size = length
     shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
     print('Epoch {}/{}'.format(e+1,num_epochs))
     for i,shots_array in enumerate(shots_arrays):
-        X_train,y_train = load_shots_as_X_y(conf,shots_array)
+        X_y_train_list = load_shots_as_X_y_list(conf,shots_array,stateful=True)
+        pbar =  Progbar(len(shots_array))
+
         print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
-        model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0)
+        for (X_train,y_train) in X_y_train_list:
+            train_model.reset_states()
+            history = LossHistory()
+            train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
+            pbar.add(1, values=[("train loss", history.losses[-1])])
+    train_model.save_weights('./tmp/train_model.%d.h5' % e,overwrite=True)
+
 print('...done')
+
+#load last model for testing
+test_model.load_weights('./tmp/train_model.%d.h5' % (num_epochs-1))
 
 if conf['training']['evaluate']:
     print('evaluating model')
     for (i,shot) in enumerate(shots_test):
         print('Shot {}/{}'.format(i,num_shots_test))
-        X,y = load_shot_as_X_y(conf,shot)
-        res = model.evaluate(X,y,batch_size=batch_size_large)
+        X,y = load_shot_as_X_y(conf,shot,stateful=True)
+        res = train_model.evaluate(X,y,batch_size=batch_size_large)
         print(res)
     print('...done')
 
@@ -107,18 +124,37 @@ y_gold_test = []
 y_gold_train = []
 
 for (i,shot) in enumerate(shots_train):
+    test_model.reset_states()
     print('Shot {}/{}'.format(i,num_shots))
-    X,y = load_shot_as_X_y(conf,shot)
-    y_prime_train.append(model.predict(X,batch_size=batch_size_large))
-    y_gold_train.append(y)
+    X,y = load_shot_as_X_y(conf,shot,stateful=True,prediction_mode=True)
+    assert(X.shape[0] == y.shape[0])
+    shot_length = X.shape[0]
+    y_prime_train_curr = []
+    for j in range(shot_length):
+        X_row = X[j:j+1,:,:]
+        y_prime_train_curr.append(test_model.predict(X_row))
+    y_prime_train_curr = squeeze(vstack(y_prime_train_curr),axis=1)
+    y_prime_train.append(y_prime_train_curr)
+    y_gold_train.append(squeeze(y,axis=1))
+
 
 for (i,shot) in enumerate(shots_test):
+    test_model.reset_states()
     print('Shot {}/{}'.format(i + len(shots_train),num_shots))
-    X,y = load_shot_as_X_y(conf,shot)
-    y_prime_test.append(model.predict(X,batch_size=batch_size_large))
-    y_gold_test.append(y)
+    X,y = load_shot_as_X_y(conf,shot,stateful=True,prediction_mode=True)
+    assert(X.shape[0] == y.shape[0])
+    shot_length = X.shape[0]
+    y_prime_test_curr = []
+    for j in range(shot_length):
+        X_row = X[j:j+1,:,:]
+        y_prime_test_curr.append(test_model.predict(X_row))
+    y_prime_test_curr = squeeze(vstack(y_prime_test_curr),axis=1)
+    y_prime_test.append(y_prime_test_curr)
+    y_gold_test.append(squeeze(y,axis=1))
 
 
+
+ 
 disruptive = concatenate((disruptive_train,disruptive_test))
 y_gold = concatenate((y_gold_train,y_gold_test))
 y_prime = concatenate((y_prime_train,y_prime_test))
