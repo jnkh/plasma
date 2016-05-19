@@ -3,8 +3,7 @@ from matplotlib import pyplot
 import os
 
 
-def load_ith_file(i,mode='test',verbose=True):
-    results_dir = '/p/datad/jkatesha/data/results/'
+def load_ith_file(i,results_dir,mode='test',verbose=True):
     results_files = os.listdir(results_dir)
     print(results_files)
     dat = load(results_dir + results_files[i])
