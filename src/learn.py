@@ -5,11 +5,13 @@ import matplotlib
 matplotlib.use('Agg')
 
 import datetime
+import time
 from data_processing import *
 from model_builder import build_model
 import numpy as np
 import os.path
 from conf import conf
+from pprint import pformat
 
 
 from keras.utils.generic_utils import Progbar 
@@ -75,7 +77,7 @@ train_model = build_model(conf,False)
 test_model = build_model(conf,True)
 print('...done')
 
-
+unique_configuration_id = hash(pformat(conf))
 print('training model')
 for e in range(num_epochs):
     # #train on small batches in first and last epoch
@@ -85,24 +87,30 @@ for e in range(num_epochs):
     # else:
     #     batch_size = batch_size_large 
     batch_size = length
-    shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
+    shots_array = np.random.permutation(shots_train)
+    # shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
     print('Epoch {}/{}'.format(e+1,num_epochs))
-    for i,shots_array in enumerate(shots_arrays):
-        X_y_train_list = load_shots_as_X_y_list(conf,shots_array,stateful=True)
+    # for i,shots_array in enumerate(shots_arrays):
+    for (i,shot) in enumerate(shots_array):
+        print('Shots {}/{}'.format(i,len(shots_array)))
+        start = time.time()
+        X_train,y_train = load_shot_as_X_y(conf,shot,stateful=True)
+        print('loaded shot in {} seconds'.format(time.time() - start))
         pbar =  Progbar(len(shots_array))
 
-        print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
-        for (X_train,y_train) in X_y_train_list:
-            train_model.reset_states()
-            history = LossHistory()
-            train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
-            pbar.add(1, values=[("train loss", history.losses[-1])])
-    train_model.save_weights('./tmp/train_model.%d.h5' % e,overwrite=True)
+        # print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
+        # for (X_train,y_train) in X_y_train_list:
+        train_model.reset_states()
+        history = LossHistory()
+        train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
+        pbar.add(1, values=[("train loss", mean(history.losses))])
+
+    train_model.save_weights('./tmp/train_model.{}._epoch_.{}.h5'.format(unique_configuration_id,e),overwrite=True)
 
 print('...done')
 
 #load last model for testing
-test_model.load_weights('./tmp/train_model.%d.h5' % (num_epochs-1))
+test_model.load_weights('./tmp/train_model.{}._epoch_.{}.h5'.format(unique_configuration_id,(num_epochs-1)))
 
 if conf['training']['evaluate']:
     print('evaluating model')
