@@ -91,12 +91,12 @@ for e in range(num_epochs):
     # shots_arrays = array_split(np.random.permutation(shots_train),max(1,int(round(1.0*num_shots_train/num_shots_at_once))))
     print('Epoch {}/{}'.format(e+1,num_epochs))
     # for i,shots_array in enumerate(shots_arrays):
+    pbar =  Progbar(len(shots_array))
     for (i,shot) in enumerate(shots_array):
         print('Shots {}/{}'.format(i,len(shots_array)))
         start = time.time()
         X_train,y_train = load_shot_as_X_y(conf,shot,stateful=True)
         print('loaded shot in {} seconds'.format(time.time() - start))
-        pbar =  Progbar(len(shots_array))
 
         # print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
         # for (X_train,y_train) in X_y_train_list:
