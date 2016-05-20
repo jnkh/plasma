@@ -23,39 +23,25 @@ shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
 train_frac = conf['training']['train_frac']
 
+
+pp = Preprocessor(conf)
+
+
 print("Clean Shot Lists",end='')
-clean_shots_lists(shot_list_dir)
+pp.clean_shot_lists()
 print("...done")
 
-#signals_by_shot,ttd_by_shot,disruptive = load_all_shots(conf)
 
-#only one list of shots -- split randomly
-if len(shot_files_test) == 0:
-    print("preprocessing all shots",end='')
-    shots,disruptive = preprocess_all_shots(conf)
-    print("...done")
-
-    split_groups = train_test_split_all((shots,disruptive),train_frac,conf['training']['shuffle_training'])
-    shots_train,shots_test = split_groups[0]
-    disruptive_train,disruptive_test = split_groups[1]
-
-#train and test list given
-else:
-    use_shots_train = int(round(train_frac*conf['data']['use_shots']))
-    use_shots_test = int(round((1-train_frac)*conf['data']['use_shots']))
-    print("preprocessing training shots",end='')
-    shots_train,disruptive_train = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots_train)
-    print("preprocessing testing shots",end='')
-    shots_test,disruptive_test = preprocess_all_shots_from_files(conf,shot_list_dir,shot_files_test,use_shots_test)
-    print("...done")
-
-    shots = np.concatenate((shots_train,shots_test))
-    disruptive = np.concatenate((disruptive_train,disruptive_test))
+print("preprocessing all shots",end='')
+shot_list = pp.preprocess_all()
+print("...done")
 
 
-T_warning = conf['data']['T_warning']
-train_frac = conf['training']['train_frac']
-shuffle_training = conf['training']['shuffle_training']
+
+shot_list_train,shot_list_test = shot_list.split_train_test(conf)
+
+
+
 num_epochs = conf['training']['num_epochs']
 batch_size_large = conf['training']['batch_size_large']
 batch_size_small = conf['training']['batch_size_small']

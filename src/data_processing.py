@@ -7,7 +7,7 @@ import numpy as np
 import os.path
 from scipy.cluster.vq import whiten
 from scipy.interpolate import interp1d,UnivariateSpline
-import multiprocessing as mp
+import pathos.multiprocessing as mp
 from functools import partial
 
 from os import listdir,remove
@@ -71,10 +71,10 @@ class Normalizer():
 
         if recompute or not self.previously_saved_stats(normalizer_path):
             pool = mp.Pool()
-            mapping_fn = partial(self.train_on_single_shot)
             print('running in parallel on {} processes'.format(pool._processes))
             start_time = time.time()
-            for (i,stats) in enumerate(pool.imap_unordered(mapping_fn,shot_list_picked)):
+
+            for (i,stats) in enumerate(pool.imap_unordered(self.train_on_single_shot,shot_list_picked)):
                 print('{}/{}'.format(i,len(indices)))
                 if stats is not None:
                     self.incorporate_stats(stats)
@@ -135,6 +135,28 @@ class Preprocessor():
     def __init__(self,conf):
         self.conf = conf
 
+
+    def clean_shot_lists(self):
+        shot_list_dir = self.conf['paths']['shot_list_dir']
+        paths = [join(shot_list_dir, f) for f in listdir(shot_list_dir) if isfile(join(shot_list_dir, f))]
+        for path in paths:
+            self.clean_shot_list(path)
+
+
+    def clean_shot_list(self,path):
+        data = loadtxt(path)
+        ending_idx = path.rfind('.')
+        new_path = append_to_filename(path,'_clear')
+        if len(shape(data)) < 2:
+            #nondisruptive
+            nd_times = -1.0*ones_like(data)
+            data_two_column = vstack((data,nd_times)).transpose()
+            savetxt(new_path,data_two_column,fmt = '%d %f')
+            print('created new file: {}'.format(new_path))
+            print('deleting old file: {}'.format(path))
+            os.remove(path)
+
+
     def preprocess_all(self):
         conf = self.conf
         shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
@@ -153,17 +175,19 @@ class Preprocessor():
         used_shots = ShotList()
 
         pool = mp.Pool()
-        mapping_fn = partial(self.preprocess_single_file)
 
         print('running in parallel on {} processes'.format(pool._processes))
         start_time = time.time()
-        for (i,shot) in enumerate(pool.imap_unordered(mapping_fn,shot_list_picked)):
-            print('{}/{}'.format(i,len(indices)))
+        for shot in shot_list_picked:
+            print(shot)
+        for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,shot_list_picked)):
+        # for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,[1,2,3])):
+            print('{}/{}'.format(i,len(shot_list_picked)))
             used_shots.append_if_valid(shot)
 
         pool.close()
         pool.join()
-        print('Finished Preprocessing {} files in {} seconds'.format(len(indices),time.time()-start_time))
+        print('Finished Preprocessing {} files in {} seconds'.format(len(shot_list_picked),time.time()-start_time))
         print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
         print('{}/{} disruptive shots'.format(used_shots.num_disruptive(),len(used_shots)))
         return used_shots 
@@ -175,7 +199,7 @@ class Preprocessor():
         if recompute or not shot.previously_saved(processed_prepath):
             # print('(re)computing shot_number {}'.format(shot_number),end='')
           #get minmax times
-            signals,times,t_min,t_max,t_thresh,valid = self.get_signals_and_times_from_file(shot.shot_number,shot.t_disrupt) 
+            signals,times,t_min,t_max,t_thresh,valid = self.get_signals_and_times_from_file(shot.number,shot.t_disrupt) 
             #cut and resample
             signals,ttd = self.cut_and_resample_signals(times,signals,t_min,t_max,shot.is_disruptive)
 
@@ -185,9 +209,8 @@ class Preprocessor():
             shot.save(processed_prepath)
 
         else:
-            shot = Shot(number = shot_number)
-            shot.restore(prepath,light=True)
-            print('shot_number {} exists.'.format(shot_number))
+            shot.restore(processed_prepath,light=True)
+            print('shot_number {} exists.'.format(shot.number))
         shot.make_light()
         return shot 
 
@@ -199,6 +222,7 @@ class Preprocessor():
         t_thresh = -1
         signals = []
         times = []
+        conf = self.conf
         signal_prepath = conf['paths']['signal_prepath']
         signals_dirs = conf['paths']['signals_dirs']
         current_index = conf['data']['current_index']
@@ -232,8 +256,8 @@ class Preprocessor():
 
 
     def cut_and_resample_signals(self,times,signals,t_min,t_max,is_disruptive):
-        dt = conf['data']['dt']
-        T_max = conf['data']['T_max']
+        dt = self.conf['data']['dt']
+        T_max = self.conf['data']['T_max']
 
         #resample signals
         signals_processed = []
@@ -272,8 +296,39 @@ class ShotList():
         for number,t in zip(shot_numbers,disruption_times):
             self.append(Shot(number=number,t_disrupt=t))
 
+    def split_train_test(self,conf):
+        shot_list_dir = conf['paths']['shot_list_dir']
+        shot_files = conf['paths']['shot_files']
+        shot_files_test = conf['paths']['shot_files_test']
+        train_frac = conf['training']['train_frac']
+        shuffle_training = conf['training']['shuffle_training']
+        #split randomly
+        if len(shot_files_test) == 0:
+            shots_train,shots_test = train_test_split(self.shots,train_frac,shuffle_training)
+            return ShotList(shots_train), ShotList(shots_test)
+        #train and test list given
+        else:
+            use_shots_train = int(round(train_frac*use_shots))
+            use_shots_test = int(round((1-train_frac)*use_shots))
+            shot_numbers_train,_ = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+            shot_numbers_test,_ = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files_test)
+
+            shots_train = self.filter_by_number(shot_numbers_train)
+            shots_test = self.filter_by_number(shot_numbers_test)
+
+            return shots_train.random_sublist(use_shots_train),shots_test.random_sublist(use_shots_test)
+
+
+    def filter_by_number(self,numbers):
+        new_shot_list = ShotList()
+        numbers = set(numbers)
+        for shot in self.shots:
+            if shot.number in numbers:
+                new_shot_list.append(shot)
+        return new_shot_list
+
     def num_disruptive(self):
-        return len([shot for shot in self.shots if shot.is_disruptive()])
+        return len([shot for shot in self.shots if shot.is_disruptive_shot()])
 
     def __len__(self):
         return len(self.shots) 
@@ -281,8 +336,11 @@ class ShotList():
     def __iter__(self):
         return self.shots.__iter__()
 
+    def next(self):
+        return self.shots.next()
+
     def __add__(self,other_list):
-        self.shots += other_list.shots
+        return self.shots + other_list.shots
 
 
     def random_sublist(self,num):
@@ -319,7 +377,17 @@ class Shot():
         self.t_disrupt = t_disrupt
         if t_disrupt is not None:
             self.is_disruptive = Shot.is_disruptive_given_disruption_time(t_disrupt)
- 
+
+    def __str__(self):
+        string = 'number: {}\n'.format(self.number)
+        string += 'signals: {}\n'.format(self.signals )
+        string += 'ttd: {}\n'.format(self.ttd )
+        string += 'valid: {}\n'.format(self.valid )
+        string += 'is_disruptive: {}\n'.format(self.is_disruptive)
+        string += 't_disrupt: {}\n'.format(self.t_disrupt)
+        return string
+     
+
     def get_number(self):
         return self.number
 
@@ -329,7 +397,7 @@ class Shot():
     def is_valid(self):
         return self.valid
 
-    def is_disruptive(self):
+    def is_disruptive_shot(self):
         return self.is_disruptive
 
     def save(self,prepath):
@@ -358,7 +426,7 @@ class Shot():
             self.ttd = dat['ttd']
   
     def previously_saved(self,prepath):
-        save_path = self.get_save_path(prepath,prepath.number)
+        save_path = self.get_save_path(prepath)
         return os.path.isfile(save_path)
 
     def make_light(self):
@@ -401,10 +469,7 @@ class LossHistory(Callback):
         self.losses.append(logs.get('loss'))
 
 
-def clean_shots_lists(shots_lists_dir):
-    paths = [join(shots_lists_dir, f) for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
-    for path in paths:
-        clean_shots_list(path)
+
 
 
 def append_to_filename(path,to_append):
@@ -413,18 +478,7 @@ def append_to_filename(path,to_append):
     return new_path
 
 
-def clean_shots_list(path):
-    data = loadtxt(path)
-    ending_idx = path.rfind('.')
-    new_path = append_to_filename(path,'_clear')
-    if len(shape(data)) < 2:
-        #nondisruptive
-        nd_times = -1.0*ones_like(data)
-        data_two_column = vstack((data,nd_times)).transpose()
-        savetxt(new_path,data_two_column,fmt = '%d %f')
-        print('created new file: {}'.format(new_path))
-        print('deleting old file: {}'.format(path))
-        os.remove(path)
+
 
 
 def resample_signal(t,sig,tmin,tmax,dt):
@@ -724,10 +778,27 @@ def array_to_path_and_external_pred_cut(arr,res,length,skip,return_sequences=Fal
 
 
 def train_test_split(x,frac,shuffle_data=False):
+    if not isinstance(x,ndarray):
+        return train_test_split_robust(x,frac,shuffle_data)
     mask = array(range(len(x))) < frac*len(x)
     if shuffle_data:
         shuffle(mask)
     return x[mask],x[~mask]
+
+def train_test_split_robust(x,frac,shuffle_data=False):
+    mask = array(range(len(x))) < frac*len(x)
+    if shuffle_data:
+        shuffle(mask)
+    train = []
+    test = []
+    for (i,_x) in enumerate(x):
+        if mask[i]:
+            train.append(_x)
+        if not mask[i]:
+            test.append(_x)
+    return train,test
+
+
 
 def train_test_split_all(x,frac,shuffle_data=True):
     groups = []
