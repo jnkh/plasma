@@ -533,6 +533,7 @@ def get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
 
 
 
+
 def bool_to_int(predicate):
     return 1 if predicate else 0
 
