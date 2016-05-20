@@ -58,7 +58,8 @@ loader = Loader(conf,nn)
 print("...done")
 
 
-
+##Need to import later because accessing the GPU from several processes via multiprocessing
+## gives weird errors.
 from keras.utils.generic_utils import Progbar 
 from model_builder import build_model, LossHistory
 
@@ -120,7 +121,7 @@ y_gold_train = []
 for (i,shot) in enumerate(shot_list_train):
     test_model.reset_states()
     print('Shot {}/{}'.format(i,num_shots))
-    X,y = loader.load_as_X_y(conf,shot,stateful=True,prediction_mode=True)
+    X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
     shot_length = X.shape[0]
     y_prime_train_curr = []
