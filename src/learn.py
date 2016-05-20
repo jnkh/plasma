@@ -96,7 +96,6 @@ for e in range(num_epochs):
         print('Shots {}/{}'.format(i,len(shots_array)))
         start = time.time()
         X_train,y_train = load_shot_as_X_y(conf,shot,stateful=True)
-        print('loaded shot in {} seconds'.format(time.time() - start))
 
         # print('Shots {}/{}'.format(len(shots_array)*(i+1),num_shots_train))
         # for (X_train,y_train) in X_y_train_list:
