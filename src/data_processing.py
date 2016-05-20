@@ -16,6 +16,390 @@ from os.path import isfile, join
 from keras.callbacks import Callback
 
 
+def _pickle_method(method):
+    func_name = method.im_func.__name__
+    obj = method.im_self
+    cls = method.im_class
+    return _unpickle_method, (func_name, obj, cls)
+
+def _unpickle_method(func_name, obj, cls):
+    for cls in cls.mro():
+        try:
+            func = cls.__dict__[func_name]
+        except KeyError:
+            pass
+        else:
+           break
+    return func.__get__(obj, cls)
+
+import copy_reg
+import types
+copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)
+
+
+#######NORMALIZATION##########
+
+
+
+class Normalizer():
+
+    def __init__(self,conf):
+        self.conf = conf
+        self.stats = 0
+
+    def train(self):
+        conf = self.conf
+        #only use training shots here!! "Don't touch testing shots"
+        shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
+        shot_list_dir = conf['paths']['shot_list_dir']
+        use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
+        return self.train_on_files(shot_list_dir,shot_files,use_shots)
+
+
+    def train_on_files(self,shot_list_dir,shot_files,use_shots):
+        conf = self.conf
+        shot_list = ShotList()
+        shot_list.load_from_files(shot_list_dir,shot_files)
+
+        normalizer_path = conf['paths']['normalizer_path']
+        recompute = conf['data']['recompute_normalization']
+        used_shots = []
+        shot_list_picked = shot_list.random_sublist(use_shots) 
+        num_processed = 0
+        num_disruptive = 0
+
+
+        if recompute or not self.previously_saved_stats(normalizer_path):
+            pool = mp.Pool()
+            mapping_fn = partial(self.train_on_single_shot)
+            print('running in parallel on {} processes'.format(pool._processes))
+            start_time = time.time()
+            for (i,stats) in enumerate(pool.imap_unordered(mapping_fn,shot_list_picked)):
+                print('{}/{}'.format(i,len(indices)))
+                if stats is not None:
+                    self.incorporate_stats(stats)
+                    num_processed += 1
+
+            pool.close()
+            pool.join()
+            print('Finished Preprocessing {} files in {} seconds for normalization'.format(len(indices),time.time()-start_time))
+            self.save_stats()
+        else:
+            self.load_stats()
+
+
+    def train_on_single_shot(self,shot):
+        assert(type(shot) == Shot)
+        processed_prepath = conf['paths']['processed_prepath']
+        shot.restore(processed_prepath)
+        stats = None
+
+        if valid:
+            stats = self.extract_stats(shot) 
+        else:
+            print('Warning: shot {} not valid, omitting'.format(shot))
+        return stats
+
+
+    def save_stats(self,path):
+        # standard_deviations = dat['standard_deviations']
+        # num_processed = dat['num_processed']
+        # num_disruptive = dat['num_disruptive']
+        np.savez(path,stats = self.stats)
+        print('saving normalization data')
+
+    def load_stats(self,path):
+        assert(self.previously_saved_stats(path))
+        dat = load(path)
+        self.stats = dat['stats']
+        print('loading normalization data')
+        #print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
+
+    def previously_saved_stats(self,path):
+        return os.path.isfile(path)
+
+
+    def extract_stats(self,shot):
+        return 1
+
+    def incorporate_stats(self,stats):
+        self.stats += stats
+        # standard_deviations = np.row_stack(standard_deviations)
+        # standard_deviations = np.median(standard_deviations,0)
+
+
+
+
+class Preprocessor():
+
+    def __init__(self,conf):
+        self.conf = conf
+
+    def preprocess_all(self):
+        conf = self.conf
+        shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
+        shot_list_dir = conf['paths']['shot_list_dir']
+        use_shots = conf['data']['use_shots']
+        return self.preprocess_from_files(shot_list_dir,shot_files,use_shots)
+
+
+    def preprocess_from_files(self,shot_list_dir,shot_files,use_shots):
+        #all shots, including invalid ones
+        shot_list = ShotList()
+        shot_list.load_from_files(shot_list_dir,shot_files)
+
+        shot_list_picked = shot_list.random_sublist(use_shots)
+        #empty
+        used_shots = ShotList()
+
+        pool = mp.Pool()
+        mapping_fn = partial(self.preprocess_single_file)
+
+        print('running in parallel on {} processes'.format(pool._processes))
+        start_time = time.time()
+        for (i,shot) in enumerate(pool.imap_unordered(mapping_fn,shot_list_picked)):
+            print('{}/{}'.format(i,len(indices)))
+            used_shots.append_if_valid(shot)
+
+        pool.close()
+        pool.join()
+        print('Finished Preprocessing {} files in {} seconds'.format(len(indices),time.time()-start_time))
+        print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
+        print('{}/{} disruptive shots'.format(used_shots.num_disruptive(),len(used_shots)))
+        return used_shots 
+
+    def preprocess_single_file(self,shot):
+        processed_prepath = self.conf['paths']['processed_prepath']
+        recompute = self.conf['data']['recompute']
+        # print('({}/{}): '.format(num_processed,use_shots))
+        if recompute or not shot.previously_saved(processed_prepath):
+            # print('(re)computing shot_number {}'.format(shot_number),end='')
+          #get minmax times
+            signals,times,t_min,t_max,t_thresh,valid = self.get_signals_and_times_from_file(shot.shot_number,shot.t_disrupt) 
+            #cut and resample
+            signals,ttd = self.cut_and_resample_signals(times,signals,t_min,t_max,shot.is_disruptive)
+
+            shot.signals = signals
+            shot.ttd = ttd
+            shot.valid = valid
+            shot.save(processed_prepath)
+
+        else:
+            shot = Shot(number = shot_number)
+            shot.restore(prepath,light=True)
+            print('shot_number {} exists.'.format(shot_number))
+        shot.make_light()
+        return shot 
+
+
+    def get_signals_and_times_from_file(self,shot,t_disrupt):
+        valid = True
+        t_min = -1
+        t_max = Inf
+        t_thresh = -1
+        signals = []
+        times = []
+        signal_prepath = conf['paths']['signal_prepath']
+        signals_dirs = conf['paths']['signals_dirs']
+        current_index = conf['data']['current_index']
+        current_thresh = conf['data']['current_thresh']
+        for (i,dirname) in enumerate(signals_dirs):
+            data = loadtxt(get_individual_shot_file(signal_prepath+dirname + '/',shot))
+            t = data[:,0]
+            sig = data[:,1]
+            t_min = max(t_min,t[0])
+            t_max = min(t_max,t[-1])
+            if i == current_index:
+                if not (any(abs(sig) > current_thresh)):
+                    valid = False
+                    print('Shot {} does not exceed current threshold... invalid.'.format(shot))
+                else:
+                    index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
+                    t_thresh = t[index_thresh]
+            signals.append(sig)
+            times.append(t)
+        if not valid:
+            t_thresh = t_min
+        assert(t_thresh >= t_min)
+        assert(t_disrupt <= t_max)
+        if t_disrupt >= 0:
+            assert(t_thresh < t_disrupt)
+            t_max = t_disrupt
+        t_min = t_thresh
+
+        return signals,times,t_min,t_max,t_thresh,valid
+
+
+
+    def cut_and_resample_signals(self,times,signals,t_min,t_max,is_disruptive):
+        dt = conf['data']['dt']
+        T_max = conf['data']['T_max']
+
+        #resample signals
+        signals_processed = []
+        assert(len(signals) == len(times) and len(signals) > 0)
+        tr = 0
+        for i in range(len(signals)):
+            tr,sigr = cut_and_resample_signal(times[i],signals[i],t_min,t_max,dt)
+            signals_processed.append(sigr)
+
+        signals = signals_processed
+        signals = np.column_stack(signals)
+        print('not whitening at all')
+
+        if is_disruptive:
+            ttd = max(tr) - tr
+            ttd = np.clip(ttd,0,T_max)
+        else:
+            ttd = T_max*np.ones_like(tr)
+        ttd = log10(ttd + 1.0*dt/10)
+        return signals,ttd
+
+
+
+
+
+
+class ShotList():
+    def __init__(self,shots=None):
+        self.shots = []
+        if shots is not None:
+            assert(all([isinstance(shot,Shot) for shot in shots]))
+            self.shots = [shot for shot in shots]
+
+    def load_from_files(self,shot_list_dir,shot_files):
+        shot_numbers,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
+        for number,t in zip(shot_numbers,disruption_times):
+            self.append(Shot(number=number,t_disrupt=t))
+
+    def num_disruptive(self):
+        return len([shot for shot in self.shots if shot.is_disruptive()])
+
+    def __len__(self):
+        return len(self.shots) 
+
+    def __iter__(self):
+        return self.shots.__iter__()
+
+    def __add__(self,other_list):
+        self.shots += other_list.shots
+
+
+    def random_sublist(self,num):
+        num = min(num,len(self))
+        shots_picked = np.random.choice(self.shots,size=num,replace=False)
+        return ShotList(shots_picked)
+
+
+
+    def as_list(self):
+        return self.shots
+
+    def append(self,shot):
+        assert(isinstance(shot,Shot))
+        self.shots.append(shot)
+
+    def append_if_valid(self,shot):
+        if shot.valid:
+            self.append(shot)
+            return True
+        else:
+            print('Warning: shot {} not valid, omitting'.format(shot))
+            return False
+
+        
+
+class Shot():
+    def __init__(self,number=None,signals=None,ttd=None,valid=None,is_disruptive=None,t_disrupt=None):
+        self.number = number #Shot number
+        self.signals = signals 
+        self.ttd = ttd 
+        self.valid =valid 
+        self.is_disruptive = is_disruptive
+        self.t_disrupt = t_disrupt
+        if t_disrupt is not None:
+            self.is_disruptive = Shot.is_disruptive_given_disruption_time(t_disrupt)
+ 
+    def get_number(self):
+        return self.number
+
+    def get_signals(self):
+        return self.signals
+
+    def is_valid(self):
+        return self.valid
+
+    def is_disruptive(self):
+        return self.is_disruptive
+
+    def save(self,prepath):
+        save_path = self.get_save_path(prepath)
+        savez(save_path,number=self.number,valid=self.valid,is_disruptive=self.is_disruptive,
+            signals=self.signals,ttd=self.ttd)
+        print('...saved shot_number {}'.format(self.number))
+
+    def get_save_path(self,prepath):
+        return get_individual_shot_file(prepath,self.number,'.npz')
+
+    def restore(self,prepath,light=False):
+        assert(self.previously_saved(prepath))
+        save_path = self.get_save_path(prepath)
+        dat = load(save_path)
+
+        self.number = dat['number']
+        self.valid = dat['valid']
+        self.is_disruptive = dat['is_disruptive']
+
+        if light:
+            self.signals = None
+            self.ttd = None 
+        else:
+            self.signals = dat['signals']
+            self.ttd = dat['ttd']
+  
+    def previously_saved(self,prepath):
+        save_path = self.get_save_path(prepath,prepath.number)
+        return os.path.isfile(save_path)
+
+    def make_light(self):
+        self.signals = None
+        self.ttd = None
+
+    @staticmethod
+    def is_disruptive_given_disruption_time(t):
+        return t >= 0
+
+
+
+
+def get_shots_and_disruption_times(shots_and_disruption_times_path):
+    data = loadtxt(shots_and_disruption_times_path,ndmin=1,dtype={'names':('num','disrupt_times'),
+                                                              'formats':('i4','f4')})
+    shots = array(zip(*data)[0])
+    disrupt_times = array(zip(*data)[1])
+    return shots, disrupt_times
+
+
+def get_multiple_shots_and_disruption_times(base_path,endings):
+    all_shots = []
+    all_disruption_times = []
+    for ending in endings:
+        path = base_path + ending
+        shots,disruption_times = get_shots_and_disruption_times(path)
+        all_shots.append(shots)
+        all_disruption_times.append(disruption_times)
+    return concatenate(all_shots),concatenate(all_disruption_times)
+
+
+
+
+class LossHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
 
 def clean_shots_lists(shots_lists_dir):
     paths = [join(shots_lists_dir, f) for f in listdir(shots_lists_dir) if isfile(join(shots_lists_dir, f))]
@@ -126,87 +510,7 @@ def get_signal_and_ttd(signal_prepath,signals_dirs,processed_prepath,shot,t_min,
 
 
 
-def get_signals_and_times_from_file(shot,t_disrupt,conf):
-    valid = True
-    t_min = -1
-    t_max = Inf
-    t_thresh = -1
-    signals = []
-    times = []
-    signal_prepath = conf['paths']['signal_prepath']
-    signals_dirs = conf['paths']['signals_dirs']
-    current_index = conf['data']['current_index']
-    current_thresh = conf['data']['current_thresh']
-    for (i,dirname) in enumerate(signals_dirs):
-        data = loadtxt(get_individual_shot_file(signal_prepath+dirname + '/',shot))
-        t = data[:,0]
-        sig = data[:,1]
-        t_min = max(t_min,t[0])
-        t_max = min(t_max,t[-1])
-        if i == current_index:
-            if not (any(abs(sig) > current_thresh)):
-                valid = False
-                print('Shot {} does not exceed current threshold... invalid.'.format(shot))
-            else:
-                index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
-                t_thresh = t[index_thresh]
-        signals.append(sig)
-        times.append(t)
-    if not valid:
-        t_thresh = t_min
-    assert(t_thresh >= t_min)
-    assert(t_disrupt <= t_max)
-    if t_disrupt >= 0:
-        assert(t_thresh < t_disrupt)
-        t_max = t_disrupt
-    t_min = t_thresh
 
-    return signals,times,t_min,t_max,t_thresh,valid
-
-
-
-def cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations = None,whiten=True):
-    dt = conf['data']['dt']
-    T_max = conf['data']['T_max']
-
-    #resample signals
-    signals_processed = []
-    assert(len(signals) == len(times) and len(signals) > 0)
-    tr = 0
-    for i in range(len(signals)):
-        tr,sigr = cut_and_resample_signal(times[i],signals[i],t_min,t_max,dt)
-        signals_processed.append(sigr)
-
-    signals = signals_processed
-    signals = np.column_stack(signals)
-    if standard_deviations is None and whiten:
-        signals = whiten(signals)
-        print('warning: whitening each signal individually')
-    elif whiten:
-        # print('STD GLOBAL')
-        # print(standard_deviations)
-        # print('STD')
-        # print(std(signals,0))
-        # print('MEAN')
-        # print(mean(signals,0))
-        # print('MEAN ABS')
-        # print(mean(np.abs(signals),0))
-        # print('MIN')
-        # print(np.min(signals,0))
-        # print('MAX')
-        # print(np.max(signals,0))
-        signals /= standard_deviations
-    if not whiten:
-        print('not whitening at all')
-
-
-    if is_disruptive:
-        ttd = max(tr) - tr
-        ttd = np.clip(ttd,0,T_max)
-    else:
-        ttd = T_max*np.ones_like(tr)
-    ttd = log10(ttd + 1.0*dt/10)
-    return signals,ttd
 
 def get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf):
     dt = conf['data']['dt']
@@ -227,138 +531,7 @@ def get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
 
 
 
-def preprocess_all_shots(conf):
-    shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
-    shot_list_dir = conf['paths']['shot_list_dir']
-    use_shots = conf['data']['use_shots']
-    return preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots)
 
-
-def preprocess_all_shots_from_files(conf,shot_list_dir,shot_files,use_shots,whiten=True):
-    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
-
-    standard_deviations = preprocess_data_whitener(conf)
-
-    dt = conf['data']['dt']
-    processed_prepath = conf['paths']['processed_prepath']
-    recompute = conf['data']['recompute']
-    use_shots = min(use_shots,len(shots))
-    used_shots = []
-    disruptive = []
-    indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
-    num_processed = 0
-    pool = mp.Pool()
-    mapping_fn = partial(preprocess_single_shot_from_file,conf=conf,shots=shots,disruption_times=disruption_times,recompute=recompute,processed_prepath=processed_prepath,standard_deviations=standard_deviations,whiten=whiten)
-
-    print('running in parallel on {} processes'.format(pool._processes))
-    start_time = time.time()
-    for (i,return_data) in enumerate(pool.imap_unordered(mapping_fn,indices)):
-        print('{}/{}'.format(i,len(indices)))
-        valid,is_disruptive,shot = return_data
-        if valid:
-            used_shots.append(shot)
-            disruptive.append(bool_to_int(is_disruptive))
-        else:
-            print('Warning: shot {} not valid, omitting'.format(shot))
-
-    pool.close()
-    pool.join()
-    print('Finished Preprocessing {} files in {} seconds'.format(len(indices),time.time()-start_time))
-    print('Omitted {} shots of {} total.'.format(use_shots - len(used_shots),use_shots))
-    print('{}/{} disruptive shots'.format(sum(disruptive),len(disruptive)))
-    return array(used_shots), array(disruptive)
-
-def preprocess_single_shot_from_file(j,conf,shots,disruption_times,recompute,processed_prepath,standard_deviations,whiten=whiten):
-    # num_processed += 1
-    # print('({}/{}): '.format(num_processed,use_shots))
-    shot = shots[j]
-    t_disrupt = disruption_times[j]
-    load_file_path = get_individual_shot_file(processed_prepath,shot,'.npz')
-    if recompute or not os.path.isfile(load_file_path):
-        # print('(re)computing shot {}'.format(shot),end='')
-        is_disruptive =  t_disrupt >= 0
-      #get minmax times
-        signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
-        #cut and resample
-        signals,ttd = cut_and_resample_signals(times,signals,t_min,t_max,is_disruptive,conf,standard_deviations,whiten=whiten)
-
-        savez(load_file_path,signals = signals,ttd = ttd,is_disruptive=is_disruptive,valid=valid)
-        print('...saved shot {}'.format(shot))
-    else:
-        print('shot {} exists.'.format(shot))
-        dat = load(load_file_path)
-        valid = dat['valid']
-        is_disruptive = dat['is_disruptive']
-    return valid,is_disruptive,shot
-    
-
-def preprocess_data_whitener(conf):
-    #only use training shots here!! "Don't touch testing shots"
-    shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
-    shot_list_dir = conf['paths']['shot_list_dir']
-    use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
-    return preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots)
-
-
-def preprocess_data_whitener_from_files(conf,shot_list_dir,shot_files,use_shots):
-    shots,disruption_times = get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
-
-    dt = conf['data']['dt']
-    normalizer_path = conf['paths']['normalizer_path']
-    recompute = conf['data']['recompute_normalization']
-    use_shots = min(use_shots,len(shots))
-    used_shots = []
-    disruptive = []
-    indices = np.random.choice(arange(len(shots)),size=use_shots,replace=False)
-    num_processed = 0
-    standard_deviations = []#zeros(conf['data']['num_signals'])
-    mins = []
-    maxs = []
-    num_disruptive = 0
-
-
-    if recompute or not os.path.isfile(normalizer_path):
-        pool = mp.Pool()
-        mapping_fn = partial(preprocess_data_whitener_from_single_file,conf=conf,shots=shots,disruption_times=disruption_times)
-        print('running in parallel on {} processes'.format(pool._processes))
-        start_time = time.time()
-        for (i,return_data) in enumerate(pool.imap_unordered(mapping_fn,indices)):
-            print('{}/{}'.format(i,len(indices)))
-            valid,is_disruptive,standard_deviations_curr = return_data
-            if valid:
-                standard_deviations.append(standard_deviations_curr)
-                num_processed += 1
-                num_disruptive += (1 if is_disruptive else 0)
-            else:
-                print('Warning: shot {} not valid, omitting'.format(shot))
-
-        pool.close()
-        pool.join()
-        print('Finished Preprocessing {} files in {} seconds for normalization'.format(len(indices),time.time()-start_time))
-        standard_deviations = np.row_stack(standard_deviations)
-        standard_deviations = np.median(standard_deviations,0)
-        np.savez(normalizer_path,standard_deviations = standard_deviations,num_processed = num_processed,num_disruptive = num_disruptive)
-        print('saving normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
-    else:
-        dat = load(normalizer_path)
-        standard_deviations = dat['standard_deviations']
-        num_processed = dat['num_processed']
-        num_disruptive = dat['num_disruptive']
-        print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
-    return standard_deviations
-
-
-def preprocess_data_whitener_from_single_file(j,conf,shots,disruption_times):
-    shot = shots[j]
-    print('(re)computing shot {} for normalization'.format(shot))
-    t_disrupt = disruption_times[j]
-    is_disruptive =  t_disrupt >= 0
-  #get minmax times
-    signals,times,t_min,t_max,t_thresh,valid = get_signals_and_times_from_file(shot,t_disrupt,conf) 
-    #cut and resample
-    standard_deviations_curr = get_normalizations_for_signals(times,signals,t_min,t_max,is_disruptive,conf)
-
-    return valid, is_disruptive, standard_deviations_curr
 
 def bool_to_int(predicate):
     return 1 if predicate else 0
@@ -665,31 +838,5 @@ def get_current_threshold_time(signal_prepath,current_dir,shot):
     t_thresh = t[index_thresh]
     return t_thresh
 
-def get_shots_and_disruption_times(shots_and_disruption_times_path):
-    data = loadtxt(shots_and_disruption_times_path,ndmin=1,dtype={'names':('num','disrupt_times'),
-                                                              'formats':('i4','f4')})
-    shots = array(zip(*data)[0])
-    disrupt_times = array(zip(*data)[1])
-    return shots, disrupt_times
 
-
-def get_multiple_shots_and_disruption_times(base_path,endings):
-    all_shots = []
-    all_disruption_times = []
-    for ending in endings:
-        path = base_path + ending
-        shots,disruption_times = get_shots_and_disruption_times(path)
-        all_shots.append(shots)
-        all_disruption_times.append(disruption_times)
-    return concatenate(all_shots),concatenate(all_disruption_times)
-
-
-
-
-class LossHistory(Callback):
-    def on_train_begin(self, logs={}):
-        self.losses = []
-
-    def on_batch_end(self, batch, logs={}):
-        self.losses.append(logs.get('loss'))
 
