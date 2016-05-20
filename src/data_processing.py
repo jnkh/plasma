@@ -324,6 +324,7 @@ class ShotList():
         shot_files_test = conf['paths']['shot_files_test']
         train_frac = conf['training']['train_frac']
         shuffle_training = conf['training']['shuffle_training']
+        use_shots = conf['data']['use_shots']
         #split randomly
         if len(shot_files_test) == 0:
             shots_train,shots_test = train_test_split(self.shots,train_frac,shuffle_training)
