@@ -438,9 +438,9 @@ class Shot():
         save_path = self.get_save_path(prepath)
         dat = load(save_path)
 
-        self.number = dat['number']
-        self.valid = dat['valid']
-        self.is_disruptive = dat['is_disruptive']
+        self.number = dat['number'][()]
+        self.valid = dat['valid'][()]
+        self.is_disruptive = dat['is_disruptive'][()]
 
         if light:
             self.signals = None
