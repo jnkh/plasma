@@ -25,13 +25,10 @@ import numpy as np
 
 
 #keras
-from keras.utils.generic_utils import Progbar 
-from keras.callbacks import Callback
 
 #my classes
 from conf import conf
 from data_processing import *
-from model_builder import build_model, LossHistory
 
 
 num_epochs = conf['training']['num_epochs']
@@ -59,6 +56,11 @@ nn = Normalizer(conf)
 nn.train()
 loader = Loader(conf,nn)
 print("...done")
+
+
+
+from keras.utils.generic_utils import Progbar 
+from model_builder import build_model, LossHistory
 
 print('Build model...',end='')
 train_model = build_model(conf,False)
