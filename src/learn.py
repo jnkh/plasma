@@ -16,7 +16,8 @@ This work was supported by the DOE CSGF program.
 
 from __future__ import print_function
 import datetime,time,os.path
-from pprint import pformat
+# from pprint import pformat
+import dill
 
 #matplotlib
 import matplotlib
@@ -73,7 +74,7 @@ num_shots_test = len(shot_list_test)
 num_shots = num_shots_train + num_shots_test
 
 print('Training on {} shots, testing on {} shots'.format(num_shots_train,num_shots_test))
-unique_configuration_id = hash(pformat(conf))
+unique_configuration_id = hash(dill.dumps(conf))
 for e in range(num_epochs):
 
     #history
