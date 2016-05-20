@@ -345,6 +345,7 @@ class ShotList():
     def filter_by_number(self,numbers):
         new_shot_list = ShotList()
         numbers = set(numbers)
+	print(66027 in numbers)
         for shot in self.shots:
             if shot.number in numbers:
                 new_shot_list.append(shot)
