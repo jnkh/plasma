@@ -55,12 +55,14 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'length' : 100,
+        'length' : 128,
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 20,
         'rnn_type' : 'LSTM',
         'optimizer' : 'adam',
+        'loss' : 'binary_crossentropy',
+        'stateful' : True,
         'dropout_prob' : 0.1,
     },
 

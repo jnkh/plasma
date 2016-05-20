@@ -18,9 +18,12 @@ P_thresh_opt = 0.04
 
 verbose=False
 
-pred,truth,disruptive_curr,length = load_ith_file(file_num,mode,verbose=verbose)
 
-pred_train,truth_train,disruptive_curr_train,length = load_ith_file(file_num,'train',verbose=verbose)
+results_dir = '../data/results/'
+
+pred,truth,disruptive_curr,length = load_ith_file(file_num,results_dir,mode,verbose=verbose)
+
+pred_train,truth_train,disruptive_curr_train,length = load_ith_file(file_num,results_dir,'train',verbose=verbose)
 
 #compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
