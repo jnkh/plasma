@@ -4,7 +4,8 @@ import os
 
 
 def load_ith_file(i,mode='test',verbose=True):
-    results_dir = '/p/datad/jkatesha/data/results/'
+    #results_dir = '/p/datad/jkatesha/data/results/'
+    results_dir = '../data/results/'
     results_files = os.listdir(results_dir)
     print(results_files)
     dat = load(results_dir + results_files[i])

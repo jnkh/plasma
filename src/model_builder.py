@@ -31,6 +31,6 @@ def build_model(conf,predict):
 	model.add(Dropout(dropout_prob))
 	model.add(TimeDistributed(Dense(1)))
 	model.add(Activation('sigmoid')) #add if probabilistic output
-	model.compile(loss='binary_crossentropy', optimizer=optimizer)
+	model.compile(loss='mse', optimizer=optimizer)
 	#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 	return model
