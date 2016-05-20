@@ -4,12 +4,27 @@ from keras.layers.recurrent import LSTM, SimpleRNN
 from keras.utils.data_utils import get_file
 from keras.layers.wrappers import TimeDistributed
 
+from keras.callbacks import Callback
+
+
+
+class LossHistory(Callback):
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
+    def on_batch_end(self, batch, logs={}):
+        self.losses.append(logs.get('loss'))
+
+
+
+
 
 def build_model(conf,predict):
 	model_conf = conf['model']
 	rnn_size = model_conf['rnn_size']
 	rnn_type = model_conf['rnn_type']
 	optimizer = model_conf['optimizer']
+	loss_fn = model_conf['loss']
 	dropout_prob = model_conf['dropout_prob']
 	length = model_conf['length']
 	num_signals = conf['data']['num_signals']
@@ -31,6 +46,6 @@ def build_model(conf,predict):
 	model.add(Dropout(dropout_prob))
 	model.add(TimeDistributed(Dense(1)))
 	model.add(Activation('sigmoid')) #add if probabilistic output
-	model.compile(loss='binary_crossentropy', optimizer=optimizer)
+	model.compile(loss=loss_fn, optimizer=optimizer)
 	#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 	return model
