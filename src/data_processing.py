@@ -120,6 +120,7 @@ class Normalizer():
             self.save_stats()
         else:
             self.load_stats()
+	print('stats: {}'.format(self.minimums,self.maximums))
 
 
     def train_on_single_shot(self,shot):
@@ -345,7 +346,6 @@ class ShotList():
     def filter_by_number(self,numbers):
         new_shot_list = ShotList()
         numbers = set(numbers)
-	print(66027 in numbers)
         for shot in self.shots:
             if shot.number in numbers:
                 new_shot_list.append(shot)
