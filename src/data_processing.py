@@ -37,6 +37,9 @@ class Normalizer():
         self.remapper = conf['data']['ttd_remapper']
 
 
+    def __str__(self):
+        return('Normalizer.\nminimums: {}\nmaximums: {}'.format(self.minimums,self.maximums))
+
     def extract_stats(self,shot):
         stats = Stats()
         if shot.valid:
@@ -120,7 +123,7 @@ class Normalizer():
             self.save_stats()
         else:
             self.load_stats()
-	print('stats: {}'.format(self.minimums,self.maximums))
+        print(self)
 
 
     def train_on_single_shot(self,shot):
