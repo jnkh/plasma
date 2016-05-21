@@ -479,10 +479,9 @@ class Loader(object):
         self.normalizer = normalizer
 
     def load_as_X_y(self,shot,verbose=False,prediction_mode=False):
-        assert(isinstance(shot,Shot))
+        assert(shot.valid)
         prepath = self.conf['paths']['processed_prepath']
         shot.restore(prepath)
-        assert(shot.valid)
 
         if self.normalizer is not None:
             self.normalizer.apply(shot)
