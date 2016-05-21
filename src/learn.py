@@ -141,7 +141,7 @@ for (i,shot) in enumerate(shot_list_train):
     y_prime_train_curr = np.squeeze(np.vstack(y_prime_train_curr),axis=1)
     y_prime_train.append(y_prime_train_curr)
     y_gold_train.append(np.squeeze(y,axis=1))
-    disruptive_train.append(shot.shot_is_disruptive())
+    disruptive_train.append(shot.is_disruptive_shot())
 
 
 for (i,shot) in enumerate(shot_list_test):
@@ -157,7 +157,7 @@ for (i,shot) in enumerate(shot_list_test):
     y_prime_test_curr = np.squeeze(np.vstack(y_prime_test_curr),axis=1)
     y_prime_test.append(y_prime_test_curr)
     y_gold_test.append(np.squeeze(y,axis=1))
-    disruptive_test.append(shot.shot_is_disruptive())
+    disruptive_test.append(shot.is_disruptive_shot())
 
 
 
