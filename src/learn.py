@@ -25,7 +25,7 @@ import numpy as np
 
 #my classes
 from conf import conf
-from data_processing import *
+from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 
 num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
