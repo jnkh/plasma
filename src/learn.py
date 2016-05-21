@@ -86,7 +86,7 @@ e = model_builder.load_model_weights(train_model)
 print('{} epochs left to go'.format(num_epochs - 1 - e))
 while e < num_epochs-1:
     e += 1
-    print('Epoch {}/{}'.format(e+2,num_epochs))
+    print('Epoch {}/{}'.format(e+1,num_epochs))
     pbar =  Progbar(len(shot_list_train))
 
     #shuffle during every iteration
@@ -99,7 +99,7 @@ while e < num_epochs-1:
         train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
 
         print('Shots {}/{}'.format(i,len(shot_list_train)))
-        pbar.add(1, values=[("train loss", mean(history.losses))])
+        pbar.add(1, values=[("train loss", np.mean(history.losses))])
 
     model_builder.save_model_weights(train_model,e)
 print('...done')
