@@ -12,6 +12,7 @@ from __future__ import print_function
 from os import listdir,remove
 import os.path
 import time,random,sys
+from types import *
 
 from pylab import *
 import numpy as np
@@ -479,7 +480,7 @@ class Loader():
         self.normalizer = normalizer
 
     def load_as_X_y(self,shot,verbose=False,prediction_mode=False):
-        assert(isinstance(shot,Shot))
+        assert(type(shot) is data_processing.Shot)
         prepath = self.conf['paths']['processed_prepath']
         shot.restore(prepath)
         assert(shot.valid)
