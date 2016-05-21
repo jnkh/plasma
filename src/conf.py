@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
@@ -43,7 +43,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 100,
+        'use_shots' : 200,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -55,7 +55,7 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'length' : 128,
+        'length' : 64,
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 20,
@@ -74,7 +74,7 @@ conf = {
         'batch_size_small' : 256,
         'batch_size' : 256,
         'num_shots_at_once' :  25,
-        'num_epochs' : 4,
+        'num_epochs' : 2,
         'evaluate' : False,
    },
 }
