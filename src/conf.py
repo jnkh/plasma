@@ -44,7 +44,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 200,
+        'use_shots' : 2,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
