@@ -32,6 +32,7 @@ conf = {
         'processed_prepath' : base_path + 'data/processed_shots/',
         'normalizer_path' : base_path + 'data/normalization/normalization.npz',
         'results_prepath' : base_path + 'data/results/',
+        'model_save_path' : './tmp/'
    },
 
    'data': {
@@ -64,7 +65,6 @@ conf = {
         'loss' : 'binary_crossentropy',
         'stateful' : True,
         'dropout_prob' : 0.1,
-        'save_path' : './tmp/train_model'
     },
 
     'training': {
