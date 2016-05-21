@@ -65,7 +65,7 @@ class ModelBuilder():
 
 	def get_save_path(self,epoch):
 		unique_id = self.get_unique_id()
-		return self.conf['paths']['model_save_path'] + 'model.{}._epoch_.{}.h5'.format(unique_id,e)
+		return self.conf['paths']['model_save_path'] + 'model.{}._epoch_.{}.h5'.format(unique_id,epoch)
 
 
 	def load_model_weights(self,model):
