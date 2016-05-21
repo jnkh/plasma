@@ -17,7 +17,7 @@ class LossHistory(Callback):
 
 
 class ModelBuilder():
-	def __init__(conf):
+	def __init__(self,conf):
 		self.conf = conf
 
 	def get_unique_id(self):
