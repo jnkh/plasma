@@ -101,7 +101,7 @@ while e < num_epochs-1:
         print('Shots {}/{}'.format(i,len(shot_list_train)))
         pbar.add(1, values=[("train loss", mean(history.losses))])
 
-    model_builder.save_model_weights(train_model)
+    model_builder.save_model_weights(train_model,e)
 print('...done')
 
 
