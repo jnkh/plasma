@@ -74,7 +74,7 @@ class ModelBuilder():
 		if len(epochs) == 0:
 			print('no previous checkpoint found')
 			return -1
-		else
+		else:
 			max_epoch = max(epochs)
 			print('loading from epoch {}'.format(max_epoch))
 			model.load_weights(self.get_save_path(max_epoch))
@@ -92,7 +92,7 @@ class ModelBuilder():
 		unique_id = self.get_unique_id()
 		filenames = os.listdir(self.conf['model']['save_path'])
 		epochs = []
-		for file in filenames
+		for file in filenames:
 			curr_id,epoch = self.extract_id_and_epoch_from_filename(file)
 			if curr_id == unique_id:
 				epochs.append(epoch)
