@@ -90,7 +90,7 @@ class ModelBuilder():
 
 	def get_all_saved_files(self):
 		unique_id = self.get_unique_id()
-		filenames = os.listdir(self.conf['model']['save_path'])
+		filenames = os.listdir(self.conf['paths']['model_save_path'])
 		epochs = []
 		for file in filenames:
 			curr_id,epoch = self.extract_id_and_epoch_from_filename(file)
