@@ -16,7 +16,6 @@ This work was supported by the DOE CSGF program.
 
 from __future__ import print_function
 import datetime,time,os.path
-# from pprint import pformat
 import dill
 
 #matplotlib
@@ -24,13 +23,9 @@ import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 
-
-#keras
-
 #my classes
 from conf import conf
 from data_processing import *
-
 
 num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
@@ -44,13 +39,23 @@ else:
     batch_size = conf['training']['batch_size_large']
 
 
+#####################################################
+####################PREPROCESSING####################
+#####################################################
 
 print("preprocessing all shots",end='')
 pp = Preprocessor(conf)
 pp.clean_shot_lists()
 shot_list = pp.preprocess_all()
 shot_list_train,shot_list_test = shot_list.split_train_test(conf)
+num_shots = len(shot_list_train) + len(shot_list_test)
 print("...done")
+
+
+#####################################################
+####################Normalization####################
+#####################################################
+
 
 print("normalization",end='')
 nn = Normalizer(conf)
@@ -58,27 +63,30 @@ nn.train()
 loader = Loader(conf,nn)
 print("...done")
 
+#####################################################
+####################Training#########################
+#####################################################
+
 
 ##Need to import later because accessing the GPU from several processes via multiprocessing
 ## gives weird errors.
 from keras.utils.generic_utils import Progbar 
-from model_builder import build_model, LossHistory
+from model_builder import build_model, build_train_test_models, LossHistory
 
 print('Build model...',end='')
-train_model = build_model(conf,False)
-test_model = build_model(conf,True)
+model_builder = ModelBuilder(conf)
+train_model,test_model = model_builder.build_train_test_models(conf)
 print('...done')
 
-num_shots_train = len(shot_list_train)
-num_shots_test = len(shot_list_test)
-num_shots = num_shots_train + num_shots_test
+print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),len(shot_list_test)))
 
-print('Training on {} shots, testing on {} shots'.format(num_shots_train,num_shots_test))
-unique_configuration_id = hash(dill.dumps(conf))
-for e in range(num_epochs):
 
-    #history
-    print('Epoch {}/{}'.format(e+1,num_epochs))
+#load the latest epoch we did. Returns -1 if none exist yet
+e = model_builder.load_model_weights(train_model)
+print('{} epochs left to go'.format(num_epochs - 1 - e))
+while e < num_epochs-1
+    e += 1
+    print('Epoch {}/{}'.format(e+2,num_epochs))
     pbar =  Progbar(len(shot_list_train))
 
     #shuffle during every iteration
@@ -93,23 +101,18 @@ for e in range(num_epochs):
         print('Shots {}/{}'.format(i,len(shot_list_train)))
         pbar.add(1, values=[("train loss", mean(history.losses))])
 
-    train_model.save_weights('./tmp/train_model.{}._epoch_.{}.h5'.format(unique_configuration_id,e),overwrite=True)
-
+    model_builder.save_model_weights(train_model)
 print('...done')
 
+
+
+
+#####################################################
+####################Evaluating#######################
+#####################################################
+
 #load last model for testing
-test_model.load_weights('./tmp/train_model.{}._epoch_.{}.h5'.format(unique_configuration_id,(num_epochs-1)))
-
-# if conf['training']['evaluate']:
-#     print('evaluating model')
-#     for (i,shot) in enumerate(shots_test):
-#         print('Shot {}/{}'.format(i,num_shots_test))
-#         X,y = load_shot_as_X_y(conf,shot,stateful=True)
-#         res = train_model.evaluate(X,y,batch_size=batch_size_large)
-#         print(res)
-#     print('...done')
-
-
+model_builder.load_model_weights(test_model)
 print('saving results')
 y_prime = []
 y_prime_test = []
@@ -163,15 +166,6 @@ savez(conf['paths']['results_prepath']+save_str,
     conf = conf)
 
 
-# if plotting:
-#     print('plotting results')
-#     plot(ttd)
-#     plot(ttd_prime)
-#     plot(indices_test,ttd_prime_test,'g')
-#     plot(indices_train,ttd_prime_train,'r')
-#     savefig('plot.png')
-#     #plot(y_train,'.')
-#     #show()
 
 print('finished.')
 
