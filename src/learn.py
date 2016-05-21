@@ -132,9 +132,9 @@ for (i,shot) in enumerate(shot_list_train):
     for j in range(shot_length):
         X_row = X[j:j+1,:,:]
         y_prime_train_curr.append(test_model.predict(X_row))
-    y_prime_train_curr = squeeze(vstack(y_prime_train_curr),axis=1)
+    y_prime_train_curr = np.squeeze(np.vstack(y_prime_train_curr),axis=1)
     y_prime_train.append(y_prime_train_curr)
-    y_gold_train.append(squeeze(y,axis=1))
+    y_gold_train.append(np.squeeze(y,axis=1))
 
 
 for (i,shot) in enumerate(shot_list_test):
@@ -147,19 +147,19 @@ for (i,shot) in enumerate(shot_list_test):
     for j in range(shot_length):
         X_row = X[j:j+1,:,:]
         y_prime_test_curr.append(test_model.predict(X_row))
-    y_prime_test_curr = squeeze(vstack(y_prime_test_curr),axis=1)
+    y_prime_test_curr = np.squeeze(np.vstack(y_prime_test_curr),axis=1)
     y_prime_test.append(y_prime_test_curr)
-    y_gold_test.append(squeeze(y,axis=1))
+    y_gold_test.append(np.squeeze(y,axis=1))
 
 
 
  
-disruptive = concatenate((disruptive_train,disruptive_test))
-y_gold = concatenate((y_gold_train,y_gold_test))
-y_prime = concatenate((y_prime_train,y_prime_test))
+disruptive = np.concatenate((disruptive_train,disruptive_test))
+y_gold = np.concatenate((y_gold_train,y_gold_test))
+y_prime = np.concatenate((y_prime_train,y_prime_test))
 
 save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-savez(conf['paths']['results_prepath']+save_str,
+np.savez(conf['paths']['results_prepath']+save_str,
     y_gold=y_gold,y_gold_train=y_gold_train,y_gold_test=y_gold_test,
     y_prime=y_prime,y_prime_train=y_prime_train,y_prime_test=y_prime_test,
     disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test,
