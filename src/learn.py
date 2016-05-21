@@ -163,8 +163,8 @@ y_gold_train = np.concatenate(y_gold_train)
 y_gold_test = np.concatenate(y_gold_test)
 y_prime_train = np.concatenate(y_prime_train)
 y_prime_test = np.concatenate(y_prime_test)
-disruptive_train = np.concatenate(disruptive_train)
-disruptive_test = np.concatenate(disruptive_test)
+disruptive_train = np.array(disruptive_train)
+disruptive_test = np.array(disruptive_test)
 
  
 y_gold = np.concatenate((y_gold_train,y_gold_test))
