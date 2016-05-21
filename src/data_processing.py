@@ -23,10 +23,10 @@ import pathos.multiprocessing as mp
 
 #######NORMALIZATION##########
 
-class Stats():
+class Stats(object):
     pass
 
-class Normalizer():
+class Normalizer(object):
     def __init__(self,conf):
         self.minimums = None
         self.maximums = None
@@ -140,7 +140,7 @@ class Normalizer():
 
 
 
-class Preprocessor():
+class Preprocessor(object):
 
     def __init__(self,conf):
         self.conf = conf
@@ -288,7 +288,7 @@ class Preprocessor():
 
 
 
-class ShotList():
+class ShotList(object):
     def __init__(self,shots=None):
         self.shots = []
         if shots is not None:
@@ -395,7 +395,7 @@ class ShotList():
 
         
 
-class Shot():
+class Shot(object):
     def __init__(self,number=None,signals=None,ttd=None,valid=None,is_disruptive=None,t_disrupt=None):
         self.number = number #Shot number
         self.signals = signals 
@@ -472,7 +472,7 @@ class Shot():
         
 
 
-class Loader():
+class Loader(object):
     def __init__(self,conf,normalizer=None):
         self.conf = conf
         self.stateful = conf['model']['stateful']
