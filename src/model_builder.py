@@ -6,7 +6,7 @@ from keras.layers.wrappers import TimeDistributed
 from keras.callbacks import Callback
 
 import dill
-import re
+import re,os
 
 class LossHistory(Callback):
     def on_train_begin(self, logs={}):
