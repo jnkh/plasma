@@ -75,7 +75,7 @@ from model_builder import ModelBuilder, LossHistory
 
 print('Build model...',end='')
 model_builder = ModelBuilder(conf)
-train_model,test_model = model_builder.build_train_test_models(conf)
+train_model,test_model = model_builder.build_train_test_models()
 print('...done')
 
 print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),len(shot_list_test)))
