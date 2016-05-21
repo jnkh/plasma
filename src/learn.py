@@ -71,7 +71,7 @@ print("...done")
 ##Need to import later because accessing the GPU from several processes via multiprocessing
 ## gives weird errors.
 from keras.utils.generic_utils import Progbar 
-from model_builder import build_model, build_train_test_models, LossHistory
+from model_builder import ModelBuilder, LossHistory
 
 print('Build model...',end='')
 model_builder = ModelBuilder(conf)
