@@ -84,7 +84,7 @@ print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),le
 #load the latest epoch we did. Returns -1 if none exist yet
 e = model_builder.load_model_weights(train_model)
 print('{} epochs left to go'.format(num_epochs - 1 - e))
-while e < num_epochs-1
+while e < num_epochs-1:
     e += 1
     print('Epoch {}/{}'.format(e+2,num_epochs))
     pbar =  Progbar(len(shot_list_train))
