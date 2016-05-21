@@ -140,7 +140,7 @@ for (i,shot) in enumerate(shot_list_train):
 for (i,shot) in enumerate(shot_list_test):
     test_model.reset_states()
     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
-    X,y = loader.load_as_X_y(conf,shot,stateful=True,prediction_mode=True)
+    X,y = loader.load_as_X_y(conf,shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
     shot_length = X.shape[0]
     y_prime_test_curr = []
