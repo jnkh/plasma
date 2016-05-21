@@ -122,6 +122,12 @@ y_gold = []
 y_gold_test = []
 y_gold_train = []
 
+disruptive= []
+disruptive_train= []
+disruptive_test= []
+
+
+
 for (i,shot) in enumerate(shot_list_train):
     test_model.reset_states()
     print('Shot {}/{}'.format(i,num_shots))
@@ -135,6 +141,7 @@ for (i,shot) in enumerate(shot_list_train):
     y_prime_train_curr = np.squeeze(np.vstack(y_prime_train_curr),axis=1)
     y_prime_train.append(y_prime_train_curr)
     y_gold_train.append(np.squeeze(y,axis=1))
+    disruptive_train.append(shot.shot_is_disruptive())
 
 
 for (i,shot) in enumerate(shot_list_test):
@@ -150,13 +157,14 @@ for (i,shot) in enumerate(shot_list_test):
     y_prime_test_curr = np.squeeze(np.vstack(y_prime_test_curr),axis=1)
     y_prime_test.append(y_prime_test_curr)
     y_gold_test.append(np.squeeze(y,axis=1))
+    disruptive_test.append(shot.shot_is_disruptive())
 
 
 
  
-disruptive = np.concatenate((disruptive_train,disruptive_test))
 y_gold = np.concatenate((y_gold_train,y_gold_test))
 y_prime = np.concatenate((y_prime_train,y_prime_test))
+disruptive = np.concatenate((disruptive_train,disruptive_test))
 
 save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 np.savez(conf['paths']['results_prepath']+save_str,
