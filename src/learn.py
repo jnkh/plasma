@@ -159,10 +159,10 @@ for (i,shot) in enumerate(shot_list_test):
     y_gold_test.append(np.squeeze(y,axis=1))
     disruptive_test.append(shot.is_disruptive_shot())
 
-y_gold_train = np.concatenate(y_gold_train)
-y_gold_test = np.concatenate(y_gold_test)
-y_prime_train = np.concatenate(y_prime_train)
-y_prime_test = np.concatenate(y_prime_test)
+# y_gold_train = np.concatenate(y_gold_train)
+# y_gold_test = np.concatenate(y_gold_test)
+# y_prime_train = np.concatenate(y_prime_train)
+# y_prime_test = np.concatenate(y_prime_test)
 disruptive_train = np.array(disruptive_train)
 disruptive_test = np.array(disruptive_test)
 
