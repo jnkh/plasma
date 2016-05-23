@@ -44,7 +44,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2,
+        'use_shots' : 400,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -56,7 +56,7 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'length' : 64,
+        'length' : 128,
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 20,
