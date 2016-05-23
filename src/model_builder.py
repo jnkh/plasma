@@ -4,6 +4,7 @@ from keras.layers.recurrent import LSTM, SimpleRNN
 from keras.utils.data_utils import get_file
 from keras.layers.wrappers import TimeDistributed
 from keras.callbacks import Callback
+from keras.optimizers import *
 
 import dill
 import re,os
@@ -35,6 +36,10 @@ class ModelBuilder():
 		rnn_size = model_conf['rnn_size']
 		rnn_type = model_conf['rnn_type']
 		optimizer = model_conf['optimizer']
+		if optimizer == 'sgd':
+			optimizer = SGD(lr = 0.0001)
+		if optimizer == 'adam':
+			optimizer = Adam(lr = 0.0001)
 		loss_fn = model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
