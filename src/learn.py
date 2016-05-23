@@ -68,6 +68,7 @@ print("...done")
 ####################Training#########################
 #####################################################
 
+np.random.seed(5)
 
 ##Need to import later because accessing the GPU from several processes via multiprocessing
 ## gives weird errors.

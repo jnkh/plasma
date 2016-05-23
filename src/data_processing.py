@@ -493,13 +493,33 @@ class Loader(object):
         signals = shot.signals
         ttd = shot.ttd
 
-        if not self.stateful:
-            X,y = self.array_to_path_and_external_pred(signals,ttd)
-        else:
-            X,y = self.array_to_path_and_external_pred_cut(signals,ttd,return_sequences=True,prediction_mode=prediction_mode)
+        # signals,ttd = self.get_mock_data()
+
+        # if not self.stateful:
+        #     X,y = self.array_to_path_and_external_pred(signals,ttd)
+        # else:
+        X,y = self.array_to_path_and_external_pred_cut(signals,ttd,
+                return_sequences=return_sequences,prediction_mode=prediction_mode)
 
         shot.make_light()
-        return  X,y
+        return  X,y#X,y
+
+    def get_mock_data(self):
+        signals = linspace(0,2*pi,10000)
+        #ttd[-100:] = 1
+        signals = vstack([signals]*8)
+        signals = signals.T
+        signals[:,0] = 0.5 + 0.5*sin(signals[:,0])
+        signals[:,1] = 0.5 + 0.5*cos(signals[:,1])
+        signals[:,2] = 0.5 + 0.5*sin(2*signals[:,2])
+        signals[:,3:] *= 0
+        offset = 1000
+        ttd = 1.0*signals[:,0]
+        mask = ttd > mean(ttd)
+        ttd[mask] = 1
+        ttd[~mask] = 0
+        #mean(signals[:,:2],1)
+        return signals,ttd
 
     def array_to_path_and_external_pred_cut(self,arr,res,return_sequences=False,prediction_mode=False):
         length = self.conf['model']['length']
