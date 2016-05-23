@@ -44,7 +44,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 10,
+        'use_shots' : 4,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -56,7 +56,7 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'pred_length' : 100,
+        'pred_length' : 10,
         'length' : 100,
         'skip' : 1,
         #hidden layer size
@@ -65,6 +65,7 @@ conf = {
         'optimizer' : 'adam',
         'loss' : 'binary_crossentropy',
         'stateful' : True,
+        'return_sequences' : True,
         'dropout_prob' : 0.1,
     },
 

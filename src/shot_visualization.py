@@ -1,9 +1,40 @@
 from matplotlib import rc
 rc('text', usetex=True)
 
-from conf import conf
-from data_processing import *
+import matplotlib
+matplotlib.use('Agg')
+
 from pylab import *
+from matplotlib import pyplot
+import os
+
+from performance_analysis_utils import *
+
+mode = 'test'
+file_num = 2
+save_figure = False
+
+P_thresh_range = logspace(-4,0,100) 
+T_max_warn = 1000
+T_min_warn = 30
+
+verbose=False
+results_dir = '../data/results/'
+
+
+print("preprocessing all shots")
+pp = Preprocessor(conf)
+pp.clean_shot_lists()
+shot_list = pp.preprocess_all()
+sorted(shot_list)
+shot_list_train,shot_list_test = shot_list.split_train_test(conf)
+num_shots = len(shot_list_train) + len(shot_list_test)
+print("...done")
+
+nn = Normalizer(conf)
+nn.train()
+loader = Loader(conf,nn)
+
 
 def plot_shot_from_file(j,conf,shots,disruption_times,processed_prepath,standard_deviations,labels,whiten=whiten):
     # num_processed += 1

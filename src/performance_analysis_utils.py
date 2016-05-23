@@ -367,7 +367,7 @@ class PerformanceAnalyzer():
                 axhline(P_thresh_opt,color='k',label='trigger threshold')
                 xlabel('TTD [ms]')
                 legend(loc = (1.0,0.6))
-                ylim([1e-4,1e0])
+                ylim([1e-7,1e0])
                 grid()
                 plotted += 1
 
