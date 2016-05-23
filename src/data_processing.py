@@ -482,6 +482,7 @@ class Loader(object):
         assert(isinstance(shot,Shot))
         assert(shot.valid)
         prepath = self.conf['paths']['processed_prepath']
+        return_sequences = self.conf['model']['return_sequences']
         shot.restore(prepath)
 
         if self.normalizer is not None:

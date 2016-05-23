@@ -41,6 +41,7 @@ class ModelBuilder():
 		pred_length = model_conf['pred_length']
 		skip = model_conf['skip']
 		stateful = model_conf['stateful']
+		return_sequences = model_conf['return_sequences']
 		num_signals = conf['data']['num_signals']
 
 		if predict:
@@ -60,11 +61,13 @@ class ModelBuilder():
 			exit(1)
 
 		model = Sequential()
-		model.add(rnn_model(rnn_size, return_sequences=True, stateful=stateful, batch_input_shape=(batch_size,length, num_signals)))
+		model.add(rnn_model(rnn_size, return_sequences=return_sequences,
+		 stateful=stateful, batch_input_shape=(batch_size,length, num_signals)))
 		model.add(Dropout(dropout_prob))
 		model.add(TimeDistributed(Dense(1)))
 		model.add(TimeDistributed(Activation('sigmoid'))) #add if probabilistic output
 		model.compile(loss=loss_fn, optimizer=optimizer)
+		model.reset_states()
 		#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 		return model
 

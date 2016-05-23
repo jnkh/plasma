@@ -58,13 +58,14 @@ conf = {
         #length of LSTM memory
         'pred_length' : 10,
         'length' : 128,
-        'skip' : 7,
+        'skip' : 1,
         #hidden layer size
-        'rnn_size' : 20,
+        'rnn_size' : 40,
         'rnn_type' : 'LSTM',
         'optimizer' : 'adam',
         'loss' : 'binary_crossentropy',
         'stateful' : True,
+        'return_sequences' : True,
         'dropout_prob' : 0.1,
     },
 
@@ -76,7 +77,7 @@ conf = {
         'batch_size_small' : 256,
         'batch_size' : 256,
         'num_shots_at_once' :  25,
-        'num_epochs' : 2,
+        'num_epochs' : 50,
         'evaluate' : False,
    },
 }
