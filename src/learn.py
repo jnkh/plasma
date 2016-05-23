@@ -97,7 +97,7 @@ while e < num_epochs-1:
         X_train,y_train = loader.load_as_X_y(shot,prediction_mode=False)
         train_model.reset_states()
         train_model.fit(X_train,y_train,batch_size=loader.get_batch_size(prediction_mode=False)
-            ,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
+            ,nb_epoch=1,shuffle=False,verbose=1,validation_split=0.0,callbacks=[history])
 
         print('Shots {}/{}'.format(i,len(shot_list_train)))
         pbar.add(1, values=[("train loss", np.mean(history.losses))])
