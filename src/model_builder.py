@@ -23,7 +23,10 @@ class ModelBuilder():
 		self.conf = conf
 
 	def get_unique_id(self):
-		return hash(dill.dumps(self.conf))
+		this_conf = self.conf.copy()
+		#don't make hash dependent on number of epochs.
+		this_conf['training']['num_epochs'] = 0
+		return hash(dill.dumps(this_conf))
 
 
 	def build_model(self,predict):
