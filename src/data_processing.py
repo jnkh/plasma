@@ -510,7 +510,6 @@ class Loader(object):
         num_chunks = len(arr) // length
         arr = arr[-num_chunks*length:]
         res = res[-num_chunks*length:]
-        print(len(res))
         assert(shape(arr)[0] == shape(res)[0])
         X = []
         y = []

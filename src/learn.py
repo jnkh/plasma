@@ -148,7 +148,7 @@ for (i,shot) in enumerate(shot_list_test):
     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True))
+    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True),verbose=1)
     shot_length = y_p.shape[0]*y_p.shape[1]
     answer_dims = y_p.shape[2]
     y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
