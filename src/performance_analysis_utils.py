@@ -4,7 +4,7 @@ import os
 
 
 
-def PerformanceAnalyzer():
+class PerformanceAnalyzer():
     def __init__(self,results_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False):
         self.T_min_warn = T_min_warn
         self.T_max_warn = T_max_warn
@@ -22,7 +22,7 @@ def PerformanceAnalyzer():
 
 
 
-    def get_metrics_vs_p_thresh(self,mode='train'):
+    def get_metrics_vs_p_thresh(self,P_thresh_range,mode):
         correct_range = zeros_like(P_thresh_range)
         accuracy_range = zeros_like(P_thresh_range)
         fp_range = zeros_like(P_thresh_range)
@@ -40,7 +40,7 @@ def PerformanceAnalyzer():
         return correct_range,accuracy_range,fp_range,missed_range,early_alarm_range
 
 
-    def summarize_shot_prediction_stats(self,P_thresh,mode=mode):
+    def summarize_shot_prediction_stats(self,P_thresh,mode,verbose=False):
         if mode == 'train':
             all_preds = self.pred_train
             all_truths = self.truth_train
@@ -52,9 +52,9 @@ def PerformanceAnalyzer():
             all_truths = self.truth_test
             all_disruptive = self.disruptive_test
 
-       TPs,FPs,FNs,TNs,earlies,lates = (0,0,0,0,0,0)
+        TPs,FPs,FNs,TNs,earlies,lates = (0,0,0,0,0,0)
 
-        for i in range(len(preds_by_shot)):
+        for i in range(len(all_preds)):
             preds = all_preds[i]
             truth = all_truths[i]
             is_disruptive = all_disruptive[i]
@@ -70,10 +70,10 @@ def PerformanceAnalyzer():
             
         disr = earlies + lates + TPs + FNs
         nondisr = FPs + TNs
-        if self.verbose:
-            print('total: {}, tp: {} fp: {} fn: {} tn: {} early: {} late: {} disr: {} nondisr: {}'.format(len(preds_by_shot),TPs,FPs,FNs,TNs,earlies,lates,disr,nondisr))
+        if verbose:
+            print('total: {}, tp: {} fp: {} fn: {} tn: {} early: {} late: {} disr: {} nondisr: {}'.format(len(all_preds),TPs,FPs,FNs,TNs,earlies,lates,disr,nondisr))
        
-        return get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates)
+        return self.get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates,verbose)
 
     #we are interested in the predictions of the *first alarm*
     def get_shot_prediction_stats(self,P_thresh,pred,truth,is_disruptive):
@@ -121,26 +121,26 @@ def PerformanceAnalyzer():
         return acceptable
 
 
-    def get_accuracy_and_fp_rate_from_stats(tp,fp,fn,tn,early,late):
+    def get_accuracy_and_fp_rate_from_stats(self,tp,fp,fn,tn,early,late,verbose=False):
         total = tp + fp + fn + tn + early + late
         disr = early + late + tp + fn 
         nondisr = fp + tn
         
         if disr == 0:
-        early_alarm_rate = 0
-        missed = 0
-        accuracy = 0 
+            early_alarm_rate = 0
+            missed = 0
+            accuracy = 0 
         else:
-        early_alarm_rate = 1.0*early/disr
-        missed = 1.0*(late + fn)/disr
-        accuracy = 1.0*tp/disr
+            early_alarm_rate = 1.0*early/disr
+            missed = 1.0*(late + fn)/disr
+            accuracy = 1.0*tp/disr
         if nondisr == 0:
-        fp_rate = 0
+            fp_rate = 0
         else: 
             fp_rate = 1.0*fp/nondisr
         correct = 1.0*(tp + tn)/total
         
-        if self.verbose:
+        if verbose:
             print('accuracy: {}'.format(accuracy))
             print('missed: {}'.format(missed))
             print('early alarms: {}'.format(early_alarm_rate))
@@ -154,7 +154,7 @@ def PerformanceAnalyzer():
     def load_ith_file(self):
         results_files = os.listdir(self.results_dir)
         print(results_files)
-        dat = load(results_dir + results_files[self.i])
+        dat = load(self.results_dir + results_files[self.i])
 
         if self.verbose:
             print('configuration: {} '.format(dat['conf']))
@@ -216,10 +216,10 @@ def PerformanceAnalyzer():
 
 
     def gather_first_alarms(self,P_thresh,mode):
-        if mode = 'train':
+        if mode == 'train':
             pred_list = self.pred_train 
             disruptive_list = self.disruptive_train 
-        elif mode = 'test':
+        elif mode == 'test':
             pred_list = self.pred_test 
             disruptive_list = self.disruptive_test 
         
@@ -258,7 +258,7 @@ def PerformanceAnalyzer():
             if(any(fp_range < fp_thresh)):
                 idx = where(fp_range <= fp_thresh)[0][0]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,mode)
+                self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -270,7 +270,7 @@ def PerformanceAnalyzer():
             if(any(missed_range < missed_thresh)):
                 idx = where(missed_range <= missed_thresh)[0][-1]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,mode)
+                self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -293,7 +293,7 @@ def PerformanceAnalyzer():
             if(any(fp_range < fp_thresh)):
                 idx = where(fp_range <= fp_thresh)[0][0]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,'test')
+                self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -308,7 +308,7 @@ def PerformanceAnalyzer():
             if(any(missed_range < missed_thresh)):
                 idx = where(missed_range <= missed_thresh)[0][-1]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,'test')
+                self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
     	    if missed_thresh == 0.05:
     		P_thresh_ret = P_thresh_opt
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))

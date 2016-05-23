@@ -33,10 +33,10 @@ shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
 train_frac = conf['training']['train_frac']
 stateful = conf['model']['stateful']
-if stateful: 
-    batch_size = conf['model']['length']
-else:
-    batch_size = conf['training']['batch_size_large']
+# if stateful: 
+#     batch_size = conf['model']['length']
+# else:
+#     batch_size = conf['training']['batch_size_large']
 
 
 #####################################################
@@ -96,7 +96,8 @@ while e < num_epochs-1:
         #load data and fit on data
         X_train,y_train = loader.load_as_X_y(shot,prediction_mode=False)
         train_model.reset_states()
-        train_model.fit(X_train,y_train,batch_size=batch_size,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
+        train_model.fit(X_train,y_train,batch_size=loader.get_batch_size(prediction_mode=False)
+            ,nb_epoch=1,verbose=1,validation_split=0.0,callbacks=[history])
 
         print('Shots {}/{}'.format(i,len(shot_list_train)))
         pbar.add(1, values=[("train loss", np.mean(history.losses))])
@@ -133,14 +134,12 @@ for (i,shot) in enumerate(shot_list_train):
     print('Shot {}/{}'.format(i,num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    shot_length = X.shape[0]
-    y_prime_train_curr = []
-    for j in range(shot_length):
-        X_row = X[j:j+1,:,:]
-        y_prime_train_curr.append(test_model.predict(X_row))
-    y_prime_train_curr = np.squeeze(np.vstack(y_prime_train_curr),axis=1)
-    y_prime_train.append(y_prime_train_curr)
-    y_gold_train.append(np.squeeze(y,axis=1))
+    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True),verbose=1)
+    print(y_p.shape)
+    shot_length = y_p.shape[0]*y_p.shape[1]
+    answer_dims = y_p.shape[2]
+    y_prime_train.append(np.reshape(y_p,(shot_length,answer_dims)))
+    y_gold_train.append(np.reshape(y,(shot_length,answer_dims)))
     disruptive_train.append(shot.is_disruptive_shot())
 
 
@@ -149,14 +148,11 @@ for (i,shot) in enumerate(shot_list_test):
     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    shot_length = X.shape[0]
-    y_prime_test_curr = []
-    for j in range(shot_length):
-        X_row = X[j:j+1,:,:]
-        y_prime_test_curr.append(test_model.predict(X_row))
-    y_prime_test_curr = np.squeeze(np.vstack(y_prime_test_curr),axis=1)
-    y_prime_test.append(y_prime_test_curr)
-    y_gold_test.append(np.squeeze(y,axis=1))
+    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True))
+    shot_length = y_p.shape[0]*y_p.shape[1]
+    answer_dims = y_p.shape[2]
+    y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
+    y_gold_test.append(np.reshape(y,(shot_length,answer_dims)))
     disruptive_test.append(shot.is_disruptive_shot())
 
 # y_gold_train = np.concatenate(y_gold_train)
@@ -166,9 +162,8 @@ for (i,shot) in enumerate(shot_list_test):
 disruptive_train = np.array(disruptive_train)
 disruptive_test = np.array(disruptive_test)
 
- 
-y_gold = np.concatenate((y_gold_train,y_gold_test))
-y_prime = np.concatenate((y_prime_train,y_prime_test))
+y_gold = y_gold_train + y_gold_test
+y_prime = y_prime_train + y_prime_test
 disruptive = np.concatenate((disruptive_train,disruptive_test))
 
 save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
