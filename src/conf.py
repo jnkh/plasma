@@ -25,7 +25,7 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['mixed_list1.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
@@ -44,8 +44,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 400,
-        'use_shots' : 2,
+        'use_shots' : 10,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -57,9 +56,9 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'pred_length' : 10,
-        'length' : 128,
-        'skip' : 7,
+        'pred_length' : 100,
+        'length' : 100,
+        'skip' : 1,
         #hidden layer size
         'rnn_size' : 20,
         'rnn_type' : 'LSTM',
@@ -77,7 +76,7 @@ conf = {
         'batch_size_small' : 256,
         'batch_size' : 256,
         'num_shots_at_once' :  25,
-        'num_epochs' : 2,
+        'num_epochs' : 10,
         'evaluate' : False,
    },
 }
