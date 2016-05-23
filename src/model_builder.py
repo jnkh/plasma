@@ -8,6 +8,8 @@ from keras.callbacks import Callback
 import dill
 import re,os
 
+from data_processing import Loader
+
 class LossHistory(Callback):
     def on_train_begin(self, logs={}):
         self.losses = []
@@ -33,10 +35,15 @@ class ModelBuilder():
 		loss_fn = model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
+		pred_length = model_conf['pred_length']
+		skip = model_conf['skip']
 		num_signals = conf['data']['num_signals']
 		if predict:
-			length = 1
-	    #so we can predict with one time point at a time!
+		    #so we can predict with one time point at a time!
+			batch_size = 1
+			length =pred_length 
+		else:
+			batch_size = Loader.get_num_skips(length,skip)
 
 
 		if rnn_type == 'LSTM':
@@ -48,7 +55,7 @@ class ModelBuilder():
 			exit(1)
 
 		model = Sequential()
-		model.add(rnn_model(rnn_size, return_sequences=True, batch_input_shape=(length,length, num_signals)))
+		model.add(rnn_model(rnn_size, return_sequences=True, batch_input_shape=(batch_size,length, num_signals)))
 		model.add(Dropout(dropout_prob))
 		model.add(TimeDistributed(Dense(1)))
 		model.add(Activation('sigmoid')) #add if probabilistic output

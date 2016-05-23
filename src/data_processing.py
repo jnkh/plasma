@@ -501,42 +501,60 @@ class Loader(object):
         shot.make_light()
         return  X,y
 
-    
-    def array_to_path_and_next(self,arr):
+    def array_to_path_and_external_pred_cut(self,arr,res,return_sequences=False,prediction_mode=False):
         length = self.conf['model']['length']
         skip = self.conf['model']['skip']
+        if prediction_mode:
+            length = self.conf['model']['pred_length']
+            skip = length #batchsize = 1!
+        assert(shape(arr)[0] == shape(res)[0])
+        num_chunks = len(arr) // length
+        arr = arr[-num_chunks*length:]
+        res = res[-num_chunks*length:]
+        print(len(res))
+        assert(shape(arr)[0] == shape(res)[0])
         X = []
         y = []
         i = 0
-        while True:
-            pred = i+length
-            if pred >= len(arr):
-                break
-            X.append(arr[i:i+length])
-            y.append(arr[i+length])
-            i += skip
-        X = array(X)
-        X = expand_dims(X,axis=len(shape(X)))
-        return X,array(y)
 
-    
-    def array_to_path(self,arr):
-        length = self.conf['model']['length']
-        skip = self.conf['model']['skip']
-        X = []
-        i = 0
-        while True:
-            pred = i+length
-            if pred > len(arr):
-                break
-            X.append(arr[i:i+length,:])
-            i += skip
+        chunk_range = range(num_chunks-1)
+        i_range = range(1,length+1,skip)
+        if prediction_mode:
+            chunk_range = range(num_chunks)
+            i_range = range(1)
+
+
+        for chunk in chunk_range:
+            for i in i_range:
+                start = chunk*length + i
+                assert(start + length <= len(arr))
+                X.append(arr[start:start+length,:])
+                if return_sequences:
+                    y.append(res[start:start+length])
+                else:
+                    y.append(res[start+length-1:start+length])
         X = array(X)
+        y = array(y)
         if len(shape(X)) == 1:
             X = expand_dims(X,axis=len(shape(X)))
-        return X
+        if return_sequences:
+            y = expand_dims(y,axis=len(shape(y)))
+        return X,y
 
-    
+    def get_batch_size(self,prediction_mode):
+        length = self.conf['model']['length']
+        skip = self.conf['model']['skip']
+        if prediction_mode == True:
+            return 1
+        else:
+            return Loader.get_num_skips(length,skip)
+
+    @staticmethod
+    def get_num_skips(length,skip):
+        return 1 + (length-1)//skip
+
+
+
     def array_to_path_and_external_pred(self,arr,res,return_sequences=False):
         length = self.conf['model']['length']
         skip = self.conf['model']['skip']
@@ -562,43 +580,42 @@ class Loader(object):
             y = expand_dims(y,axis=len(shape(y)))
         return X,y
 
+   
+    # def array_to_path_and_next(self,arr):
+    #     length = self.conf['model']['length']
+    #     skip = self.conf['model']['skip']
+    #     X = []
+    #     y = []
+    #     i = 0
+    #     while True:
+    #         pred = i+length
+    #         if pred >= len(arr):
+    #             break
+    #         X.append(arr[i:i+length])
+    #         y.append(arr[i+length])
+    #         i += skip
+    #     X = array(X)
+    #     X = expand_dims(X,axis=len(shape(X)))
+    #     return X,array(y)
 
     
-    def array_to_path_and_external_pred_cut(self,arr,res,return_sequences=False,prediction_mode=False):
-        length = self.conf['model']['length']
-        skip = self.conf['model']['skip']
-        if prediction_mode:
-            length = 1
-            skip = 1
-        assert(shape(arr)[0] == shape(res)[0])
-        num_chunks = len(arr) // length
-        arr = arr[-num_chunks*length:]
-        res = res[-num_chunks*length:]
-        assert(shape(arr)[0] == shape(res)[0])
-        X = []
-        y = []
-        i = 0
-        for chunk in range(num_chunks-1):
-            for i in range(1,length+1,skip):
-                start = chunk*length + i
-                assert(start + length <= len(arr))
-                if prediction_mode:
-                    X.append(arr[start:start+1,:])
-                    y.append(res[start:start+1])
-                else:
-                    X.append(arr[start:start+length,:])
-                    if return_sequences:
-                        y.append(res[start:start+length])
-                    else:
-                        y.append(res[start+length-1:start+length])
-        X = array(X)
-        y = array(y)
-        if len(shape(X)) == 1:
-            X = expand_dims(X,axis=len(shape(X)))
-        if return_sequences:
-            y = expand_dims(y,axis=len(shape(y)))
-        return X,y
+    # def array_to_path(self,arr):
+    #     length = self.conf['model']['length']
+    #     skip = self.conf['model']['skip']
+    #     X = []
+    #     i = 0
+    #     while True:
+    #         pred = i+length
+    #         if pred > len(arr):
+    #             break
+    #         X.append(arr[i:i+length,:])
+    #         i += skip
+    #     X = array(X)
+    #     if len(shape(X)) == 1:
+    #         X = expand_dims(X,axis=len(shape(X)))
+    #     return X
 
+    
     #unused: handling sequences of shots        
     # def load_shots_as_X_y(conf,shots,verbose=False,stateful=True,prediction_mode=False):
     #     X,y = zip(*[load_shot_as_X_y(conf,shot,verbose,stateful,prediction_mode) for shot in shots])

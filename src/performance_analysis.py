@@ -14,33 +14,29 @@ save_figure = True
 P_thresh_range = logspace(-4,0,100) 
 T_max_warn = 1000
 T_min_warn = 30
-P_thresh_opt = 0.04
 
 verbose=False
-
-
 results_dir = '/p/datad/jkatesha/data/results/'
 
-pred,truth,disruptive_curr,length = load_ith_file(file_num,results_dir,mode,verbose=verbose)
 
-pred_train,truth_train,disruptive_curr_train,length = load_ith_file(file_num,results_dir,'train',verbose=verbose)
+analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
+	T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
+
+analyzer.load_ith_file()
 
 #compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
-P_thresh_opt = compute_tradeoffs_and_print_from_training(P_thresh_range,pred_train,truth_train,disruptive_curr_train,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
+P_thresh_opt = analyzer.compute_tradeoffs_and_print_from_training(P_thresh_range)
 
-compute_tradeoffs_and_plot(P_thresh_range,pred_train,truth_train,disruptive_curr_train,length,T_min_warn,T_max_warn,save_figure=save_figure,plot_string='_train')
+analyzer.compute_tradeoffs_and_plot(P_thresh_range,'train',save_figure=save_figure,plot_string='_train')
+analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figure,plot_string='_test')
 
-compute_tradeoffs_and_plot(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,save_figure=save_figure,plot_string='_test')
+analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
 
-summarize_shot_prediction_stats(P_thresh_opt,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn,verbose=True)
-
-
-
-alarms,disr_alarms,nondisr_alarms = gather_first_alarms(P_thresh_opt,pred,disruptive_curr,T_min_warn,T_max_warn)
-hist_alarms(disr_alarms,T_min_warn,T_max_warn,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)
+alarms,disr_alarms,nondisr_alarms = analyzer.gather_first_alarms(P_thresh_opt,'test')
+analyzer.hist_alarms(disr_alarms,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)
 print('{} disruptive alarms'.format(len(disr_alarms)))
 print('{} seconds mean alarm time'.format(mean(disr_alarms[disr_alarms > 0])))
-hist_alarms(nondisr_alarms,T_min_warn,T_max_warn,'nondisruptive alarms, P_thresh = {}'.format(P_thresh_opt))
+analyzer.hist_alarms(nondisr_alarms,'nondisruptive alarms, P_thresh = {}'.format(P_thresh_opt))
 print('{} nondisruptive alarms'.format(len(nondisr_alarms)))
 

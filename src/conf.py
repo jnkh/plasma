@@ -25,7 +25,7 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['mixed_list1.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
@@ -45,6 +45,7 @@ conf = {
         #train/validate split
         #how many shots to use
         'use_shots' : 400,
+        'use_shots' : 2,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -56,8 +57,9 @@ conf = {
 
    'model': {
         #length of LSTM memory
+        'pred_length' : 10,
         'length' : 128,
-        'skip' : 1,
+        'skip' : 7,
         #hidden layer size
         'rnn_size' : 20,
         'rnn_type' : 'LSTM',
