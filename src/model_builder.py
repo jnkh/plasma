@@ -40,7 +40,9 @@ class ModelBuilder():
 		length = model_conf['length']
 		pred_length = model_conf['pred_length']
 		skip = model_conf['skip']
+		stateful = model_conf['stateful']
 		num_signals = conf['data']['num_signals']
+
 		if predict:
 		    #so we can predict with one time point at a time!
 			batch_size = 1
@@ -58,10 +60,10 @@ class ModelBuilder():
 			exit(1)
 
 		model = Sequential()
-		model.add(rnn_model(rnn_size, return_sequences=True, batch_input_shape=(batch_size,length, num_signals)))
+		model.add(rnn_model(rnn_size, return_sequences=True, stateful=stateful, batch_input_shape=(batch_size,length, num_signals)))
 		model.add(Dropout(dropout_prob))
 		model.add(TimeDistributed(Dense(1)))
-		model.add(Activation('sigmoid')) #add if probabilistic output
+		model.add(TimeDistributed(Activation('sigmoid'))) #add if probabilistic output
 		model.compile(loss=loss_fn, optimizer=optimizer)
 		#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
 		return model
