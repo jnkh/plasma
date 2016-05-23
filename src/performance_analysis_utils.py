@@ -324,6 +324,52 @@ class PerformanceAnalyzer():
 
         tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
+    def example_plots(self,P_thresh_opt,mode='test',type = 'FP'):
+        if mode == 'test':
+            pred = self.pred_test
+            truth = self.truth_test
+            is_disruptive = self.disruptive_test
+        else:
+            pred = self.pred_train
+            truth = self.truth_train
+            is_disruptive = self.disruptive_train
+        to_plot = 5
+        max_plot = 5
+        plotted = 0
+        iterate_arr = range(len(truth))
+        shuffle(iterate_arr)
+        for i in iterate_arr:
+            t = truth[i]
+            p = pred[i]
+            is_disr = is_disruptive[i]
+            TP,FP,FN,TN,early,late =self.get_shot_prediction_stats(P_thresh_opt,p,t,is_disr)
+            if type == 'FP':
+                comparison = FP
+            elif type == 'TP':
+                comparison =TP 
+            elif type == 'FN':
+                comparison =FN 
+            elif type == 'TN':
+                comparison =TN 
+            elif type == 'late':
+                comparison =late 
+            elif type == 'early':
+                comparison =early 
+            else:
+                print('warning, unkown type')
+                return
+            if comparison and plotted < max_plot:
+                figure()
+                semilogy((t+0.001)[::-1],label='ground truth')
+                plot(p[::-1],'g',label='neural net prediction')
+                axvline(self.T_min_warn,color='r',label='max warning time')
+                axvline(self.T_max_warn,color='r',label='min warning time')
+                axhline(P_thresh_opt,color='k',label='trigger threshold')
+                xlabel('TTD [ms]')
+                legend(loc = (1.0,0.6))
+                ylim([1e-4,1e0])
+                grid()
+                plotted += 1
 
 def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
     figure()
@@ -334,8 +380,10 @@ def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alar
     legend(loc=(1.0,.6))
     xlabel('Alarm threshold')
     grid()
+    title_str = 'metrics{}'.format(plot_string)
+    title(title_str)
     if save_figure:
-        savefig('metrics{}.png'.format(plot_string),bbox_inches='tight')
+        savefig(title_str + '.png',bbox_inches='tight')
 
 
 
