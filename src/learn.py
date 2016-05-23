@@ -38,7 +38,7 @@ stateful = conf['model']['stateful']
 # else:
 #     batch_size = conf['training']['batch_size_large']
 
-
+np.random.seed(5)
 #####################################################
 ####################PREPROCESSING####################
 #####################################################
@@ -47,6 +47,7 @@ print("preprocessing all shots",end='')
 pp = Preprocessor(conf)
 pp.clean_shot_lists()
 shot_list = pp.preprocess_all()
+sorted(shot_list)
 shot_list_train,shot_list_test = shot_list.split_train_test(conf)
 num_shots = len(shot_list_train) + len(shot_list_test)
 print("...done")
