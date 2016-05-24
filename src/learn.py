@@ -85,6 +85,7 @@ print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),le
 
 #load the latest epoch we did. Returns -1 if none exist yet
 e = model_builder.load_model_weights(train_model)
+num_at_once = conf['training']['num_shots_at_once']
 print('{} epochs left to go'.format(num_epochs - 1 - e))
 while e < num_epochs-1:
     e += 1
@@ -93,16 +94,21 @@ while e < num_epochs-1:
 
     #shuffle during every iteration
     shot_list_train.shuffle() 
-    for (i,shot) in enumerate(shot_list_train):
-        history = LossHistory()
-        #load data and fit on data
-        X_train,y_train = loader.load_as_X_y(shot,prediction_mode=False)
-        train_model.reset_states()
-        train_model.fit(X_train,y_train,batch_size=loader.get_batch_size(prediction_mode=False)
-            ,nb_epoch=1,shuffle=False,verbose=1,validation_split=0.0,callbacks=[history])
+    shot_sublists = shot_list_train.sublists(num_at_once)
+    for (i,shot_sublist) in enumerate(shot_sublists):
+        X_list,y_list = loader.load_as_X_y_list(shot_sublist)
+        for j,(X,y) in enumerate(zip(X_list,y_list)):
+            history = LossHistory()
+            #load data and fit on data
+            train_model.reset_states()
+            train_model.fit(X,y,
+                batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
+                nb_epoch=1,shuffle=False,verbose=0,
+                validation_split=0.0,callbacks=[history])
 
-        print('Shots {}/{}'.format(i,len(shot_list_train)))
-        pbar.add(1, values=[("train loss", np.mean(history.losses))])
+            print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
+            pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", np.mean(history.losses))])
+            loader.verbose=False#True during the first iteration
 
     model_builder.save_model_weights(train_model,e)
 print('...done')
@@ -136,7 +142,7 @@ for (i,shot) in enumerate(shot_list_train):
     print('Shot {}/{}'.format(i,num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True),verbose=1)
+    y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
     print(y_p.shape)
     shot_length = y_p.shape[0]*y_p.shape[1]
     answer_dims = y_p.shape[2]
@@ -150,7 +156,7 @@ for (i,shot) in enumerate(shot_list_test):
     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    y_p = test_model.predict(X,batch_size=loader.get_batch_size(prediction_mode=True),verbose=1)
+    y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
     shot_length = y_p.shape[0]*y_p.shape[1]
     answer_dims = y_p.shape[2]
     y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))

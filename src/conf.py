@@ -1,4 +1,5 @@
 from numpy import log10
+from keras.optimizers import SGD
 #paths#
 base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
@@ -44,12 +45,12 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 4,
+        'use_shots' : 40,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 2,
-        'T_warning' : 0.2,
+        'T_warning' : 0.5,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
    },
@@ -73,11 +74,10 @@ conf = {
         'as_array_of_shots':True,
         'shuffle_training' : True,
         'train_frac' : 0.5,
-        'batch_size_large' : 2048,
-        'batch_size_small' : 256,
         'batch_size' : 256,
+        'max_patch_length' : 1000,
         'num_shots_at_once' :  25,
-        'num_epochs' : 10,
+        'num_epochs' : 100,
         'evaluate' : False,
    },
 }
