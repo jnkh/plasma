@@ -375,6 +375,15 @@ class ShotList(object):
         shots_picked = np.random.choice(self.shots,size=num,replace=False)
         return ShotList(shots_picked)
 
+    def sublists(self,num,shuffle=True):
+        lists = []
+        self.shuffle()
+        for i in range(0,len(self),num):
+            lists.append(self.shots[i:i+num])
+        return [ShotList(l) for l in lists]
+
+
+
     def shuffle(self):
         shuffle(self.shots)
 
@@ -477,6 +486,157 @@ class Loader(object):
         self.conf = conf
         self.stateful = conf['model']['stateful']
         self.normalizer = normalizer
+        self.verbose = True
+
+
+    def load_as_X_y_list(self,shot_list,verbose=False,prediction_mode=False):
+        prepath = self.conf['paths']['processed_prepath']
+        return_sequences = self.conf['model']['return_sequences']
+        signals = []
+        results = []
+        total_length = 0
+        for shot in shot_list:
+            assert(isinstance(shot,Shot))
+            assert(shot.valid)
+            shot.restore(prepath)
+
+            if self.normalizer is not None:
+                self.normalizer.apply(shot)
+            else:
+                print('Warning, no normalization. Training data may be poorly conditioned')
+
+            total_length += len(shot.ttd)
+            signals.append(shot.signals)
+            res = shot.ttd
+            if len(res.shape) == 1:
+                results.append(expand_dims(res,axis=1))
+            else:
+                results.append(shot.ttd)
+            shot.make_light()
+
+        sig_patches, res_patches = self.make_patches(signals,results)
+        X_list,y_list = self.arange_patches(sig_patches,res_patches)
+
+        effective_length = len(res_patches)*len(res_patches[0])
+        if self.verbose:
+            print('multiplication factor: {}'.format(1.0*effective_length/total_length))
+            print('effective/total length : {}/{}'.format(effective_length,total_length))
+            print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
+            print(X_list[0].shape)
+
+
+
+
+
+
+        return X_list,y_list
+
+
+    def make_deterministic_patches(self,signals,results):
+        length = self.conf['model']['length']
+        sig_patches = []
+        res_patches = []
+        min_len = self.get_min_len(signals,length)
+        for sig,res in zip(signals,results):
+            sig_patch, res_patch =  self.make_deterministic_patches_from_single_array(sig,res,min_len)
+            sig_patches += sig_patch
+            res_patches += res_patch
+        return sig_patches, res_patches
+
+    def make_deterministic_patches_from_single_array(self,sig,res,min_len):
+        sig_patches = []
+        res_patches = []
+        assert(min_len <= len(sig))
+        for start in range(0,len(sig)-min_len,min_len):
+            sig_patches.append(sig[start:start+min_len])
+            res_patches.append(res[start:start+min_len])
+        sig_patches.append(sig[-min_len:])
+        res_patches.append(res[-min_len:])
+        return sig_patches,res_patches
+
+    def make_random_patches(self,signals,results,num):
+        length = self.conf['model']['length']
+        sig_patches = []
+        res_patches = []
+        min_len = self.get_min_len(signals,length)
+        for i in range(num):
+            idx= np.random.randint(len(signals))
+            sig_patch, res_patch =  self.make_random_patch_from_array(signals[idx],results[idx],min_len)
+            sig_patches.append(sig_patch)
+            res_patches.append(res_patch)
+        return sig_patches,res_patches
+
+    def make_random_patch_from_array(self,sig,res,min_len):
+        start = np.random.randint(len(sig) - min_len+1)
+        return sig[start:start+min_len],res[start:start+min_len]
+        
+
+    def get_min_len(self,arrs,length):
+        length = self.conf['model']['length']
+        min_len = min([len(a) for a in arrs] + [self.conf['training']['max_patch_length']])
+        min_len = max(1,min_len // length) * length 
+        return min_len
+
+    def make_patches(self,signals,results):
+        length = self.conf['model']['length']
+        total_num = self.conf['training']['batch_size'] 
+        sig_patches_det,res_patches_det = self.make_deterministic_patches(signals,results)
+        num_already = len(sig_patches_det)
+        
+        total_num = int(ceil(1.0 * num_already / total_num)) * total_num
+        
+        
+        num_additional = total_num - num_already
+        assert(num_additional >= 0)
+        sig_patches_rand,res_patches_rand = self.make_random_patches(signals,results,num_additional)
+        if self.verbose:
+            print('random to deterministic ratio: {}/{}'.format(num_additional,num_already))
+        return sig_patches_det + sig_patches_rand,res_patches_det + res_patches_rand 
+
+
+    def arange_patches(self,sig_patches,res_patches):
+        length = self.conf['model']['length']
+        batch_size = self.conf['training']['batch_size']
+        assert(len(sig_patches) % batch_size == 0) #fixed number of batches
+        assert(len(sig_patches[0]) % length == 0) #divisible by length
+        num_batches = len(sig_patches) / batch_size
+        patch_length = len(sig_patches[0])
+
+        zipped = zip(sig_patches,res_patches)
+        shuffle(zipped)
+        sig_patches, res_patches = zip(*zipped) 
+        X_list = []
+        y_list = []
+        for i in range(num_batches):
+            X,y = self.arange_patches_single(sig_patches[i*batch_size:(i+1)*batch_size],
+                                        res_patches[i*batch_size:(i+1)*batch_size])
+            X_list.append(X)
+            y_list.append(y)
+        return X_list,y_list
+
+    def arange_patches_single(self,sig_patches,res_patches):
+        length = self.conf['model']['length']
+        batch_size = self.conf['training']['batch_size']
+
+        assert(len(sig_patches) == batch_size)
+        assert(len(sig_patches[0]) % length == 0)
+        num_chunks = len(sig_patches[0]) / length
+        num_signals = sig_patches[0].shape[1]
+        if len(res_patches[0].shape) == 1:
+            num_answers = 1
+        else:
+            num_answers = res_patches[0].shape[1]
+        
+        X = zeros((num_chunks*batch_size,length,num_signals))
+        y = zeros((num_chunks*batch_size,length,num_answers))
+        
+        for chunk_idx in range(num_chunks):
+            src_start = chunk_idx*length
+            src_end = (chunk_idx+1)*length
+            for batch_idx in range(batch_size):
+                X[chunk_idx*batch_size + batch_idx,:,:] = sig_patches[batch_idx][src_start:src_end]
+                y[chunk_idx*batch_size + batch_idx,:,:] = res_patches[batch_idx][src_start:src_end]
+        return X,y
 
     def load_as_X_y(self,shot,verbose=False,prediction_mode=False):
         assert(isinstance(shot,Shot))
@@ -560,44 +720,49 @@ class Loader(object):
             y = expand_dims(y,axis=len(shape(y)))
         return X,y
 
-    def get_batch_size(self,prediction_mode):
-        length = self.conf['model']['length']
-        skip = self.conf['model']['skip']
-        if prediction_mode == True:
+    @staticmethod
+    def get_batch_size(batch_size,prediction_mode):
+        if prediction_mode:
             return 1
         else:
-            return Loader.get_num_skips(length,skip)
+            return batch_size#Loader.get_num_skips(length,skip)
 
     @staticmethod
     def get_num_skips(length,skip):
         return 1 + (length-1)//skip
 
+    # def produce_indices(signals_list):
+    #     indices_list = []
+    #     for xx in signals_list:
+    #         indices_list.append(arange(len(xx)))
+    #     return indices_list
 
 
-    def array_to_path_and_external_pred(self,arr,res,return_sequences=False):
-        length = self.conf['model']['length']
-        skip = self.conf['model']['skip']
-        assert(shape(arr)[0] == shape(res)[0])
-        X = []
-        y = []
-        i = 0
-        while True:
-            pred = i+length
-            if pred > len(arr):
-                break
-            X.append(arr[i:i+length,:])
-            if return_sequences:
-                y.append(res[i:i+length])
-            else:
-                y.append(res[i+length-1])
-            i += skip
-        X = array(X)
-        y = array(y)
-        if len(shape(X)) == 1:
-            X = expand_dims(X,axis=len(shape(X)))
-        if return_sequences and len(shape(y)) == 1:
-            y = expand_dims(y,axis=len(shape(y)))
-        return X,y
+
+    # def array_to_path_and_external_pred(self,arr,res,return_sequences=False):
+    #     length = self.conf['model']['length']
+    #     skip = self.conf['model']['skip']
+    #     assert(shape(arr)[0] == shape(res)[0])
+    #     X = []
+    #     y = []
+    #     i = 0
+    #     while True:
+    #         pred = i+length
+    #         if pred > len(arr):
+    #             break
+    #         X.append(arr[i:i+length,:])
+    #         if return_sequences:
+    #             y.append(res[i:i+length])
+    #         else:
+    #             y.append(res[i+length-1])
+    #         i += skip
+    #     X = array(X)
+    #     y = array(y)
+    #     if len(shape(X)) == 1:
+    #         X = expand_dims(X,axis=len(shape(X)))
+    #     if return_sequences and len(shape(y)) == 1:
+    #         y = expand_dims(y,axis=len(shape(y)))
+    #     return X,y
 
    
     # def array_to_path_and_next(self,arr):

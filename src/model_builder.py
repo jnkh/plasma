@@ -37,9 +37,9 @@ class ModelBuilder():
 		rnn_type = model_conf['rnn_type']
 		optimizer = model_conf['optimizer']
 		if optimizer == 'sgd':
-			optimizer = SGD(lr = 0.0001)
+			optimizer = SGD(lr=0.0001)
 		if optimizer == 'adam':
-			optimizer = Adam(lr = 0.0001)
+			optimizer = Adam(lr=0.0001)
 		loss_fn = model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
@@ -49,12 +49,10 @@ class ModelBuilder():
 		return_sequences = model_conf['return_sequences']
 		num_signals = conf['data']['num_signals']
 
+		batch_size = Loader.get_batch_size(self.conf['training']['batch_size'],predict)
 		if predict:
 		    #so we can predict with one time point at a time!
-			batch_size = 1
 			length =pred_length 
-		else:
-			batch_size = Loader.get_num_skips(length,skip)
 
 
 		if rnn_type == 'LSTM':
