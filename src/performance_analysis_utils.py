@@ -80,12 +80,12 @@ class PerformanceAnalyzer():
         predictions = pred > P_thresh
         predictions = reshape(predictions,(len(predictions),))
         
-        max_acceptable = self.create_acceptable_region(truth,'min')
-        min_acceptable = self.create_acceptable_region(truth,'max')
+        max_acceptable = self.create_acceptable_region(truth,'max')
+        min_acceptable = self.create_acceptable_region(truth,'min')
         
         early = late = TP = TN = FN = FP = 0
       
-        positives = where(predictions)[0]
+        positives = self.get_positives(predictions)#where(predictions)[0]
         if len(positives) == 0:
             if is_disruptive:
                 FN = 1
@@ -105,6 +105,9 @@ class PerformanceAnalyzer():
         return TP,FP,FN,TN,early,late
 
 
+    def get_positives(self,predictions):
+        indices = arange(len(predictions))
+        return where(logical_and(predictions,indices >= 100))[0]
 
 
     def create_acceptable_region(self,truth,mode):
@@ -230,7 +233,7 @@ class PerformanceAnalyzer():
             pred = pred_list[i]
             predictions = pred > P_thresh
             predictions = reshape(predictions,(len(predictions),))
-            positives = where(predictions)[0]
+            positives = self.get_positives(predictions)#where(predictions)[0]
             if len(positives) > 0:
                 alarm_ttd = len(pred) - 1.0 - positives[0]
                 alarms.append(alarm_ttd)
@@ -354,13 +357,15 @@ class PerformanceAnalyzer():
             elif type == 'late':
                 comparison =late 
             elif type == 'early':
-                comparison =early 
+                comparison =early
+            elif type == 'any':
+                comparison = True
             else:
                 print('warning, unkown type')
                 return
             if comparison and plotted < max_plot:
                 figure()
-                semilogy((t+0.001)[::-1],label='ground truth')
+                loglog((t+0.001)[::-1],label='ground truth')
                 plot(p[::-1],'g',label='neural net prediction')
                 axvline(self.T_min_warn,color='r',label='max warning time')
                 axvline(self.T_max_warn,color='r',label='min warning time')

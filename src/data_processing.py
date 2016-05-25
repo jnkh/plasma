@@ -60,8 +60,8 @@ class Normalizer(object):
                 self.minimums = minimums
                 self.maximums = maximums
             else:
-                self.minimums = np.min(vstack((self.minimums,minimums)),0)
-                self.maximums = np.max(vstack((self.maximums,maximums)),0)
+                self.minimums = (self.num_processed*self.minimums + minimums)/(self.num_processed + 1.0)#snp.min(vstack((self.minimums,minimums)),0)
+                self.maximums = (self.num_processed*self.maximums + maximums)/(self.num_processed + 1.0)#snp.max(vstack((self.maximums,maximums)),0)
             self.num_processed = self.num_processed + 1
             self.num_disruptive = self.num_disruptive + (1 if stats.is_disruptive else 0)
 
@@ -491,7 +491,6 @@ class Loader(object):
 
     def load_as_X_y_list(self,shot_list,verbose=False,prediction_mode=False):
         prepath = self.conf['paths']['processed_prepath']
-        return_sequences = self.conf['model']['return_sequences']
         signals = []
         results = []
         total_length = 0
@@ -504,6 +503,13 @@ class Loader(object):
                 self.normalizer.apply(shot)
             else:
                 print('Warning, no normalization. Training data may be poorly conditioned')
+
+
+
+            if self.conf['training']['use_mock_data']:
+                sig,res = self.get_mock_data()
+                shot.signals = sig
+                shot.ttd = res
 
             total_length += len(shot.ttd)
             signals.append(shot.signals)
@@ -522,12 +528,6 @@ class Loader(object):
             print('multiplication factor: {}'.format(1.0*effective_length/total_length))
             print('effective/total length : {}/{}'.format(effective_length,total_length))
             print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
-            print(X_list[0].shape)
-
-
-
-
-
 
         return X_list,y_list
 
@@ -617,6 +617,7 @@ class Loader(object):
     def arange_patches_single(self,sig_patches,res_patches):
         length = self.conf['model']['length']
         batch_size = self.conf['training']['batch_size']
+        return_sequences = self.conf['model']['return_sequences']
 
         assert(len(sig_patches) == batch_size)
         assert(len(sig_patches[0]) % length == 0)
@@ -628,14 +629,21 @@ class Loader(object):
             num_answers = res_patches[0].shape[1]
         
         X = zeros((num_chunks*batch_size,length,num_signals))
-        y = zeros((num_chunks*batch_size,length,num_answers))
+        if return_sequences:
+            y = zeros((num_chunks*batch_size,length,num_answers))
+        else:
+            y = zeros((num_chunks*batch_size,num_answers))
+
         
         for chunk_idx in range(num_chunks):
             src_start = chunk_idx*length
             src_end = (chunk_idx+1)*length
             for batch_idx in range(batch_size):
                 X[chunk_idx*batch_size + batch_idx,:,:] = sig_patches[batch_idx][src_start:src_end]
-                y[chunk_idx*batch_size + batch_idx,:,:] = res_patches[batch_idx][src_start:src_end]
+                if return_sequences:
+                    y[chunk_idx*batch_size + batch_idx,:,:] = res_patches[batch_idx][src_start:src_end]
+                else:
+                    y[chunk_idx*batch_size + batch_idx,:] = res_patches[batch_idx][src_end-1]
         return X,y
 
     def load_as_X_y(self,shot,verbose=False,prediction_mode=False):
@@ -653,7 +661,8 @@ class Loader(object):
         signals = shot.signals
         ttd = shot.ttd
 
-        # signals,ttd = self.get_mock_data()
+        if self.conf['training']['use_mock_data']:
+            signals,ttd = self.get_mock_data()
 
         # if not self.stateful:
         #     X,y = self.array_to_path_and_external_pred(signals,ttd)
@@ -665,18 +674,21 @@ class Loader(object):
         return  X,y#X,y
 
     def get_mock_data(self):
-        signals = linspace(0,2*pi,10000)
+        signals = linspace(0,4*pi,10000)
+        rand_idx = randint(6000)
+        lgth = randint(1000,3000)
+        signals = signals[rand_idx:rand_idx+lgth]
         #ttd[-100:] = 1
         signals = vstack([signals]*8)
         signals = signals.T
         signals[:,0] = 0.5 + 0.5*sin(signals[:,0])
-        signals[:,1] = 0.5 + 0.5*cos(signals[:,1])
+        signals[:,1] = 0.5# + 0.5*cos(signals[:,1])
         signals[:,2] = 0.5 + 0.5*sin(2*signals[:,2])
         signals[:,3:] *= 0
-        offset = 1000
-        ttd = 1.0*signals[:,0]
+        offset = 100
+        ttd = 0.0*signals[:,0]
+        ttd[offset:] = 1.0*signals[:-offset,0]
         mask = ttd > mean(ttd)
-        ttd[mask] = 1
         ttd[~mask] = 0
         #mean(signals[:,:2],1)
         return signals,ttd
@@ -686,6 +698,8 @@ class Loader(object):
         skip = self.conf['model']['skip']
         if prediction_mode:
             length = self.conf['model']['pred_length']
+            if not return_sequences:
+                length = 1
             skip = length #batchsize = 1!
         assert(shape(arr)[0] == shape(res)[0])
         num_chunks = len(arr) // length

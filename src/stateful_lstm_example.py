@@ -13,6 +13,7 @@ from keras.utils.generic_utils import Progbar
 from keras.callbacks import Callback
  
 from data_processing import *
+from pylab import *
 
 
 def sample(a, temperature=1.0):
@@ -136,7 +137,7 @@ for e in range(num_epochs):
     model.save_weights('./tmp/keras_char_rnn.%d.h5' % e,overwrite=True)
     numberToGenerate = 100
     diversities = [.2,.5,1.0,1.2]
-    startChar = random.choice(allChars)
+    startChar = np.random.choice(allChars)
     testing_model.load_weights('./tmp/keras_char_rnn.%d.h5' % e)
     for diversity in diversities:
         next_char = startChar
