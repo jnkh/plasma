@@ -8,6 +8,7 @@ from keras.optimizers import *
 
 import dill
 import re,os
+import copy
 
 from data_processing import Loader
 
@@ -24,10 +25,14 @@ class ModelBuilder():
 		self.conf = conf
 
 	def get_unique_id(self):
+		num_epochs = self.conf['training']['num_epochs']
 		this_conf = self.conf.copy()
 		#don't make hash dependent on number of epochs.
 		this_conf['training']['num_epochs'] = 0
-		return hash(dill.dumps(this_conf))
+		unique_id =  hash(dill.dumps(this_conf))
+
+		self.conf['training']['num_epochs'] = num_epochs
+		return unique_id
 
 
 	def build_model(self,predict):
@@ -37,9 +42,9 @@ class ModelBuilder():
 		rnn_type = model_conf['rnn_type']
 		optimizer = model_conf['optimizer']
 		if optimizer == 'sgd':
-			optimizer = SGD(lr=0.0001)
+			optimizer = SGD()#lr=0.0001
 		if optimizer == 'adam':
-			optimizer = Adam(lr=0.0001)
+			optimizer = Adam()#lr=0.0005
 		loss_fn = model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
@@ -52,7 +57,10 @@ class ModelBuilder():
 		batch_size = Loader.get_batch_size(self.conf['training']['batch_size'],predict)
 		if predict:
 		    #so we can predict with one time point at a time!
-			length =pred_length 
+			if return_sequences:
+				length =pred_length
+			else:
+				length = 1
 
 
 		if rnn_type == 'LSTM':
@@ -62,10 +70,12 @@ class ModelBuilder():
 		else:
 			print('Unkown Model Type, exiting.')
 			exit(1)
-
+		
+		batch_input_shape=(batch_size,length, num_signals)
 		model = Sequential()
-		model.add(rnn_model(rnn_size, return_sequences=return_sequences,
-		 stateful=stateful, batch_input_shape=(batch_size,length, num_signals)))
+		# model.add(TimeDistributed(Dense(num_signals,bias=True),batch_input_shape=batch_input_shape))
+		model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
+		 stateful=stateful))
 		model.add(Dropout(dropout_prob))
 		if return_sequences:
 			model.add(TimeDistributed(Dense(1)))
@@ -91,13 +101,12 @@ class ModelBuilder():
 
 
 	def load_model_weights(self,model):
-		unique_id = self.get_unique_id()
 		epochs = self.get_all_saved_files()
 		if len(epochs) == 0:
 			print('no previous checkpoint found')
 			return -1
 		else:
-			max_epoch = max(epochs)
+			max_epoch = min(self.conf['training']['num_epochs'],max(epochs))
 			print('loading from epoch {}'.format(max_epoch))
 			model.load_weights(self.get_save_path(max_epoch))
 			return max_epoch

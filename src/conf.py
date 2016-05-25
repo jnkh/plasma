@@ -45,12 +45,12 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 40,
+        'use_shots' : 10,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 2,
-        'T_warning' : 0.5,
+        'T_warning' : 0.2,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
    },
@@ -61,10 +61,10 @@ conf = {
         'length' : 100,
         'skip' : 1,
         #hidden layer size
-        'rnn_size' : 20,
+        'rnn_size' : 100,
         'rnn_type' : 'LSTM',
-        'optimizer' : 'adam',
-        'loss' : 'binary_crossentropy',
+        'optimizer' : 'rmsprop',
+        'loss' : 'mse',
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.1,
@@ -74,10 +74,11 @@ conf = {
         'as_array_of_shots':True,
         'shuffle_training' : True,
         'train_frac' : 0.5,
-        'batch_size' : 256,
-        'max_patch_length' : 1000,
+        'batch_size' : 100,
+        'max_patch_length' : 1000, #THIS WAS THE CULPRIT FOR NO TRAINING!
         'num_shots_at_once' :  25,
-        'num_epochs' : 100,
+        'num_epochs' : 20,
         'evaluate' : False,
+        'use_mock_data' : False,
    },
 }

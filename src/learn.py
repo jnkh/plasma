@@ -100,13 +100,13 @@ while e < num_epochs-1:
         for j,(X,y) in enumerate(zip(X_list,y_list)):
             history = LossHistory()
             #load data and fit on data
-            train_model.reset_states()
             train_model.fit(X,y,
                 batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
                 nb_epoch=1,shuffle=False,verbose=0,
                 validation_split=0.0,callbacks=[history])
+            train_model.reset_states()
 
-            print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
+            # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
             pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", np.mean(history.losses))])
             loader.verbose=False#True during the first iteration
 
@@ -138,30 +138,36 @@ disruptive_test= []
 
 
 for (i,shot) in enumerate(shot_list_train):
-    test_model.reset_states()
     print('Shot {}/{}'.format(i,num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
     print(y_p.shape)
-    shot_length = y_p.shape[0]*y_p.shape[1]
-    answer_dims = y_p.shape[2]
+    answer_dims = y_p.shape[-1]
+    if conf['model']['return_sequences']:
+        shot_length = y_p.shape[0]*y_p.shape[1]
+    else:
+        shot_length = y_p.shape[0]
     y_prime_train.append(np.reshape(y_p,(shot_length,answer_dims)))
     y_gold_train.append(np.reshape(y,(shot_length,answer_dims)))
     disruptive_train.append(shot.is_disruptive_shot())
+    test_model.reset_states()
 
 
 for (i,shot) in enumerate(shot_list_test):
-    test_model.reset_states()
     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-    shot_length = y_p.shape[0]*y_p.shape[1]
-    answer_dims = y_p.shape[2]
+    answer_dims = y_p.shape[-1]
+    if conf['model']['return_sequences']:
+        shot_length = y_p.shape[0]*y_p.shape[1]
+    else:
+        shot_length = y_p.shape[0]
     y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
     y_gold_test.append(np.reshape(y,(shot_length,answer_dims)))
     disruptive_test.append(shot.is_disruptive_shot())
+    test_model.reset_states()
 
 # y_gold_train = np.concatenate(y_gold_train)
 # y_gold_test = np.concatenate(y_gold_test)
