@@ -1,6 +1,7 @@
 from pylab import *
 from matplotlib import pyplot
 import os
+from pprint import pprint
 
 
 
@@ -173,7 +174,7 @@ class PerformanceAnalyzer():
             print('{}: loaded {} shot ({}) disruptive'.format(mode,self.get_num_shots(mode),self.get_num_disruptive_shots(mode)))
    
     def print_conf(self):
-        print(self.conf) 
+        pprint(self.conf) 
 
     def get_num_shots(self,mode):
         if mode == 'test':
