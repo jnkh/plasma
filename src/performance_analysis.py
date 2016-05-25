@@ -11,7 +11,7 @@ mode = 'test'
 file_num = 0
 save_figure = True
 
-P_thresh_range = logspace(-4,0,100) 
+P_thresh_range = logspace(-4,0,500) 
 T_max_warn = 1000
 T_min_warn = 30
 

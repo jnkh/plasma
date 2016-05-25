@@ -279,6 +279,14 @@ class PerformanceAnalyzer():
                 print('No such P_thresh found')
             print('')
 
+        print('============== Crossing Point: ==============')
+        print('============= TEST PERFORMANCE: =============')
+        idx = where(missed_range <= fp_range)[0][-1]
+        P_thresh_opt = P_thresh_range[idx]
+        self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
+        P_thresh_ret = P_thresh_opt
+        return P_thresh_ret
+
 
     def compute_tradeoffs_and_print_from_training(self,P_thresh_range):
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(P_thresh_range,'train')
@@ -312,13 +320,20 @@ class PerformanceAnalyzer():
                 idx = where(missed_range <= missed_thresh)[0][-1]
                 P_thresh_opt = P_thresh_range[idx]
                 self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
-    	    if missed_thresh == 0.05:
-    		P_thresh_ret = P_thresh_opt
+                if missed_thresh == 0.05:
+                    P_thresh_ret = P_thresh_opt
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
     	    P_thresh_opt = P_thresh_default
             print('')
+
+        print('============== Crossing Point: ==============')
+        print('============= TEST PERFORMANCE: =============')
+        idx = where(missed_range <= fp_range)[0][-1]
+        P_thresh_opt = P_thresh_range[idx]
+        self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
+        P_thresh_ret = P_thresh_opt
         return P_thresh_ret
 
 
