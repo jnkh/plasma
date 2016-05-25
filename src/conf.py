@@ -63,7 +63,9 @@ conf = {
         #hidden layer size
         'rnn_size' : 100,
         'rnn_type' : 'LSTM',
+        'rnn_layers' : 2,
         'optimizer' : 'rmsprop',
+        'lr' : None
         'loss' : 'mse',
         'stateful' : True,
         'return_sequences' : True,
