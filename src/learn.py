@@ -85,6 +85,20 @@ print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),le
 
 #load the latest epoch we did. Returns -1 if none exist yet
 e = model_builder.load_model_weights(train_model)
+
+
+if conf['training']['data_parallel']:
+    #elephas
+    from elephas.utils.rdd_utils import to_simple_rdd
+    from elephas.spark_model import SparkModel
+    from elephas import optimizers as elephas_optimizers
+    adam = elephas_optimizers.Adam()
+    train_model = SparkModel(sc,train_model,optimizer=adam,frequency='batch',
+        mode='synchronous',num_workers=2)
+
+
+
+
 num_at_once = conf['training']['num_shots_at_once']
 print('{} epochs left to go'.format(num_epochs - 1 - e))
 while e < num_epochs-1:
@@ -99,11 +113,21 @@ while e < num_epochs-1:
         X_list,y_list = loader.load_as_X_y_list(shot_sublist)
         for j,(X,y) in enumerate(zip(X_list,y_list)):
             history = LossHistory()
-            #load data and fit on data
-            train_model.fit(X,y,
+
+            if conf['training']['data_parallel']:
+                rdd = to_simple_rdd(sc,X,y)
+                train_model.train(rdd,
                 batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
                 nb_epoch=1,shuffle=False,verbose=0,
                 validation_split=0.0,callbacks=[history])
+
+
+            else:
+                #load data and fit on data
+                train_model.fit(X,y,
+                    batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
+                    nb_epoch=1,shuffle=False,verbose=0,
+                    validation_split=0.0,callbacks=[history])
             train_model.reset_states()
 
             # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))

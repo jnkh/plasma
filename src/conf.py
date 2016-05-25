@@ -57,7 +57,7 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'pred_length' : 10,
+        'pred_length' : 100,
         'length' : 100,
         'skip' : 1,
         #hidden layer size
@@ -75,10 +75,11 @@ conf = {
         'shuffle_training' : True,
         'train_frac' : 0.5,
         'batch_size' : 100,
-        'max_patch_length' : 1000, #THIS WAS THE CULPRIT FOR NO TRAINING!
+        'max_patch_length' : 1000, 
         'num_shots_at_once' :  25,
         'num_epochs' : 20,
         'evaluate' : False,
         'use_mock_data' : False,
+        'data_parallel' : False,
    },
 }
