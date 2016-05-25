@@ -168,9 +168,12 @@ class PerformanceAnalyzer():
         self.pred_test = dat['y_prime_test']
         self.truth_test = dat['y_gold_test']
         self.disruptive_test = dat['disruptive_test']
+        self.conf = dat['conf']
         for mode in ['test','train']:
             print('{}: loaded {} shot ({}) disruptive'.format(mode,self.get_num_shots(mode),self.get_num_disruptive_shots(mode)))
-    
+   
+    def print_conf(self):
+        print(self.conf) 
 
     def get_num_shots(self,mode):
         if mode == 'test':

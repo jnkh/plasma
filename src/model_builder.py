@@ -74,9 +74,10 @@ class ModelBuilder():
 		batch_input_shape=(batch_size,length, num_signals)
 		model = Sequential()
 		# model.add(TimeDistributed(Dense(num_signals,bias=True),batch_input_shape=batch_input_shape))
-		model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
+		for _ in range(1):
+		    model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
 		 stateful=stateful))
-		model.add(Dropout(dropout_prob))
+		    model.add(Dropout(dropout_prob))
 		if return_sequences:
 			model.add(TimeDistributed(Dense(1)))
 			model.add(TimeDistributed(Activation('sigmoid'))) #add if probabilistic output

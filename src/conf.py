@@ -80,5 +80,6 @@ conf = {
         'num_epochs' : 10,
         'evaluate' : False,
         'use_mock_data' : False,
+        'data_parallel' : False,
    },
 }
