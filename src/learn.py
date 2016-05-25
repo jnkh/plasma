@@ -89,6 +89,8 @@ e = model_builder.load_model_weights(train_model)
 
 if conf['training']['data_parallel']:
     #elephas
+    from pyspark import SparkConf, SparkContext
+    sc = SparkContext()
     from elephas.utils.rdd_utils import to_simple_rdd
     from elephas.spark_model import SparkModel
     from elephas import optimizers as elephas_optimizers
@@ -118,8 +120,8 @@ while e < num_epochs-1:
                 rdd = to_simple_rdd(sc,X,y)
                 train_model.train(rdd,
                 batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
-                nb_epoch=1,shuffle=False,verbose=0,
-                validation_split=0.0,callbacks=[history])
+                nb_epoch=1,verbose=1,
+                validation_split=0.0)
 
 
             else:
