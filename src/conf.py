@@ -63,7 +63,7 @@ conf = {
         #hidden layer size
         'rnn_size' : 100,
         'rnn_type' : 'LSTM',
-        'optimizer' : 'adam',
+        'optimizer' : 'rmsprop',
         'loss' : 'binary_crossentropy',
         'stateful' : True,
         'return_sequences' : True,
