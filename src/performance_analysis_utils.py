@@ -189,7 +189,7 @@ class PerformanceAnalyzer():
         T_min_warn = self.T_min_warn
         T_max_warn = self.T_max_warn
         if len(alarms) > 0:
-            alarms /= 1000.0
+            alarms = alarms / 1000.0
             alarms = sort(alarms)
             T_min_warn /= 1000.0
             T_max_warn /= 1000.0
