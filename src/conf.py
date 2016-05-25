@@ -65,7 +65,7 @@ conf = {
         'rnn_type' : 'LSTM',
         'rnn_layers' : 2,
         'optimizer' : 'rmsprop',
-        'lr' : None
+        'lr' : None,
         'loss' : 'mse',
         'stateful' : True,
         'return_sequences' : True,
