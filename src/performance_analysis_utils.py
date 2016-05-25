@@ -330,10 +330,13 @@ class PerformanceAnalyzer():
 
         print('============== Crossing Point: ==============')
         print('============= TEST PERFORMANCE: =============')
-        idx = where(missed_range <= fp_range)[0][-1]
-        P_thresh_opt = P_thresh_range[idx]
-        self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
-        P_thresh_ret = P_thresh_opt
+        if(any(missed_range <= fp_range)):
+            idx = where(missed_range <= fp_range)[0][-1]
+            P_thresh_opt = P_thresh_range[idx]
+            self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
+            P_thresh_ret = P_thresh_opt
+        else:
+            print('No such P_thresh found')
         return P_thresh_ret
 
 
