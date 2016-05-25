@@ -89,11 +89,13 @@ e = model_builder.load_model_weights(train_model)
 
 if conf['training']['data_parallel']:
     #elephas
+    from pyspark import SparkConf, SparkContext
+    sc = SparkContext()
     from elephas.utils.rdd_utils import to_simple_rdd
     from elephas.spark_model import SparkModel
     from elephas import optimizers as elephas_optimizers
     adam = elephas_optimizers.Adam()
-    train_model = SparkModel(sc,train_model,optimizer=adam,frequency='batch',
+    spark_model = SparkModel(sc,train_model,optimizer=adam,frequency='batch',
         mode='synchronous',num_workers=2)
 
 
@@ -116,10 +118,11 @@ while e < num_epochs-1:
 
             if conf['training']['data_parallel']:
                 rdd = to_simple_rdd(sc,X,y)
-                train_model.train(rdd,
+                spark_model.train(rdd,
                 batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
                 nb_epoch=1,shuffle=False,verbose=0,
                 validation_split=0.0,callbacks=[history])
+                spark_model.reset_states()
 
 
             else:
@@ -128,13 +131,16 @@ while e < num_epochs-1:
                     batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
                     nb_epoch=1,shuffle=False,verbose=0,
                     validation_split=0.0,callbacks=[history])
-            train_model.reset_states()
+                train_model.reset_states()
 
             # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
             pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", np.mean(history.losses))])
             loader.verbose=False#True during the first iteration
 
-    model_builder.save_model_weights(train_model,e)
+    if conf['training']['data_parallel']:
+        model_builder.save_model_weights(spark_model,e)
+    else:
+        model_builder.save_model_weights(train_model,e)
 print('...done')
 
 
