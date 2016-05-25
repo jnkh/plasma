@@ -23,6 +23,7 @@ analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
 	T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
+analyzer.print_conf()
 
 #compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
