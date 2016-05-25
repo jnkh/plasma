@@ -41,10 +41,13 @@ class ModelBuilder():
 		rnn_size = model_conf['rnn_size']
 		rnn_type = model_conf['rnn_type']
 		optimizer = model_conf['optimizer']
-		if optimizer == 'sgd':
-			optimizer = SGD()#lr=0.0001
-		if optimizer == 'adam':
-			optimizer = Adam()#lr=0.0005
+		lr = model_conf['lr']
+		if optimizer == 'sgd' and lr is not None:
+			optimizer = SGD(lr = lr)#lr=0.0001
+		if optimizer == 'adam' and lr is not None:
+			optimizer = Adam(lr = lr)#lr=0.0005
+		if optimizer == 'rmsprop' and lr is not None:
+			optimizer = Adam(lr = lr)#lr=0.0005
 		loss_fn = model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
@@ -74,10 +77,10 @@ class ModelBuilder():
 		batch_input_shape=(batch_size,length, num_signals)
 		model = Sequential()
 		# model.add(TimeDistributed(Dense(num_signals,bias=True),batch_input_shape=batch_input_shape))
-		for _ in range(1):
-		    model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
-		 stateful=stateful))
-		    model.add(Dropout(dropout_prob))
+		for _ in range(model_conf['rnn_layers']):
+			model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
+			 stateful=stateful))
+			model.add(Dropout(dropout_prob))
 		if return_sequences:
 			model.add(TimeDistributed(Dense(1)))
 			model.add(TimeDistributed(Activation('sigmoid'))) #add if probabilistic output
