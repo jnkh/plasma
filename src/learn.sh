@@ -1,5 +1,5 @@
 # --- the name of your job
-#PBS -N test
+#PBS -N learn
  
 # ------------------------------------------------------------
 # Job execution details
@@ -11,7 +11,7 @@
 #PBS -l mem=4000mb
 
 #     hh:mm:ss (ex. 72 hours is 72:00:00)
-#PBS -l walltime=12:00:00
+#PBS -l walltime=48:00:00
 
 # --- do not rerun this job if it fails
 #PBS -r n

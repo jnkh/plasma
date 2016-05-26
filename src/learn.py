@@ -29,8 +29,11 @@ from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 
 if conf['data']['normalizer'] == 'minmax':
     from data_processing import MinMaxNormalizer as Normalizer #performs !much better than minmaxnormalizer
-else conf['data']['normalizer'] == 'meanvar':
+elif conf['data']['normalizer'] == 'meanvar':
     from data_processing import MeanVarNormalizer as Normalizer #performs !much better than minmaxnormalizer
+else:
+    print('unkown normalizer. exiting')
+    exit(1)
 
 num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
@@ -43,7 +46,7 @@ stateful = conf['model']['stateful']
 # else:
 #     batch_size = conf['training']['batch_size_large']
 
-np.random.seed(5)
+np.random.seed(1)
 #####################################################
 ####################PREPROCESSING####################
 #####################################################

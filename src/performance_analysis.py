@@ -8,19 +8,18 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 0
+file_num = -1
 save_figure = True
 
-P_thresh_range = logspace(-4,0,500) 
+P_thresh_range = logspace(-5,0,1000) 
 T_max_warn = 1000
 T_min_warn = 30
 
 verbose=False
-results_dir = '../data/results/'
-
+results_dir = '/p/datad/jkatesha/data/results/'
 
 analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
-	T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
+T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
 analyzer.print_conf()
