@@ -156,8 +156,9 @@ class MeanVarNormalizer(Normalizer):
 
     def apply(self,shot):
         assert(self.means is not None and self.stds is not None) 
-        means = median
-        shot.signals = (shot.signals - self.means)/self.stds
+        means = median(self.means,axis=0)
+        stds = median(self.stds,axis=0)
+        shot.signals = (shot.signals - means)/stds
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
     def save_stats(self):

@@ -147,8 +147,8 @@ while e < num_epochs-1:
     model_builder.load_model_weights(test_model)
     for (i,shot) in enumerate(shot_list_train):
         X,y = loader.load_as_X_y(shot,prediction_mode=True)
-        print(test_model.evaluate(X,y))
-        
+        print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True))
+
 print('...done')
 
 
