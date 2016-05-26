@@ -164,8 +164,9 @@ print('...done')
 
 
 
-os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
+import theano.sandbox.cuda
+theano.sandbox.cuda.use('cpu')
 reload(model_builder)
 import pathos.multiprocessing as mp
 builder = model_builder.ModelBuilder(conf)
