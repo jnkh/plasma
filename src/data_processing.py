@@ -126,7 +126,9 @@ class MeanVarNormalizer(Normalizer):
         self.stds = None
 
     def __str__(self):
-        return('Mean Var Normalizer.\nmeans: {}\nstds: {}'.format(self.means,self.stds))
+        means = median(self.means,axis=0)
+        stds = median(self.stds,axis=0)
+        return('Mean Var Normalizer.\nmeans: {}\nstds: {}'.format(means,stds))
 
     def extract_stats(self,shot):
         stats = Stats()
