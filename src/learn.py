@@ -166,7 +166,7 @@ print('...done')
 
 os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
-reload(ModelBuilder)
+reload(model_builder)
 import pathos.multiprocessing as mp
 model_builder = ModelBuilder(conf)
 
