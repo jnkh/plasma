@@ -26,7 +26,7 @@ import numpy as np
 #my classes
 from conf import conf
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
-from data_processing import MeanVarNormalizer as Normalizer
+from data_processing import MinMaxNormalizer as Normalizer#MeanVarNormalizer as Normalizer
 
 num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
@@ -147,7 +147,7 @@ while e < num_epochs-1:
     model_builder.load_model_weights(test_model)
     for (i,shot) in enumerate(shot_list_train):
         X,y = loader.load_as_X_y(shot,prediction_mode=True)
-        print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True))
+        print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True)))
 
 print('...done')
 

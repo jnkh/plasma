@@ -26,7 +26,7 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
@@ -45,7 +45,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2,
+        'use_shots' : 100,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -79,7 +79,7 @@ conf = {
         'batch_size' : 128, #100
         'max_patch_length' : 2048, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  25,
-        'num_epochs' : 50,
+        'num_epochs' : 16,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
