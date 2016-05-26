@@ -80,6 +80,7 @@ np.random.seed(5)
 
 ##Need to import later because accessing the GPU from several processes via multiprocessing
 ## gives weird errors.
+import theano
 from keras.utils.generic_utils import Progbar 
 from model_builder import ModelBuilder, LossHistory
 
@@ -163,8 +164,6 @@ print('...done')
 
 os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
-reload(keras)
-reload(model_builder)
 
 
 #####################################################
