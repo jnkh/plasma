@@ -38,7 +38,7 @@ stateful = conf['model']['stateful']
 # else:
 #     batch_size = conf['training']['batch_size_large']
 
-np.random.seed(5)
+np.random.seed(1)
 #####################################################
 ####################PREPROCESSING####################
 #####################################################
