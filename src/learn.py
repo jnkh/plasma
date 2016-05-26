@@ -161,6 +161,11 @@ print('...done')
 
 
 
+os.environ["THEANO_FLAGS"] = "device=cpu"
+reload(theano)
+reload(keras)
+reload(model_builder)
+
 
 #####################################################
 ####################Evaluating#######################
@@ -183,37 +188,66 @@ disruptive_test= []
 
 
 
-for (i,shot) in enumerate(shot_list_train):
-    print('Shot {}/{}'.format(i,num_shots))
-    X,y = loader.load_as_X_y(shot,prediction_mode=True)
-    assert(X.shape[0] == y.shape[0])
-    y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-    print(y_p.shape)
-    answer_dims = y_p.shape[-1]
-    if conf['model']['return_sequences']:
-        shot_length = y_p.shape[0]*y_p.shape[1]
-    else:
-        shot_length = y_p.shape[0]
-    y_prime_train.append(np.reshape(y_p,(shot_length,answer_dims)))
-    y_gold_train.append(np.reshape(y,(shot_length,answer_dims)))
-    disruptive_train.append(shot.is_disruptive_shot())
-    test_model.reset_states()
+def make_predictions(conf,model,shot_list,num_total):
+    y_prime = []
+    y_gold = []
+    disruptive = []
 
 
-for (i,shot) in enumerate(shot_list_test):
-    print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
-    X,y = loader.load_as_X_y(shot,prediction_mode=True)
-    assert(X.shape[0] == y.shape[0])
-    y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-    answer_dims = y_p.shape[-1]
-    if conf['model']['return_sequences']:
-        shot_length = y_p.shape[0]*y_p.shape[1]
-    else:
-        shot_length = y_p.shape[0]
-    y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
-    y_gold_test.append(np.reshape(y,(shot_length,answer_dims)))
-    disruptive_test.append(shot.is_disruptive_shot())
-    test_model.reset_states()
+    for (i,shot) in enumerate(shot_list):
+        print('Shot {}/{}'.format(i,num_total))
+        X,y = loader.load_as_X_y(shot,prediction_mode=True)
+        assert(X.shape[0] == y.shape[0])
+        y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
+        print(y_p.shape)
+        answer_dims = y_p.shape[-1]
+        if conf['model']['return_sequences']:
+            shot_length = y_p.shape[0]*y_p.shape[1]
+        else:
+            shot_length = y_p.shape[0]
+        y_prime.append(np.reshape(y_p,(shot_length,answer_dims)))
+        y_gold.append(np.reshape(y,(shot_length,answer_dims)))
+        disruptive.append(shot.is_disruptive_shot())
+        model.reset_states()
+    return y_prime,y_gold,disruptive
+
+
+y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,test_model,shot_list_train,num_shots)
+y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,test_model,shot_list_test,num_shots)
+
+
+
+# for (i,shot) in enumerate(shot_list_train):
+#     print('Shot {}/{}'.format(i,num_shots))
+#     X,y = loader.load_as_X_y(shot,prediction_mode=True)
+#     assert(X.shape[0] == y.shape[0])
+#     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
+#     print(y_p.shape)
+#     answer_dims = y_p.shape[-1]
+#     if conf['model']['return_sequences']:
+#         shot_length = y_p.shape[0]*y_p.shape[1]
+#     else:
+#         shot_length = y_p.shape[0]
+#     y_prime_train.append(np.reshape(y_p,(shot_length,answer_dims)))
+#     y_gold_train.append(np.reshape(y,(shot_length,answer_dims)))
+#     disruptive_train.append(shot.is_disruptive_shot())
+#     test_model.reset_states()
+
+
+# for (i,shot) in enumerate(shot_list_test):
+#     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
+#     X,y = loader.load_as_X_y(shot,prediction_mode=True)
+#     assert(X.shape[0] == y.shape[0])
+#     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
+#     answer_dims = y_p.shape[-1]
+#     if conf['model']['return_sequences']:
+#         shot_length = y_p.shape[0]*y_p.shape[1]
+#     else:
+#         shot_length = y_p.shape[0]
+#     y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
+#     y_gold_test.append(np.reshape(y,(shot_length,answer_dims)))
+#     disruptive_test.append(shot.is_disruptive_shot())
+#     test_model.reset_states()
 
 # y_gold_train = np.concatenate(y_gold_train)
 # y_gold_test = np.concatenate(y_gold_test)
