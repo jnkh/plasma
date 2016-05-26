@@ -84,10 +84,10 @@ np.random.seed(5)
 os.environ["THEANO_FLAGS"] = "device=gpu1"
 import theano
 from keras.utils.generic_utils import Progbar 
-from model_builder import ModelBuilder, LossHistory
+import model_builder #from model_builder import ModelBuilder, LossHistory
 
 print('Build model...',end='')
-builder = ModelBuilder(conf)
+builder = model_builder.ModelBuilder(conf)
 train_model,test_model = builder.build_train_test_models()
 print('...done')
 
@@ -125,7 +125,7 @@ while e < num_epochs-1:
     for (i,shot_sublist) in enumerate(shot_sublists):
         X_list,y_list = loader.load_as_X_y_list(shot_sublist)
         for j,(X,y) in enumerate(zip(X_list,y_list)):
-            history = LossHistory()
+            history = model_builder.LossHistory()
 
             if conf['training']['data_parallel']:
                 rdd = to_simple_rdd(sc,X,y)
@@ -168,7 +168,7 @@ os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
 reload(model_builder)
 import pathos.multiprocessing as mp
-builder = ModelBuilder(conf)
+builder = model_builder.ModelBuilder(conf)
 
 #####################################################
 ####################Evaluating#######################
