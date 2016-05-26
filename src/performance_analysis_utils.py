@@ -387,7 +387,7 @@ class PerformanceAnalyzer():
                 return
             if comparison and plotted < max_plot:
                 figure()
-                loglog((t+0.001)[::-1],label='ground truth')
+                plot((t+0.001)[::-1],label='ground truth')
                 plot(p[::-1],'g',label='neural net prediction')
                 axvline(self.T_min_warn,color='r',label='max warning time')
                 axvline(self.T_max_warn,color='r',label='min warning time')
