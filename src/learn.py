@@ -17,6 +17,7 @@ This work was supported by the DOE CSGF program.
 from __future__ import print_function
 import datetime,time,os.path
 import dill
+from functools import partial
 
 #matplotlib
 import matplotlib
@@ -165,6 +166,7 @@ print('...done')
 
 os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
+import pathos.multiprocessing as mp
 
 
 #####################################################
@@ -172,7 +174,6 @@ reload(theano)
 #####################################################
 
 #load last model for testing
-model_builder.load_model_weights(test_model)
 print('saving results')
 y_prime = []
 y_prime_test = []
@@ -193,22 +194,38 @@ def make_predictions(conf,model,shot_list,num_total):
     y_gold = []
     disruptive = []
 
+    pool = mp.Pool()
+    print('running in parallel on {} processes'.format(pool._processes))
+    start_time = time.time()
 
-    for (i,shot) in enumerate(shot_list):
+    fn = partial(make_single_prediction,model_builder=model_builder,loader=loader)
+
+    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
         print('Shot {}/{}'.format(i,num_total))
-        X,y = loader.load_as_X_y(shot,prediction_mode=True)
-        assert(X.shape[0] == y.shape[0])
-        y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-        print(y_p.shape)
-        answer_dims = y_p.shape[-1]
-        if conf['model']['return_sequences']:
-            shot_length = y_p.shape[0]*y_p.shape[1]
-        else:
-            shot_length = y_p.shape[0]
-        y_prime.append(np.reshape(y_p,(shot_length,answer_dims)))
-        y_gold.append(np.reshape(y,(shot_length,answer_dims)))
-        disruptive.append(shot.is_disruptive_shot())
-        model.reset_states()
+        y_prime.append(y_p)
+        y_gold.append(y)
+        disruptive.append(is_disruptive)
+    print('Finished Predictions in {} seconds'.format(time.time()-start_time))
+
+
+
+
+def make_single_prediction(shot,model_builder,loader):
+    _,model = model_builder.build_train_test_models()
+    model_builder.load_model_weights(model)
+    model.reset_states()
+    X,y = loader.load_as_X_y(shot,prediction_mode=True)
+    assert(X.shape[0] == y.shape[0])
+    y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
+    answer_dims = y_p.shape[-1]
+    if conf['model']['return_sequences']:
+        shot_length = y_p.shape[0]*y_p.shape[1]
+    else:
+        shot_length = y_p.shape[0]
+    y_p = np.reshape(y_p,(shot_length,answer_dims))
+    y = np.reshape(y,(shot_length,answer_dims))
+    is_disruptive = shot.is_disruptive_shot()
+    model.reset_states()
     return y_prime,y_gold,disruptive
 
 
