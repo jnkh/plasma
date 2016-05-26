@@ -81,7 +81,7 @@ np.random.seed(5)
 
 ##Need to import later because accessing the GPU from several processes via multiprocessing
 ## gives weird errors.
-os.environ["THEANO_FLAGS"] = "device=gpu"
+os.environ["THEANO_FLAGS"] = "device=gpu1"
 import theano
 from keras.utils.generic_utils import Progbar 
 from model_builder import ModelBuilder, LossHistory
@@ -166,8 +166,9 @@ print('...done')
 
 os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
+reload(ModelBuilder)
 import pathos.multiprocessing as mp
-
+model_builder = ModelBuilder(conf)
 
 #####################################################
 ####################Evaluating#######################
