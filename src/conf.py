@@ -1,5 +1,4 @@
 from numpy import log10
-from keras.optimizers import SGD
 #paths#
 base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
@@ -53,6 +52,7 @@ conf = {
         'T_warning' : 1.0,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
+        'normalizer' : 'meanvar',
    },
 
    'model': {

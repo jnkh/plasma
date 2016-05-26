@@ -26,7 +26,14 @@ import numpy as np
 #my classes
 from conf import conf
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
-from data_processing import MinMaxNormalizer as Normalizer#MeanVarNormalizer as Normalizer
+
+if conf['data']['normalizer'] == 'minmax':
+    from data_processing import MinMaxNormalizer as Normalizer #performs !much better than minmaxnormalizer
+elif conf['data']['normalizer'] == 'meanvar':
+    from data_processing import MeanVarNormalizer as Normalizer #performs !much better than minmaxnormalizer
+else:
+    print('unkown normalizer. exiting')
+    exit(1)
 
 num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
