@@ -12,6 +12,7 @@ from __future__ import print_function
 from os import listdir,remove
 import os.path
 import time,random,sys
+import abc
 
 from pylab import *
 import numpy as np
@@ -26,15 +27,166 @@ import pathos.multiprocessing as mp
 class Stats(object):
     pass
 
+
+
+
+
+
+
+
 class Normalizer(object):
     def __init__(self,conf):
-        self.minimums = None
-        self.maximums = None
         self.num_processed = 0
         self.num_disruptive = 0
         self.conf = conf
         self.path = conf['paths']['normalizer_path']
         self.remapper = conf['data']['ttd_remapper']
+
+
+    @abc.abstractmethod
+    def __str__(self):
+        pass
+
+    @abc.abstractmethod
+    def extract_stats(self,shot):
+        pass
+
+    @abc.abstractmethod
+    def incorporate_stats(self,stats):
+        pass
+
+    @abc.abstractmethod
+    def apply(self,shot):
+        pass
+
+    @abc.abstractmethod
+    def save_stats(self):
+        pass
+
+    @abc.abstractmethod
+    def load_stats(self):
+        pass
+
+    ######Modify the above to change the specifics of the normalization scheme#######
+
+    def train(self):
+        conf = self.conf
+        #only use training shots here!! "Don't touch testing shots"
+        shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
+        shot_list_dir = conf['paths']['shot_list_dir']
+        use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
+        return self.train_on_files(shot_list_dir,shot_files,use_shots)
+
+
+    def train_on_files(self,shot_list_dir,shot_files,use_shots):
+        conf = self.conf
+        shot_list = ShotList()
+        shot_list.load_from_files(shot_list_dir,shot_files)
+
+        recompute = conf['data']['recompute_normalization']
+        shot_list_picked = shot_list.random_sublist(use_shots) 
+
+        if recompute or not self.previously_saved_stats():
+            pool = mp.Pool()
+            print('running in parallel on {} processes'.format(pool._processes))
+            start_time = time.time()
+
+            for (i,stats) in enumerate(pool.imap_unordered(self.train_on_single_shot,shot_list_picked)):
+                self.incorporate_stats(stats)
+                print('{}/{}'.format(i,len(shot_list_picked)))
+
+            pool.close()
+            pool.join()
+            print('Finished Training Normalizer on {} files in {} seconds'.format(len(shot_list_picked),time.time()-start_time))
+            self.save_stats()
+        else:
+            self.load_stats()
+        print(self)
+
+
+    def train_on_single_shot(self,shot):
+        assert(isinstance(shot,Shot))
+        processed_prepath = self.conf['paths']['processed_prepath']
+        shot.restore(processed_prepath)
+        stats = self.extract_stats(shot) 
+        shot.make_light()
+        return stats
+
+
+    def previously_saved_stats(self):
+        return os.path.isfile(self.path)
+
+
+
+
+class MeanVarNormalizer(Normalizer):
+    def __init__(self,conf):
+        Normalizer.__init__(self,conf)
+        self.means = None
+        self.stds = None
+
+    def __str__(self):
+        return('Mean Var Normalizer.\nmeans: {}\nstds: {}'.format(self.means,self.stds))
+
+    def extract_stats(self,shot):
+        stats = Stats()
+        if shot.valid:
+            stats.means = np.reshape(np.mean(shot.signals,0),(1,shot.signals.shape[1]))
+            stats.stds = np.reshape(np.std(shot.signals,0),(1,shot.signals.shape[1]))
+            stats.is_disruptive = shot.is_disruptive
+        else:
+            print('Warning: shot {} not valid, omitting'.format(shot))
+        stats.valid = shot.valid
+        return stats
+
+
+    def incorporate_stats(self,stats):
+        if stats.valid:
+            means = stats.means
+            stds = stats.stds
+            if self.num_processed == 0:
+                self.means = means
+                self.stds = stds 
+            else:
+                self.means = np.concatenate((self.means,means),axis=0)
+                self.stds = np.concatenate((self.stds,stds),axis=0)
+            self.num_processed = self.num_processed + 1
+            self.num_disruptive = self.num_disruptive + (1 if stats.is_disruptive else 0)
+
+
+    def apply(self,shot):
+        assert(self.means is not None and self.stds is not None) 
+        means = median
+        shot.signals = (shot.signals - self.means)/self.stds
+        shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
+
+    def save_stats(self):
+        # standard_deviations = dat['standard_deviations']
+        # num_processed = dat['num_processed']
+        # num_disruptive = dat['num_disruptive']
+        np.savez(self.path,means = self.means,stds = self.stds,
+         num_processed=self.num_processed,num_disruptive=self.num_disruptive)
+        print('saved normalization data from {} shots ( {} disruptive )'.format(self.num_processed,self.num_disruptive))
+
+    def load_stats(self):
+        assert(self.previously_saved_stats())
+        dat = load(self.path)
+        self.means = dat['means']
+        self.stds = dat['stds']
+        self.num_processed = dat['num_processed']
+        self.num_disruptive = dat['num_disruptive']
+        print('loaded normalization data from {} shots ( {} disruptive )'.format(self.num_processed,self.num_disruptive))
+        #print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
+
+
+
+
+class MinMaxNormalizer(Normalizer):
+    def __init__(self,conf):
+        Normalizer.__init__(self,conf)
+        self.minimums = None
+        self.maximums = None
+
 
 
     def __str__(self):
@@ -89,54 +241,6 @@ class Normalizer(object):
         print('loaded normalization data from {} shots ( {} disruptive )'.format(self.num_processed,self.num_disruptive))
         #print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
 
-    ######Modify the above to change the specifics of the normalization scheme#######
-
-    def train(self):
-        conf = self.conf
-        #only use training shots here!! "Don't touch testing shots"
-        shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
-        shot_list_dir = conf['paths']['shot_list_dir']
-        use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
-        return self.train_on_files(shot_list_dir,shot_files,use_shots)
-
-
-    def train_on_files(self,shot_list_dir,shot_files,use_shots):
-        conf = self.conf
-        shot_list = ShotList()
-        shot_list.load_from_files(shot_list_dir,shot_files)
-
-        recompute = conf['data']['recompute_normalization']
-        shot_list_picked = shot_list.random_sublist(use_shots) 
-
-        if recompute or not self.previously_saved_stats():
-            pool = mp.Pool()
-            print('running in parallel on {} processes'.format(pool._processes))
-            start_time = time.time()
-
-            for (i,stats) in enumerate(pool.imap_unordered(self.train_on_single_shot,shot_list_picked)):
-                self.incorporate_stats(stats)
-                print('{}/{}'.format(i,len(shot_list_picked)))
-
-            pool.close()
-            pool.join()
-            print('Finished Training Normalizer on {} files in {} seconds'.format(len(shot_list_picked),time.time()-start_time))
-            self.save_stats()
-        else:
-            self.load_stats()
-        print(self)
-
-
-    def train_on_single_shot(self,shot):
-        assert(isinstance(shot,Shot))
-        processed_prepath = self.conf['paths']['processed_prepath']
-        shot.restore(processed_prepath)
-        stats = self.extract_stats(shot) 
-        shot.make_light()
-        return stats
-
-
-    def previously_saved_stats(self):
-        return os.path.isfile(self.path)
 
 
 
