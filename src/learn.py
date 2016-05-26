@@ -87,15 +87,15 @@ from keras.utils.generic_utils import Progbar
 from model_builder import ModelBuilder, LossHistory
 
 print('Build model...',end='')
-model_builder = ModelBuilder(conf)
-train_model,test_model = model_builder.build_train_test_models()
+builder = ModelBuilder(conf)
+train_model,test_model = builder.build_train_test_models()
 print('...done')
 
 print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),len(shot_list_test)))
 
 
 #load the latest epoch we did. Returns -1 if none exist yet
-e = model_builder.load_model_weights(train_model)
+e = builder.load_model_weights(train_model)
 
 
 if conf['training']['data_parallel']:
@@ -147,15 +147,15 @@ while e < num_epochs-1:
             loader.verbose=False#True during the first iteration
 
     if conf['training']['data_parallel']:
-        model_builder.save_model_weights(spark_model,e)
+        builder.save_model_weights(spark_model,e)
     else:
-        model_builder.save_model_weights(train_model,e)
+        builder.save_model_weights(train_model,e)
 
 
 
     #validation
     if conf['training']['evaluate']:
-        model_builder.load_model_weights(test_model)
+        builder.load_model_weights(test_model)
         for (i,shot) in enumerate(shot_list_train):
             X,y = loader.load_as_X_y(shot,prediction_mode=True)
             print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True)))
@@ -168,7 +168,7 @@ os.environ["THEANO_FLAGS"] = "device=cpu"
 reload(theano)
 reload(model_builder)
 import pathos.multiprocessing as mp
-model_builder = ModelBuilder(conf)
+builder = ModelBuilder(conf)
 
 #####################################################
 ####################Evaluating#######################
@@ -199,7 +199,7 @@ def make_predictions(conf,model,shot_list,num_total):
     print('running in parallel on {} processes'.format(pool._processes))
     start_time = time.time()
 
-    fn = partial(make_single_prediction,model_builder=model_builder,loader=loader)
+    fn = partial(make_single_prediction,builder=builder,loader=loader)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
         print('Shot {}/{}'.format(i,num_total))
@@ -211,9 +211,9 @@ def make_predictions(conf,model,shot_list,num_total):
 
 
 
-def make_single_prediction(shot,model_builder,loader):
-    _,model = model_builder.build_train_test_models()
-    model_builder.load_model_weights(model)
+def make_single_prediction(shot,builder,loader):
+    _,model = builder.build_train_test_models()
+    builder.load_model_weights(model)
     model.reset_states()
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
