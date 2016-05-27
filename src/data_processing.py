@@ -276,10 +276,16 @@ class Preprocessor(object):
 
     def preprocess_all(self):
         conf = self.conf
-        shot_files = conf['paths']['shot_files'] + conf['paths']['shot_files_test']
+        shot_files_train = conf['paths']['shot_files']
+        shot_files_test = conf['paths']['shot_files_test']
+        if len(shot_numbers_test) == 0:
+            shot_files_test = shot_files_train
         shot_list_dir = conf['paths']['shot_list_dir']
         use_shots = conf['data']['use_shots']
-        return self.preprocess_from_files(shot_list_dir,shot_files,use_shots)
+        use_shots_train = int(round(train_frac*use_shots))
+        use_shots_test = int(round((1-train_frac)*use_shots))
+        return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) +
+               self.preprocess_from_files(shot_list_dir,shot_files_test,use_shots_test)
 
 
     def preprocess_from_files(self,shot_list_dir,shot_files,use_shots):
@@ -474,7 +480,7 @@ class ShotList(object):
         return self.shots.next()
 
     def __add__(self,other_list):
-        return self.shots + other_list.shots
+        return ShotList(self.shots + other_list.shots)
 
 
     def random_sublist(self,num):
