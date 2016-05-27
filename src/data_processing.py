@@ -278,13 +278,14 @@ class Preprocessor(object):
         conf = self.conf
         shot_files_train = conf['paths']['shot_files']
         shot_files_test = conf['paths']['shot_files_test']
-        if len(shot_numbers_test) == 0:
+        if len(shot_files_test) == 0:
             shot_files_test = shot_files_train
         shot_list_dir = conf['paths']['shot_list_dir']
         use_shots = conf['data']['use_shots']
+        train_frac = conf['training']['train_frac']
         use_shots_train = int(round(train_frac*use_shots))
         use_shots_test = int(round((1-train_frac)*use_shots))
-        return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) +
+        return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) + \
                self.preprocess_from_files(shot_list_dir,shot_files_test,use_shots_test)
 
 
