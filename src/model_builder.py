@@ -9,6 +9,7 @@ from keras.optimizers import *
 import dill
 import re,os
 import copy
+from copy import deepcopy
 
 from data_processing import Loader
 
@@ -26,12 +27,10 @@ class ModelBuilder():
 
 	def get_unique_id(self):
 		num_epochs = self.conf['training']['num_epochs']
-		this_conf = self.conf.copy()
+		this_conf = deepcopy(self.conf)
 		#don't make hash dependent on number of epochs.
 		this_conf['training']['num_epochs'] = 0
 		unique_id =  hash(dill.dumps(this_conf))
-
-		self.conf['training']['num_epochs'] = num_epochs
 		return unique_id
 
 
