@@ -205,7 +205,7 @@ disruptive_test= []
 
 
 
-def make_predictions(conf,shot_list,num_total):
+def make_predictions(conf,shot_list,num_total,builder,loader):
     y_prime = []
     y_gold = []
     disruptive = []
@@ -215,9 +215,6 @@ def make_predictions(conf,shot_list,num_total):
     start_time = time.time()
 
     #force compilation
-    for shot in shot_list:
-        make_single_prediction(shot,builder,loader)
-        break
     _,model = builder.build_train_test_models()
     builder.load_model_weights(model)
     fn = partial(make_single_prediction,builder=builder,loader=loader)
@@ -252,8 +249,8 @@ def make_single_prediction(shot,builder,loader):
     return y_prime,y_gold,disruptive
 
 
-y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,num_shots)
-y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,num_shots)
+y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,num_shots,builder,loader)
+y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,num_shots,builder,loader)
 
 
 
