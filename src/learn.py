@@ -216,8 +216,8 @@ def make_predictions(conf,shot_list,num_total,builder,loader):
 
     #force compilation
     _,model = builder.build_train_test_models()
-    builder.load_model_weights(model)
-    fn = partial(make_single_prediction,builder=builder,loader=loader)
+    weights_path = builder.get_latest_save_path()
+    fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
         print('Shot {}/{}'.format(i,num_total))
@@ -232,9 +232,9 @@ def make_predictions(conf,shot_list,num_total,builder,loader):
 
 
 
-def make_single_prediction(shot,builder,loader):
+def make_single_prediction(shot,builder,loader,weights_path):
     _,model = builder.build_train_test_models()
-    builder.load_model_weights(model)
+    model.load_weights(weights_path)
     model.reset_states()
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])

@@ -114,6 +114,17 @@ class ModelBuilder():
 			model.load_weights(self.get_save_path(max_epoch))
 			return max_epoch
 
+	def get_latest_save_path(self):
+		epochs = self.get_all_saved_files()
+		if len(epochs) == 0:
+			print('no previous checkpoint found')
+			return ''
+		else:
+			max_epoch = min(self.conf['training']['num_epochs'],max(epochs))
+			print('loading from epoch {}'.format(max_epoch))
+			return self.get_save_path(max_epoch)
+
+
 	def extract_id_and_epoch_from_filename(self,filename):
 		regex = re.compile(r'-?\d+')
 		numbers = [int(x) for x in regex.findall(filename)]
