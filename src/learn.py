@@ -214,6 +214,12 @@ def make_predictions(conf,shot_list,num_total):
     print('running in parallel on {} processes'.format(pool._processes))
     start_time = time.time()
 
+    #force compilation
+    for shot in shot_list:
+        make_single_prediction(shot,builder,loader)
+        break
+    _,model = builder.build_train_test_models()
+    builder.load_model_weights(model)
     fn = partial(make_single_prediction,builder=builder,loader=loader)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
