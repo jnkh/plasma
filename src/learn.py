@@ -233,7 +233,7 @@ def make_single_prediction(shot,builder,loader):
     model.reset_states()
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
-    y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
+    y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=0)
     answer_dims = y_p.shape[-1]
     if conf['model']['return_sequences']:
         shot_length = y_p.shape[0]*y_p.shape[1]
@@ -251,42 +251,6 @@ y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,
 
 
 
-# for (i,shot) in enumerate(shot_list_train):
-#     print('Shot {}/{}'.format(i,num_shots))
-#     X,y = loader.load_as_X_y(shot,prediction_mode=True)
-#     assert(X.shape[0] == y.shape[0])
-#     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-#     print(y_p.shape)
-#     answer_dims = y_p.shape[-1]
-#     if conf['model']['return_sequences']:
-#         shot_length = y_p.shape[0]*y_p.shape[1]
-#     else:
-#         shot_length = y_p.shape[0]
-#     y_prime_train.append(np.reshape(y_p,(shot_length,answer_dims)))
-#     y_gold_train.append(np.reshape(y,(shot_length,answer_dims)))
-#     disruptive_train.append(shot.is_disruptive_shot())
-#     test_model.reset_states()
-
-
-# for (i,shot) in enumerate(shot_list_test):
-#     print('Shot {}/{}'.format(i + len(shot_list_train),num_shots))
-#     X,y = loader.load_as_X_y(shot,prediction_mode=True)
-#     assert(X.shape[0] == y.shape[0])
-#     y_p = test_model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=1)
-#     answer_dims = y_p.shape[-1]
-#     if conf['model']['return_sequences']:
-#         shot_length = y_p.shape[0]*y_p.shape[1]
-#     else:
-#         shot_length = y_p.shape[0]
-#     y_prime_test.append(np.reshape(y_p,(shot_length,answer_dims)))
-#     y_gold_test.append(np.reshape(y,(shot_length,answer_dims)))
-#     disruptive_test.append(shot.is_disruptive_shot())
-#     test_model.reset_states()
-
-# y_gold_train = np.concatenate(y_gold_train)
-# y_gold_test = np.concatenate(y_gold_test)
-# y_prime_train = np.concatenate(y_prime_train)
-# y_prime_test = np.concatenate(y_prime_test)
 disruptive_train = np.array(disruptive_train)
 disruptive_test = np.array(disruptive_test)
 
