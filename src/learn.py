@@ -205,7 +205,7 @@ disruptive_test= []
 
 
 
-def make_predictions(conf,shot_list,num_total,builder,loader):
+def make_predictions(conf,shot_list,builder,loader):
     y_prime = []
     y_gold = []
     disruptive = []
@@ -220,7 +220,7 @@ def make_predictions(conf,shot_list,num_total,builder,loader):
     fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
-        print('Shot {}/{}'.format(i,num_total))
+        print('Shot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
@@ -248,11 +248,11 @@ def make_single_prediction(shot,builder,loader,weights_path):
     y = np.reshape(y,(shot_length,answer_dims))
     is_disruptive = shot.is_disruptive_shot()
     model.reset_states()
-    return y_prime,y_gold,disruptive
+    return y_p,y,is_disruptive
 
 
-y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,num_shots,builder,loader)
-y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,num_shots,builder,loader)
+y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,builder,loader)
+y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,builder,loader)
 
 
 
