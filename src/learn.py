@@ -26,6 +26,8 @@ import numpy as np
 
 #my classes
 from conf import conf
+from pprint import pprint
+pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 
 if conf['data']['normalizer'] == 'minmax':
