@@ -224,6 +224,8 @@ def make_predictions(conf,shot_list,num_total,builder,loader):
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
+    pool.close()
+    pool.join()
     print('Finished Predictions in {} seconds'.format(time.time()-start_time))
     return y_prime,y_gold,disruptive
 
