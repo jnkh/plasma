@@ -77,19 +77,11 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-<<<<<<< HEAD
         'train_frac' : 0.75,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
         'num_epochs' : 5,
-=======
-        'train_frac' : 0.5,
-        'batch_size' : 128, #100
-        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly. With good normalization it seems the larger the better.
-        'num_shots_at_once' :  25,
-        'num_epochs' : 2,
->>>>>>> a5d11cbaed177bafbd685be1c6a15b85a52ed345
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
