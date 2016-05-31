@@ -25,8 +25,8 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
-        'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
+        'shot_files' :['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files_test' :['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
@@ -37,18 +37,18 @@ conf = {
 
    'data': {
         'recompute' : False,
-        'recompute_normalization' : True,
+        'recompute_normalization' : False,
         #'recompute_minmax' : False
         'num_signals' : len(signals_dirs),
         'current_index' : 0,
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 100,
+        'use_shots' : 1000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
-        'T_max' : 2,
+        'T_max' : 1000,
         'T_warning' : 1.0,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
@@ -57,29 +57,29 @@ conf = {
 
    'model': {
         #length of LSTM memory
-        'pred_length' : 400,
+        'pred_length' : 100,
         'length' : 128,
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 100,
         'rnn_type' : 'LSTM',
-        'rnn_layers' : 2,
+        'rnn_layers' : 3,
         'optimizer' : 'adam', #have not found a difference yet
-        'loss' : 'mse', #binary crossentropy performs slightly better?
-        'lr' : 0.00005,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'loss' : 'mae', #binary crossentropy performs slightly better?
+        'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.0,
+        'dropout_prob' : 0.1,
     },
 
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.5,
-        'batch_size' : 128, #100
-        'max_patch_length' : 2048, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
-        'num_shots_at_once' :  25,
-        'num_epochs' : 16,
+        'train_frac' : 0.75,
+        'batch_size' : 256, #100
+        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
+        'num_shots_at_once' :  200,
+        'num_epochs' : 5,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
