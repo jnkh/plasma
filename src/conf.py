@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
@@ -25,7 +25,7 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files' : ['short_list.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
@@ -44,30 +44,31 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 100,
+        'use_shots' : 2,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 2,
-        'T_warning' : 1.0,
+        'T_warning' : 1.0,                  #TODO optimize
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
-        'normalizer' : 'meanvar',
+        'normalizer' : 'meanvar',           #TODO optimize
    },
 
    'model': {
         #length of LSTM memory
         'pred_length' : 400,
-        'length' : 128,
+        'length' : 128,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
-        'rnn_size' : 100,
+        'rnn_size' : 100,                   #TODO optimize
+        #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
-        'rnn_layers' : 2,
+        'rnn_layers' : 2,                   #TODO optimize
         'optimizer' : 'adam', #have not found a difference yet
-        'loss' : 'mse', #binary crossentropy performs slightly better?
-        'lr' : 0.00005,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'loss' : 'mae', #binary crossentropy performs slightly better?
         'stateful' : True,
+        'lr' : 0.00005,                     #TODO optimize #None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'return_sequences' : True,
         'dropout_prob' : 0.0,
     },
@@ -77,9 +78,9 @@ conf = {
         'shuffle_training' : True,
         'train_frac' : 0.5,
         'batch_size' : 128, #100
-        'max_patch_length' : 2048, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
+        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly. With good normalization it seems the larger the better.
         'num_shots_at_once' :  25,
-        'num_epochs' : 16,
+        'num_epochs' : 2,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
