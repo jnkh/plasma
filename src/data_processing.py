@@ -460,6 +460,8 @@ class ShotList(object):
 
     def filter_by_number(self,numbers):
         new_shot_list = ShotList()
+        if isinstance(numbers,ShotList):
+            numbers = [shot.number for shot in numbers]
         numbers = set(numbers)
         for shot in self.shots:
             if shot.number in numbers:
