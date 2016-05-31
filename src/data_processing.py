@@ -448,6 +448,8 @@ class ShotList(object):
         use_shots_test = int(round((1-train_frac)*use_shots))
         if len(shot_files_test) == 0:
             shot_numbers_train,shot_numbers_test = train_test_split(self.shots,train_frac,shuffle_training)
+	    shot_numbers_train = [shot.number for shot in shot_numbers_train]
+	    shot_numbers_test = [shot.number for shot in shot_numbers_test]
         #train and test list given
         else:
             shot_numbers_train,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
@@ -460,8 +462,6 @@ class ShotList(object):
 
     def filter_by_number(self,numbers):
         new_shot_list = ShotList()
-        if isinstance(numbers,ShotList):
-            numbers = [shot.number for shot in numbers]
         numbers = set(numbers)
         for shot in self.shots:
             if shot.number in numbers:
