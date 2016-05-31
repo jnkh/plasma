@@ -360,7 +360,7 @@ class PerformanceAnalyzer():
             truth = self.truth_train
             is_disruptive = self.disruptive_train
         to_plot = 5
-        max_plot = 5
+        max_plot = 10
         plotted = 0
         iterate_arr = range(len(truth))
         shuffle(iterate_arr)
