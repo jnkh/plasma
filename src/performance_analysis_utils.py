@@ -402,10 +402,10 @@ class PerformanceAnalyzer():
 
 def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
     figure()
-    semilogx(P_thresh_range,accuracy_range,label="accuracy")
+    # semilogx(P_thresh_range,accuracy_range,label="accuracy")
     plot(P_thresh_range,missed_range,'r',label="missed")
     plot(P_thresh_range,fp_range,'k',label="false positives")
-    plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
+    # plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
     legend(loc=(1.0,.6))
     xlabel('Alarm threshold')
     grid()
