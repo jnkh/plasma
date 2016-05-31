@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
@@ -52,22 +52,24 @@ conf = {
         'T_warning' : 1.0,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
-        'normalizer' : 'meanvar',
+        'normalizer' : 'meanvar',           #TODO optimize
    },
 
    'model': {
         #length of LSTM memory
-        'pred_length' : 100,
-        'length' : 128,
+        'pred_length' : 400,
+        'length' : 128,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
-        'rnn_size' : 100,
+        'rnn_size' : 100,                   #TODO optimize
+        #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
         'rnn_layers' : 3,
         'optimizer' : 'adam', #have not found a difference yet
         'loss' : 'mae', #binary crossentropy performs slightly better?
         'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
+        'lr' : 0.00005,                     #TODO optimize #None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'return_sequences' : True,
         'dropout_prob' : 0.1,
     },
@@ -75,11 +77,19 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
+<<<<<<< HEAD
         'train_frac' : 0.75,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
         'num_epochs' : 5,
+=======
+        'train_frac' : 0.5,
+        'batch_size' : 128, #100
+        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly. With good normalization it seems the larger the better.
+        'num_shots_at_once' :  25,
+        'num_epochs' : 2,
+>>>>>>> a5d11cbaed177bafbd685be1c6a15b85a52ed345
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,

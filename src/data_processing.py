@@ -278,15 +278,16 @@ class Preprocessor(object):
         conf = self.conf
         shot_files_train = conf['paths']['shot_files']
         shot_files_test = conf['paths']['shot_files_test']
-        if len(shot_files_test) == 0:
-            shot_files_test = shot_files_train
         shot_list_dir = conf['paths']['shot_list_dir']
         use_shots = conf['data']['use_shots']
         train_frac = conf['training']['train_frac']
         use_shots_train = int(round(train_frac*use_shots))
         use_shots_test = int(round((1-train_frac)*use_shots))
-        return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) + \
+	if len(shot_files_test) > 0:
+            return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) + \
                self.preprocess_from_files(shot_list_dir,shot_files_test,use_shots_test)
+	else:
+	    return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train)
 
 
     def preprocess_from_files(self,shot_list_dir,shot_files,use_shots):
@@ -444,20 +445,24 @@ class ShotList(object):
         shuffle_training = conf['training']['shuffle_training']
         use_shots = conf['data']['use_shots']
         #split randomly
+        use_shots_train = int(round(train_frac*use_shots))
+        use_shots_test = int(round((1-train_frac)*use_shots))
         if len(shot_files_test) == 0:
-            shots_train,shots_test = train_test_split(self.shots,train_frac,shuffle_training)
-            return ShotList(shots_train), ShotList(shots_test)
+            shot_list_train,shot_list_test = train_test_split(self.shots,train_frac,shuffle_training)
+    	    shot_numbers_train = [shot.number for shot in shot_list_train]
+    	    shot_numbers_test = [shot.number for shot in shot_list_test]
+	    print(shot_numbers_train,shot_numbers_test)
+	    print(len(self.shots),len(shot_numbers_train),len(shot_numbers_test))
         #train and test list given
         else:
-            use_shots_train = int(round(train_frac*use_shots))
-            use_shots_test = int(round((1-train_frac)*use_shots))
             shot_numbers_train,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
             shot_numbers_test,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files_test)
 
-            shots_train = self.filter_by_number(shot_numbers_train)
-            shots_test = self.filter_by_number(shot_numbers_test)
-
-            return shots_train.random_sublist(use_shots_train),shots_test.random_sublist(use_shots_test)
+        
+	print(len(shot_numbers_train),len(shot_numbers_test))
+        shots_train = self.filter_by_number(shot_numbers_train)
+        shots_test = self.filter_by_number(shot_numbers_test)
+        return shots_train.random_sublist(use_shots_train),shots_test.random_sublist(use_shots_test)
 
 
     def filter_by_number(self,numbers):
@@ -996,7 +1001,7 @@ def train_test_split_robust(x,frac,shuffle_data=False):
     for (i,_x) in enumerate(x):
         if mask[i]:
             train.append(_x)
-        if not mask[i]:
+        else:
             test.append(_x)
     return train,test
 
