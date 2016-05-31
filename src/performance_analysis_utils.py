@@ -172,6 +172,7 @@ class PerformanceAnalyzer():
         self.conf = dat['conf']
         for mode in ['test','train']:
             print('{}: loaded {} shot ({}) disruptive'.format(mode,self.get_num_shots(mode),self.get_num_disruptive_shots(mode)))
+        self.print_conf()
    
     def print_conf(self):
         pprint(self.conf[()]) 
@@ -387,16 +388,17 @@ class PerformanceAnalyzer():
                 return
             if comparison and plotted < max_plot:
                 figure()
-                plot((t+0.001)[::-1],label='ground truth')
+                loglog((t+0.001)[::-1],label='ground truth')
                 plot(p[::-1],'g',label='neural net prediction')
                 axvline(self.T_min_warn,color='r',label='max warning time')
                 axvline(self.T_max_warn,color='r',label='min warning time')
                 axhline(P_thresh_opt,color='k',label='trigger threshold')
                 xlabel('TTD [ms]')
                 legend(loc = (1.0,0.6))
-                ylim([1e-7,1e0])
+                ylim([1e-7,1.1e0])
                 grid()
                 plotted += 1
+                savefig('fig_{}.png'.format(i),bbox_inches='tight')
 
 def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
     figure()
