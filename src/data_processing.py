@@ -105,7 +105,7 @@ class Normalizer(object):
 
 
     def train_on_single_shot(self,shot):
-        assert(isinstance(shot,Shot))
+        assert isinstance(shot,Shot), 'should be instance of shot'
         processed_prepath = self.conf['paths']['processed_prepath']
         shot.restore(processed_prepath)
         stats = self.extract_stats(shot) 
@@ -157,7 +157,7 @@ class MeanVarNormalizer(Normalizer):
 
 
     def apply(self,shot):
-        assert(self.means is not None and self.stds is not None) 
+        assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         means = median(self.means,axis=0)
         stds = median(self.stds,axis=0)
         shot.signals = (shot.signals - means)/stds
@@ -172,7 +172,7 @@ class MeanVarNormalizer(Normalizer):
         print('saved normalization data from {} shots ( {} disruptive )'.format(self.num_processed,self.num_disruptive))
 
     def load_stats(self):
-        assert(self.previously_saved_stats())
+        assert self.previously_saved_stats(), "stats not saved before"
         dat = load(self.path)
         self.means = dat['means']
         self.stds = dat['stds']
