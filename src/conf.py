@@ -52,7 +52,7 @@ conf = {
         'T_warning' : 100.0,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
-        'normalizer' : 'meanvar',           #TODO optimize
+        'normalizer' : 'var',           #TODO optimize
    },
 
    'model': {

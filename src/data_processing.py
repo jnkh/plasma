@@ -182,6 +182,12 @@ class MeanVarNormalizer(Normalizer):
         #print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
 
 
+class VarNormalizer(MeanVarNormalizer):
+    def apply(self,shot):
+        assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
+        stds = median(self.stds,axis=0)
+        shot.signals = shot.signals/stds
+        shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
 
 class MinMaxNormalizer(Normalizer):
