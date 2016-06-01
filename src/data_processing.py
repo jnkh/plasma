@@ -511,6 +511,10 @@ class ShotList(object):
         assert(isinstance(shot,Shot))
         self.shots.append(shot)
 
+    def make_light(self):
+        for shot in self.shots:
+            shot.make_light()
+
     def append_if_valid(self,shot):
         if shot.valid:
             self.append(shot)
