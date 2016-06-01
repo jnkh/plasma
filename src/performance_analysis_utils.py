@@ -408,7 +408,7 @@ class PerformanceAnalyzer():
                 ylim([1e-7,1.1e0])
                 grid()
                 plotted += 1
-                savefig('fig_{}.png'.format(i),bbox_inches='tight')
+                savefig('fig_{}.png'.format(shot_list.shots[i].number),bbox_inches='tight')
                 if plot_signals:
                     self.plot_shot(shot_list.shots[i],True,normalize)
 
