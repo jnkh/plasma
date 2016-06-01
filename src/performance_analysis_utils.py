@@ -378,6 +378,7 @@ class PerformanceAnalyzer():
             t = truth[i]
             p = pred[i]
             is_disr = is_disruptive[i]
+            shot = shot_list.shots[i]
             TP,FP,FN,TN,early,late =self.get_shot_prediction_stats(P_thresh_opt,p,t,is_disr)
             if type == 'FP':
                 comparison = FP
@@ -408,9 +409,9 @@ class PerformanceAnalyzer():
                 ylim([1e-7,1.1e0])
                 grid()
                 plotted += 1
-                savefig('fig_{}.png'.format(shot_list.shots[i].number),bbox_inches='tight')
+                savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
-                    self.plot_shot(shot_list.shots[i],True,normalize)
+                    self.plot_shot(shot,True,normalize)
 
 
 
