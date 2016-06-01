@@ -48,11 +48,11 @@ conf = {
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
-        'T_max' : 2,
-        'T_warning' : 1.0,                  #TODO optimize
+        'T_max' : 2,                        #make sure is larger than T_warning. Need to make sure shots are reprocessed if we change this!.
+        'T_warning' : 1.0,                  #TODO optimize. More seems better!
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
-        'normalizer' : 'meanvar',           #TODO optimize
+        'normalizer' : 'var',           #TODO optimize
    },
 
    'model': {
@@ -69,6 +69,7 @@ conf = {
         'loss' : 'mae', #binary crossentropy performs slightly better?
         'stateful' : True,
         'lr' : 0.00005,                     #TODO optimize #None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        #best between 1e-4 and 1e-5
         'return_sequences' : True,
         'dropout_prob' : 0.0,
     },
