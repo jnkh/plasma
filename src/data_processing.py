@@ -74,7 +74,7 @@ class Normalizer(object):
         #only use training shots here!! "Don't touch testing shots"
         shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
         shot_list_dir = conf['paths']['shot_list_dir']
-        use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
+        use_shots = max(400,int(round(0.1*conf['data']['use_shots'])))
         return self.train_on_files(shot_list_dir,shot_files,use_shots)
 
 
@@ -451,8 +451,6 @@ class ShotList(object):
             shot_list_train,shot_list_test = train_test_split(self.shots,train_frac,shuffle_training)
     	    shot_numbers_train = [shot.number for shot in shot_list_train]
     	    shot_numbers_test = [shot.number for shot in shot_list_test]
-	    print(shot_numbers_train,shot_numbers_test)
-	    print(len(self.shots),len(shot_numbers_train),len(shot_numbers_test))
         #train and test list given
         else:
             shot_numbers_train,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
