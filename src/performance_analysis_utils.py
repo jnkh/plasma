@@ -2,24 +2,32 @@ from pylab import *
 from matplotlib import pyplot
 import os
 from pprint import pprint
+from data_processing import MeanVarNormalizer as Normalizer 
 
 
 
 class PerformanceAnalyzer():
-    def __init__(self,results_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False):
+    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False):
         self.T_min_warn = T_min_warn
         self.T_max_warn = T_max_warn
         self.verbose = verbose
         self.results_dir = results_dir
+        self.shots_dir = shots_dir
         self.i = i
+
+
 
         self.pred_train = None
         self.truth_train = None
         self.disruptive_train = None
+        self.shot_list_train = None
 
         self.pred_test = None
         self.truth_test = None
         self.disruptive_test = None
+        self.shot_list_test = None
+
+        self.normalizer = None
 
 
 
@@ -169,13 +177,15 @@ class PerformanceAnalyzer():
         self.pred_test = dat['y_prime_test']
         self.truth_test = dat['y_gold_test']
         self.disruptive_test = dat['disruptive_test']
-        self.conf = dat['conf']
+        self.shot_list_test = dat['shot_list_test'][()]
+        self.shot_list_train = dat['shot_list_train'][()]
+        self.conf = dat['conf'][()]
         for mode in ['test','train']:
             print('{}: loaded {} shot ({}) disruptive'.format(mode,self.get_num_shots(mode),self.get_num_disruptive_shots(mode)))
         self.print_conf()
    
     def print_conf(self):
-        pprint(self.conf[()]) 
+        pprint(self.conf) 
 
     def get_num_shots(self,mode):
         if mode == 'test':
@@ -350,17 +360,17 @@ class PerformanceAnalyzer():
 
         tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
-    def example_plots(self,P_thresh_opt,mode='test',type = 'FP'):
+    def example_plots(self,P_thresh_opt,mode='test',type = 'FP',max_plot = 5,normalize=True,plot_signals=True):
         if mode == 'test':
             pred = self.pred_test
             truth = self.truth_test
             is_disruptive = self.disruptive_test
+            shot_list = self.shot_list_test
         else:
             pred = self.pred_train
             truth = self.truth_train
             is_disruptive = self.disruptive_train
-        to_plot = 5
-        max_plot = 10
+            shot_list = self.shot_list_train
         plotted = 0
         iterate_arr = range(len(truth))
         shuffle(iterate_arr)
@@ -399,6 +409,53 @@ class PerformanceAnalyzer():
                 grid()
                 plotted += 1
                 savefig('fig_{}.png'.format(i),bbox_inches='tight')
+                if plot_signals:
+                    self.plot_shot(shot_list.shots[i],True,normalize)
+
+
+
+    def plot_shot(self,shot,save_fig=True,normalize=True):
+        if self.normalizer is None and normalize:
+            nn = Normalizer(self.conf)
+            nn.train()
+            self.normalizer = nn
+
+        labels = [r' $I_{plasma}$ [A]',
+        r' Mode L. A. [A]',
+        r' $P_{radiated}$ [W]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $L_{plasma,internal}$',
+        r'$\frac{d}{dt} E_{D}$ [W]',
+        r' $P_{input}$ [W]',
+        r'$E_{D}$']
+
+        if(shot.previously_saved(self.shots_dir)):
+            shot.restore(self.shots_dir)
+            t_disrupt = shot.t_disrupt
+            is_disruptive =  shot.is_disruptive
+            if normalize:
+                self.normalizer.apply(shot)
+            signals = shot.signals
+
+            if is_disruptive:
+                print('disruptive')
+            else:
+                print('non disruptive')
+
+            f,axarr = subplots(len(signals.T)/2,2)
+            for (i,sig) in enumerate(signals.T):
+                axarr.flatten()[i].plot(sig,label = labels[i])
+                axarr.flatten()[i].legend(loc='best')
+                print('min: {}, max: {}'.format(min(sig), max(sig)))
+
+            if save_fig:
+                savefig('sig_fig_{}.png'.format(shot.number),bbox_inches='tight')
+        else:
+            print("Shot hasn't been processed")
+
+
+
+
 
 def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
     figure()
