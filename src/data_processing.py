@@ -189,6 +189,10 @@ class VarNormalizer(MeanVarNormalizer):
         shot.signals = shot.signals/stds
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
+    def __str__(self):
+        stds = median(self.stds,axis=0)
+        return('Var Normalizer.\nstds: {}'.format(means,stds))
+
 
 class MinMaxNormalizer(Normalizer):
     def __init__(self,conf):
