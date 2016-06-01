@@ -106,6 +106,7 @@ class Normalizer(object):
 
     def train_on_single_shot(self,shot):
         assert isinstance(shot,Shot), 'should be instance of shot'
+	print('hi')
         processed_prepath = self.conf['paths']['processed_prepath']
         shot.restore(processed_prepath)
         stats = self.extract_stats(shot) 
