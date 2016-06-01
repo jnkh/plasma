@@ -191,7 +191,7 @@ class VarNormalizer(MeanVarNormalizer):
 
     def __str__(self):
         stds = median(self.stds,axis=0)
-        return('Var Normalizer.\nstds: {}'.format(means,stds))
+        return('Var Normalizer.\nstds: {}'.format(stds))
 
 
 class MinMaxNormalizer(Normalizer):
