@@ -8,17 +8,18 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 3
+file_num = 0
 save_figure = True
 
-P_thresh_range = logspace(-5,0,10) 
+P_thresh_range = logspace(-2,0,100) 
 T_max_warn = 1000
 T_min_warn = 30
 
 verbose=False
-results_dir = '../data/results/'#'/p/datad/jkatesha/data/results/'
+results_dir = '/p/datad/jkatesha/data/results/'
+shots_dir = '/p/datad/jkatesha/data/processed_shots/'
 
-analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
+analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
@@ -33,7 +34,7 @@ analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figur
 
 analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
 
-analyzer.example_plots(P_thresh_opt,'test','any')
+analyzer.example_plots(P_thresh_opt,'test','any',normalize=False)
 
 alarms,disr_alarms,nondisr_alarms = analyzer.gather_first_alarms(P_thresh_opt,'test')
 analyzer.hist_alarms(disr_alarms,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)
