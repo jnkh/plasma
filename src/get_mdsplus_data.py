@@ -66,7 +66,7 @@ for shot_num in shot_numbers:
 	for signal_path in signal_paths:
 		save_path_full = prepath+save_path + '/' + machine + '/' +signal_path  + '/{}.txt'.format(shot_num)
 		if os.path.isfile(save_path_full):
-			print('-'.end='')
+			print('-',end='')
 		else:
 			if machine == 'nstx':
 				tree,tag = get_tree_and_tag(signal_path)
