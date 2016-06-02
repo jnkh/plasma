@@ -6,6 +6,8 @@ http://www.mdsplus.org/index.php?title=Documentation:Tutorial:MdsObjects&open=76
 '''
 from __future__ import print_function
 from MDSplus import *
+from data_processing import ShotList
+
 
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
@@ -40,7 +42,7 @@ else:
 	print('unkown machine. exiting')
 	exit(1)
 
-shot_numbers,_ = get_multiple_shots_and_disruption_times(shot_numbers_path,shot_numbers_files)
+shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(shot_numbers_path,shot_numbers_files)
 
 c = Connection(server_path)
 
