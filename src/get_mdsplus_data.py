@@ -12,19 +12,6 @@ import sys
 
 
 
-def mkdirdepth(filename):
-	folder=os.path.dirname(filename)
-	if not os.path.exists(folder):
-		os.makedirs(folder)
-
-
-def get_tree_and_tag(path):
-	spl = path.split('/')
-	tree = spl[0]
-	tag = '\\' + spl[1]
-	return tree,tag
-
-
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
@@ -58,13 +45,27 @@ else:
 	print('unkown machine. exiting')
 	exit(1)
 
-shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot_numbers_path,shot_numbers_files)
 
-c = Connection(server_path)
+def mkdirdepth(filename):
+	folder=os.path.dirname(filename)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
 
-for shot_num in shot_numbers:
+
+def get_tree_and_tag(path):
+	spl = path.split('/')
+	tree = spl[0]
+	tag = '\\' + spl[1]
+	return tree,tag
+
+
+def format_save_path(prepath,signal_path,shot_num):
+	return prepath + signal_path  + '/{}.txt'.format(shot_num)
+
+
+def save_shot(shot_num,signal_paths,save_prepath,machine,c):
 	for signal_path in signal_paths:
-		save_path_full = prepath+save_path + '/' + machine + '/' +signal_path  + '/{}.txt'.format(shot_num)
+		save_path_full = format_save_path(save_prepath,signal_path,shot_num)
 		if os.path.isfile(save_path_full):
 			print('-',end='')
 		else:
@@ -80,8 +81,19 @@ for shot_num in shot_numbers:
 			mkdirdepth(save_path_full)
 			savetxt(save_path_full,data_two_column,fmt = '%f %f')
 			print('.',end='')
-			
+
 		sys.stdout.flush()
 	print('saved shot {}'.format(shot_num))
 
 
+
+
+
+save_prepath = prepath+save_path + '/' + machine + '/'
+
+shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot_numbers_path,shot_numbers_files)
+
+c = Connection(server_path)
+
+for shot_num in shot_numbers:
+	save_shot(shot_num,signal_paths,save_prepath,machine,c)
