@@ -7,6 +7,7 @@ http://www.mdsplus.org/index.php?title=Documentation:Tutorial:MdsObjects&open=76
 from __future__ import print_function
 from MDSplus import *
 from data_processing import ShotList
+from pylab import *
 
 
 prepath = '/p/datad/jkatesha/data/'
