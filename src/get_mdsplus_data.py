@@ -8,6 +8,7 @@ from __future__ import print_function
 from MDSplus import *
 from data_processing import ShotList
 from pylab import *
+import sys
 
 
 
@@ -78,6 +79,7 @@ for shot_num in shot_numbers:
 
 		savetxt(save_path_full,data_two_column,fmt = '%f %f')
 		print('.',end='')
+		sys.stdout.flush()
 	print('saved shot {}'.format(shot_num))
 
 
