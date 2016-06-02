@@ -12,6 +12,8 @@ import sys
 import multiprocessing as mp
 from functools import partial
 import Queue
+import os
+import errno
 
 
 
@@ -86,7 +88,15 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 					data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 					time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 				data_two_column = vstack((time,data)).transpose()
-				mkdirdepth(save_path_full)
+				try: #can lead to race condition
+					mkdirdepth(save_path_full)
+				except OSError, e:
+				    if e.errno == errno.EEXIST:
+				        # File exists, and it's a directory, another process beat us to creating this dir, that's OK.
+				        pass
+				    else:
+				        # Our target dir exists as a file, or different error, reraise the error!
+				        raise
 				savetxt(save_path_full,data_two_column,fmt = '%f %f')
 				print('.',end='')
 
