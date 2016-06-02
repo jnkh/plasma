@@ -9,7 +9,7 @@ from MDSplus import *
 from data_processing import ShotList
 from pylab import *
 import sys
-import pathos.multiprocessing as mp
+import multiprocessing as mp
 from functools import partial
 
 
