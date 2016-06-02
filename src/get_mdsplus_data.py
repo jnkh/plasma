@@ -73,7 +73,7 @@ for shot_num in shot_numbers:
 			time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 		data_two_column = vstack((time,data)).transpose()
 
-		save_path_full = prepath+save_path + '/' + machine + '/' signal_path  + '/{}.txt'.format(shot_num)
+		save_path_full = prepath+save_path + '/' + machine + '/' +signal_path  + '/{}.txt'.format(shot_num)
 		mkdirdepth(save_path_full)
 
 		savetxt(save_path_full,data_two_column,fmt = '%f %f')
