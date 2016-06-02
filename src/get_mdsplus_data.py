@@ -27,7 +27,7 @@ def get_tree_and_tag(path):
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
-mode = 'jet'
+mode = 'NSTX'
 
 
 if mode == 'NSTX':
