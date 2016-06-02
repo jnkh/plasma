@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '../'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
@@ -25,8 +25,8 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' : ['short_list.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
-        'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'],
+        'shot_files' :['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files_test' :['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
@@ -37,19 +37,19 @@ conf = {
 
    'data': {
         'recompute' : False,
-        'recompute_normalization' : True,
+        'recompute_normalization' : False,
         #'recompute_minmax' : False
         'num_signals' : len(signals_dirs),
         'current_index' : 0,
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2,
+        'use_shots' : 100000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
-        'T_max' : 2,                        #make sure is larger than T_warning. Need to make sure shots are reprocessed if we change this!.
-        'T_warning' : 1.0,                  #TODO optimize. More seems better!
+        'T_max' : 1000.0,
+        'T_warning' : 100.0,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
         'normalizer' : 'var',           #TODO optimize
@@ -64,24 +64,23 @@ conf = {
         'rnn_size' : 100,                   #TODO optimize
         #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
-        'rnn_layers' : 2,                   #TODO optimize
+        'rnn_layers' : 3,
         'optimizer' : 'adam', #have not found a difference yet
-        'loss' : 'mae', #binary crossentropy performs slightly better?
+        'loss' : 'binary_crossentropy', #binary crossentropy performs slightly better?
+        'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
-        'lr' : 0.00005,                     #TODO optimize #None,#001, #lower better, at most 0.0001. 0.00001 is too low
-        #best between 1e-4 and 1e-5
         'return_sequences' : True,
-        'dropout_prob' : 0.0,
+        'dropout_prob' : 0.1,
     },
 
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.5,
-        'batch_size' : 128, #100
-        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly. With good normalization it seems the larger the better.
-        'num_shots_at_once' :  25,
-        'num_epochs' : 2,
+        'train_frac' : 0.75,
+        'batch_size' : 256, #100
+        'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
+        'num_shots_at_once' :  200,
+        'num_epochs' : 15,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
