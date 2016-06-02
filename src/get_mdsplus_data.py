@@ -58,9 +58,19 @@ for shot_num in shot_numbers:
 			data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 			time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 		data_two_column = vstack((time,data)).transpose()
-		savetxt(prepath+save_path + '/' + signal_path,data_two_column,fmt = '%f %f')
+
+		save_path_full = prepath+save_path + '/' + signal_path 
+		mkdirdepth(save_path_full)
+
+		savetxt(save_path_full,data_two_column,fmt = '%f %f')
 		print('.',end='')
 	print('saved shot {}'.format(shot_num))
+
+
+def mkdirdepth(filename):
+	folder=os.path.dirname(filename)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
 
 
 def get_tree_and_tag(path):
