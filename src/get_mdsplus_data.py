@@ -67,9 +67,9 @@ def format_save_path(prepath,signal_path,shot_num):
 
 def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 	while True:
-		shot_num = shot_num_queue.get()
-		if shot_num is None:
+		if shot_num_queue.empty():
 			break
+		shot_num = shot_num_queue.get()
 		for signal_path in signal_paths:
 			save_path_full = format_save_path(save_prepath,signal_path,shot_num)
 			if os.path.isfile(save_path_full):
