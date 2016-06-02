@@ -1,10 +1,7 @@
 '''
 http://www.mdsplus.org/index.php?title=Documentation:Tutorial:RemoteAccess&open=76203664636339686324830207&page=Documentation%2FThe+MDSplus+tutorial%2FRemote+data+access+in+MDSplus
-
 http://piscope.psfc.mit.edu/index.php/MDSplus_%26_python#Simple_example_of_reading_MDSplus_data
-
 http://www.mdsplus.org/documentation/beginners/expressions.shtml
-
 http://www.mdsplus.org/index.php?title=Documentation:Tutorial:MdsObjects&open=76203664636339686324830207&page=Documentation%2FThe+MDSplus+tutorial%2FThe+Object+Oriented+interface+of+MDSPlus
 '''
 
@@ -12,10 +9,11 @@ from MDSplus import *
 
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
-save_path = 'signal_data'
+save_path = 'signal_data1'
+mode = 'jet'
 
 
-if mode = 'NSTX':
+if mode == 'NSTX':
 	shot_numbers_files = ['disrupt_nstx.txt'] 
 	server_path = "skylark.pppl.gov:8501::"
 	signal_paths = ['engineering/ip1/',
@@ -57,7 +55,9 @@ for shot_num in shot_numbers:
 			data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 			time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 	    data_two_column = vstack((time,data)).transpose()
-        savetxt(prepath+save_path + '/' + signal_path,data_two_column,fmt = '%f %f')
+            savetxt(prepath+save_path + '/' + signal_path,data_two_column,fmt = '%f %f')
+	    print('.',end='')
+    	print('saved shot {}'.format(shot_num))
 
 
 def get_tree_and_tag(path):
