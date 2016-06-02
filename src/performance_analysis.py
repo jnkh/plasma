@@ -17,8 +17,9 @@ T_min_warn = 30
 
 verbose=False
 results_dir = '../data/results/'#'/p/datad/jkatesha/data/results/'
+shots_dir = '../data/processed_shots/'#'/p/datad/jkatesha/data/results/'
 
-analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
+analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
