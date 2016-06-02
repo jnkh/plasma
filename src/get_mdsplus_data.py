@@ -27,7 +27,7 @@ if mode == 'NSTX':
 	'efit02/wpdot/']
 
 elif mode == 'jet':
-	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt'],
+	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
 	signal_paths = ['jpf/da/c2-ipla',
@@ -42,7 +42,7 @@ else:
 	print('unkown machine. exiting')
 	exit(1)
 
-shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(shot_numbers_path,shot_numbers_files)
+shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot_numbers_path,shot_numbers_files)
 
 c = Connection(server_path)
 
