@@ -100,7 +100,7 @@ c = Connection(server_path)
 pool = mp.Pool()
 print('running in parallel on {} processes'.format(pool._processes))
 start_time = time.time()
-fn = partial(save_shot,shot_num=shot_num,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,c=c)
+fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,c=c)
 
 # for shot_num in shot_numbers:
 # 	save_shot(shot_num,signal_paths,save_prepath,machine,c)
