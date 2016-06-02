@@ -9,6 +9,8 @@ from MDSplus import *
 from data_processing import ShotList
 from pylab import *
 import sys
+import pathos.multiprocessing as mp
+from functools import partial
 
 
 
@@ -95,5 +97,22 @@ shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot
 
 c = Connection(server_path)
 
-for shot_num in shot_numbers:
-	save_shot(shot_num,signal_paths,save_prepath,machine,c)
+pool = mp.Pool()
+print('running in parallel on {} processes'.format(pool._processes))
+start_time = time.time()
+fn = partial(save_shot,shot_num=shot_num,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,c=c)
+
+# for shot_num in shot_numbers:
+# 	save_shot(shot_num,signal_paths,save_prepath,machine,c)
+for (i,_) in enumerate(pool.imap_unordered(fn,shot_numbers)):
+    print('{}/{}'.format(i,len(shot_numbers)))
+
+pool.close()
+pool.join()
+print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),time.time()-start_time))
+
+
+
+
+
+
