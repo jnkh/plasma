@@ -65,28 +65,31 @@ def format_save_path(prepath,signal_path,shot_num):
 	return prepath + signal_path  + '/{}.txt'.format(shot_num)
 
 
-def save_shot(shot_num,signal_paths,save_prepath,machine,server_path):
-	c = Connection(server_path)
-	for signal_path in signal_paths:
-		save_path_full = format_save_path(save_prepath,signal_path,shot_num)
-		if os.path.isfile(save_path_full):
-			print('-',end='')
-		else:
-			if machine == 'nstx':
-				tree,tag = get_tree_and_tag(signal_path)
-				c.openTree(tree,shot_num)
-				data = c.get(tag).data()
-				time = c.get('dim_of('+tag+')').data()
-			elif machine == 'jet':
-				data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
-				time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
-			data_two_column = vstack((time,data)).transpose()
-			mkdirdepth(save_path_full)
-			savetxt(save_path_full,data_two_column,fmt = '%f %f')
-			print('.',end='')
+def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
+	while True:
+		shot_num = shot_num_queue.get()
+		if shot_num is None:
+			break
+		for signal_path in signal_paths:
+			save_path_full = format_save_path(save_prepath,signal_path,shot_num)
+			if os.path.isfile(save_path_full):
+				print('-',end='')
+			else:
+				if machine == 'nstx':
+					tree,tag = get_tree_and_tag(signal_path)
+					c.openTree(tree,shot_num)
+					data = c.get(tag).data()
+					time = c.get('dim_of('+tag+')').data()
+				elif machine == 'jet':
+					data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
+					time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
+				data_two_column = vstack((time,data)).transpose()
+				mkdirdepth(save_path_full)
+				savetxt(save_path_full,data_two_column,fmt = '%f %f')
+				print('.',end='')
 
-		sys.stdout.flush()
-	print('saved shot {}'.format(shot_num))
+			sys.stdout.flush()
+		print('saved shot {}'.format(shot_num))
 
 
 
@@ -96,21 +99,37 @@ save_prepath = prepath+save_path + '/' + machine + '/'
 
 shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot_numbers_path,shot_numbers_files)
 
-c = Connection(server_path)
 
-pool = mp.Pool()
-print('running in parallel on {} processes'.format(pool._processes))
+
+fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine)
+num_cores = mp.cpu_count()
+queue = mp.Queue()
+for shot_num in shot_numbers:
+	queue.put(shot_num)
+connections = [Connection(server_path) for _ in range(num_cores)]
+processes = [mp.Process(target=fn,args=(queue,connections[i])) for i in range(num_cores)]
+
+print('running in parallel on {} processes'.format(num_cores))
 start_time = time.time()
-fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,server_path=server_path)
 
-# for shot_num in shot_numbers:
-# 	save_shot(shot_num,signal_paths,save_prepath,machine,c)
-for (i,_) in enumerate(pool.imap_unordered(fn,shot_numbers)):
-    print('{}/{}'.format(i,len(shot_numbers)))
+for p in processes:
+	p.start()
+for p in processes:
+	p.join()
+queue.join()
 
-pool.close()
-pool.join()
 print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),time.time()-start_time))
+
+# c = Connection(server_path)
+
+# pool = mp.Pool()
+# for shot_num in shot_numbers:
+# # 	save_shot(shot_num,signal_paths,save_prepath,machine,c)
+# for (i,_) in enumerate(pool.imap_unordered(fn,shot_numbers)):
+#     print('{}/{}'.format(i,len(shot_numbers)))
+
+# pool.close()
+# pool.join()
 
 
 
