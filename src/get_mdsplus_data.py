@@ -10,6 +10,20 @@ from data_processing import ShotList
 from pylab import *
 
 
+
+def mkdirdepth(filename):
+	folder=os.path.dirname(filename)
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+
+def get_tree_and_tag(path):
+	spl = path.split('/')
+	tree = spl[0]
+	tag = '\\' + spl[1]
+	return tree,tag
+
+
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
@@ -67,18 +81,3 @@ for shot_num in shot_numbers:
 	print('saved shot {}'.format(shot_num))
 
 
-def mkdirdepth(filename):
-	folder=os.path.dirname(filename)
-	if not os.path.exists(folder):
-		os.makedirs(folder)
-
-
-def get_tree_and_tag(path):
-	spl = path.split('/')
-	tree = spl[0]
-	tag = '\\' + spl[1]
-	return tree,tag
-
-
-
-######JET########
