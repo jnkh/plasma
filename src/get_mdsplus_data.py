@@ -99,7 +99,7 @@ save_prepath = prepath+save_path + '/' + machine + '/'
 
 shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot_numbers_path,shot_numbers_files)
 
-
+shot_numbers = shot_numbers[:110]
 
 fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine)
 num_cores = mp.cpu_count()
