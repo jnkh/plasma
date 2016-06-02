@@ -34,6 +34,8 @@ if conf['data']['normalizer'] == 'minmax':
     from data_processing import MinMaxNormalizer as Normalizer #performs !much better than minmaxnormalizer
 elif conf['data']['normalizer'] == 'meanvar':
     from data_processing import MeanVarNormalizer as Normalizer #performs !much better than minmaxnormalizer
+elif conf['data']['normalizer'] == 'var':
+    from data_processing import VarNormalizer as Normalizer #performs !much better than minmaxnormalizer
 else:
     print('unkown normalizer. exiting')
     exit(1)
@@ -221,7 +223,7 @@ def make_predictions(conf,shot_list,builder,loader):
     weights_path = builder.get_latest_save_path()
     fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
-    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
+    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap(fn,shot_list)):
         print('Shot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
@@ -265,11 +267,16 @@ y_gold = y_gold_train + y_gold_test
 y_prime = y_prime_train + y_prime_test
 disruptive = np.concatenate((disruptive_train,disruptive_test))
 
+shot_list.make_light()
+shot_list_test.make_light()
+shot_list_train.make_light()
+
 save_str = 'results_' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 np.savez(conf['paths']['results_prepath']+save_str,
     y_gold=y_gold,y_gold_train=y_gold_train,y_gold_test=y_gold_test,
     y_prime=y_prime,y_prime_train=y_prime_train,y_prime_test=y_prime_test,
     disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test,
+    shot_list=shot_list,shot_list_train=shot_list_train,shot_list_test=shot_list_test,
     conf = conf)
 
 

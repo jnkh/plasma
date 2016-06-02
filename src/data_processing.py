@@ -74,7 +74,7 @@ class Normalizer(object):
         #only use training shots here!! "Don't touch testing shots"
         shot_files = conf['paths']['shot_files']# + conf['paths']['shot_files_test']
         shot_list_dir = conf['paths']['shot_list_dir']
-        use_shots = max(100,int(round(0.1*conf['data']['use_shots'])))
+        use_shots = max(400,int(round(0.1*conf['data']['use_shots'])))
         return self.train_on_files(shot_list_dir,shot_files,use_shots)
 
 
@@ -105,7 +105,7 @@ class Normalizer(object):
 
 
     def train_on_single_shot(self,shot):
-        assert(isinstance(shot,Shot))
+        assert isinstance(shot,Shot), 'should be instance of shot'
         processed_prepath = self.conf['paths']['processed_prepath']
         shot.restore(processed_prepath)
         stats = self.extract_stats(shot) 
@@ -157,7 +157,7 @@ class MeanVarNormalizer(Normalizer):
 
 
     def apply(self,shot):
-        assert(self.means is not None and self.stds is not None) 
+        assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         means = median(self.means,axis=0)
         stds = median(self.stds,axis=0)
         shot.signals = (shot.signals - means)/stds
@@ -172,7 +172,7 @@ class MeanVarNormalizer(Normalizer):
         print('saved normalization data from {} shots ( {} disruptive )'.format(self.num_processed,self.num_disruptive))
 
     def load_stats(self):
-        assert(self.previously_saved_stats())
+        assert self.previously_saved_stats(), "stats not saved before"
         dat = load(self.path)
         self.means = dat['means']
         self.stds = dat['stds']
@@ -182,6 +182,16 @@ class MeanVarNormalizer(Normalizer):
         #print('loading normalization data from {} shots, {} disruptive'.format(num_processed,num_disruptive))
 
 
+class VarNormalizer(MeanVarNormalizer):
+    def apply(self,shot):
+        assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
+        stds = median(self.stds,axis=0)
+        shot.signals = shot.signals/stds
+        shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
+
+    def __str__(self):
+        stds = median(self.stds,axis=0)
+        return('Var Normalizer.\nstds: {}'.format(stds))
 
 
 class MinMaxNormalizer(Normalizer):
@@ -451,8 +461,6 @@ class ShotList(object):
             shot_list_train,shot_list_test = train_test_split(self.shots,train_frac,shuffle_training)
     	    shot_numbers_train = [shot.number for shot in shot_list_train]
     	    shot_numbers_test = [shot.number for shot in shot_list_test]
-	    print(shot_numbers_train,shot_numbers_test)
-	    print(len(self.shots),len(shot_numbers_train),len(shot_numbers_test))
         #train and test list given
         else:
             shot_numbers_train,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files)
@@ -513,6 +521,10 @@ class ShotList(object):
         assert(isinstance(shot,Shot))
         self.shots.append(shot)
 
+    def make_light(self):
+        for shot in self.shots:
+            shot.make_light()
+
     def append_if_valid(self,shot):
         if shot.valid:
             self.append(shot)
@@ -566,7 +578,7 @@ class Shot(object):
         return get_individual_shot_file(prepath,self.number,'.npz')
 
     def restore(self,prepath,light=False):
-        assert(self.previously_saved(prepath))
+        assert self.previously_saved(prepath), 'shot was never saved'
         save_path = self.get_save_path(prepath)
         dat = load(save_path)
 

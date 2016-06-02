@@ -11,14 +11,15 @@ mode = 'test'
 file_num = 1
 save_figure = True
 
-P_thresh_range = logspace(-5,0,1000) 
+P_thresh_range = logspace(-5,0,10) 
 T_max_warn = 1000
 T_min_warn = 30
 
 verbose=False
 results_dir = '/tigress/jk7/data/results/'
+shots_dir = '../data/processed_shots/'#'/p/datad/jkatesha/data/results/'
 
-analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
+analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
@@ -32,6 +33,8 @@ analyzer.compute_tradeoffs_and_plot(P_thresh_range,'train',save_figure=save_figu
 analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figure,plot_string='_test')
 
 analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
+
+analyzer.example_plots(P_thresh_opt,'test','any')
 
 alarms,disr_alarms,nondisr_alarms = analyzer.gather_first_alarms(P_thresh_opt,'test')
 analyzer.hist_alarms(disr_alarms,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)
