@@ -8,7 +8,7 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = -1
+file_num = 1
 save_figure = True
 
 P_thresh_range = logspace(-5,0,1000) 
@@ -16,7 +16,7 @@ T_max_warn = 1000
 T_min_warn = 30
 
 verbose=False
-results_dir = '/p/datad/jkatesha/data/results/'
+results_dir = '/tigress/jk7/data/results/'
 
 analyzer = PerformanceAnalyzer(results_dir=results_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
