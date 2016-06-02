@@ -11,6 +11,7 @@ from pylab import *
 import sys
 import multiprocessing as mp
 from functools import partial
+import Queue
 
 
 
@@ -67,9 +68,10 @@ def format_save_path(prepath,signal_path,shot_num):
 
 def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 	while True:
-		if shot_num_queue.empty():
+		try:
+			shot_num = shot_num_queue.get(False)
+		except Queue.Empty:
 			break
-		shot_num = shot_num_queue.get()
 		for signal_path in signal_paths:
 			save_path_full = format_save_path(save_prepath,signal_path,shot_num)
 			if os.path.isfile(save_path_full):
@@ -116,7 +118,6 @@ for p in processes:
 	p.start()
 for p in processes:
 	p.join()
-queue.join()
 
 print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),time.time()-start_time))
 
