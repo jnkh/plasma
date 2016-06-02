@@ -65,7 +65,8 @@ def format_save_path(prepath,signal_path,shot_num):
 	return prepath + signal_path  + '/{}.txt'.format(shot_num)
 
 
-def save_shot(shot_num,signal_paths,save_prepath,machine,c):
+def save_shot(shot_num,signal_paths,save_prepath,machine,server_path):
+	c = Connection(server_path)
 	for signal_path in signal_paths:
 		save_path_full = format_save_path(save_prepath,signal_path,shot_num)
 		if os.path.isfile(save_path_full):
@@ -100,7 +101,7 @@ c = Connection(server_path)
 pool = mp.Pool()
 print('running in parallel on {} processes'.format(pool._processes))
 start_time = time.time()
-fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,c=c)
+fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine,server_path=server_path)
 
 # for shot_num in shot_numbers:
 # 	save_shot(shot_num,signal_paths,save_prepath,machine,c)
