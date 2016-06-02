@@ -27,10 +27,10 @@ def get_tree_and_tag(path):
 prepath = '/p/datad/jkatesha/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
-mode = 'NSTX'
+machine = 'nstx'
 
 
-if mode == 'NSTX':
+if machine == 'nstx':
 	shot_numbers_files = ['disrupt_nstx.txt'] 
 	server_path = "skylark.pppl.gov:8501::"
 	signal_paths = ['engineering/ip1/',
@@ -41,7 +41,7 @@ if mode == 'NSTX':
 	'nbi/nb_p_inj/',
 	'efit02/wpdot/']
 
-elif mode == 'jet':
+elif machine == 'jet':
 	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
@@ -63,17 +63,17 @@ c = Connection(server_path)
 
 for shot_num in shot_numbers:
 	for signal_path in signal_paths:
-		if mode == 'NSTX':
+		if machine == 'nstx':
 			tree,tag = get_tree_and_tag(signal_path)
 			c.openTree(tree,shot_num)
 			data = c.get(tag).data()
 			time = c.get('dim_of('+tag+')').data()
-		elif mode == 'jet':
+		elif machine == 'jet':
 			data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 			time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 		data_two_column = vstack((time,data)).transpose()
 
-		save_path_full = prepath+save_path + '/' + signal_path  + '/{}.txt'.format(shot_num)
+		save_path_full = prepath+save_path + '/' + machine + '/' signal_path  + '/{}.txt'.format(shot_num)
 		mkdirdepth(save_path_full)
 
 		savetxt(save_path_full,data_two_column,fmt = '%f %f')
