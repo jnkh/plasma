@@ -4,7 +4,7 @@ http://piscope.psfc.mit.edu/index.php/MDSplus_%26_python#Simple_example_of_readi
 http://www.mdsplus.org/documentation/beginners/expressions.shtml
 http://www.mdsplus.org/index.php?title=Documentation:Tutorial:MdsObjects&open=76203664636339686324830207&page=Documentation%2FThe+MDSplus+tutorial%2FThe+Object+Oriented+interface+of+MDSPlus
 '''
-
+from __future__ import print_function
 from MDSplus import *
 
 prepath = '/p/datad/jkatesha/data/'
