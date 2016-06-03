@@ -411,11 +411,11 @@ class PerformanceAnalyzer():
                 plotted += 1
                 savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
-                    self.plot_shot(shot,True,normalize,t,p)
+                    self.plot_shot(shot,True,normalize,t,p,P_thresh_opt)
 
 
 
-    def plot_shot(self,shot,save_fig=True,normalize=True,truth=None,prediction=None):
+    def plot_shot(self,shot,save_fig=True,normalize=True,truth=None,prediction=None,P_thresh_opt=None):
         if self.normalizer is None and normalize:
             nn = Normalizer(self.conf)
             nn.train()
