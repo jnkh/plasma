@@ -457,7 +457,10 @@ class PerformanceAnalyzer():
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
             ax = axarr[-1] 
-            ax.semilogy((truth+0.001)[::-1],label='ground truth')
+            if self.pred_ttd:
+                ax.plot((truth)[::-1],label='ground truth')
+            else:
+                ax.semilogy((truth+0.001)[::-1],label='ground truth')
             ax.plot(prediction[::-1],'g',label='neural net prediction')
             ax.axvline(self.T_min_warn,color='r',label='max warning time')
             ax.axvline(self.T_max_warn,color='r',label='min warning time')
