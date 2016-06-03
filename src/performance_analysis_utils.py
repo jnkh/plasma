@@ -421,8 +421,8 @@ class PerformanceAnalyzer():
                     legend(loc = (1.0,0.6))
                     ylim([1e-7,1.1e0])
                     grid()
-                    plotted += 1
                     savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
+                plotted += 1
 
 
 
