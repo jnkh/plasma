@@ -249,7 +249,10 @@ class PerformanceAnalyzer():
         nondisr_alarms = []
         for i in range(len(pred_list)):
             pred = pred_list[i]
-            predictions = pred > P_thresh
+            if self.pred_ttd:
+                predictions = pred < P_thresh
+            else:
+                predictions = pred > P_thresh
             predictions = reshape(predictions,(len(predictions),))
             positives = self.get_positives(predictions)#where(predictions)[0]
             if len(positives) > 0:
