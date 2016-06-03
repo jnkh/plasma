@@ -317,13 +317,16 @@ class PerformanceAnalyzer():
         P_thresh_default = 0.03
         P_thresh_ret = P_thresh_default
 
+        first_idx = 0 if not self.pred_ttd else -1
+        last_idx = -1 if not self.pred_ttd else 0
+
         #first index where...
         for fp_thresh in fp_threshs: 
 
             print('============= TRAINING FP RATE < {} ============='.format(fp_thresh))
             print('============= TEST PERFORMANCE: =============')
             if(any(fp_range < fp_thresh)):
-                idx = where(fp_range <= fp_thresh)[0][0]
+                idx = where(fp_range <= fp_thresh)[0][first_idx]
                 P_thresh_opt = P_thresh_range[idx]
                 self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
@@ -338,7 +341,7 @@ class PerformanceAnalyzer():
             print('============= TRAINING MISSED RATE < {} ============='.format(missed_thresh))
             print('============= TEST PERFORMANCE: =============')
             if(any(missed_range < missed_thresh)):
-                idx = where(missed_range <= missed_thresh)[0][-1]
+                idx = where(missed_range <= missed_thresh)[0][last_idx]
                 P_thresh_opt = P_thresh_range[idx]
                 self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
                 if missed_thresh == 0.05:
@@ -352,10 +355,11 @@ class PerformanceAnalyzer():
         print('============== Crossing Point: ==============')
         print('============= TEST PERFORMANCE: =============')
         if(any(missed_range <= fp_range)):
-            idx = where(missed_range <= fp_range)[0][-1]
+            idx = where(missed_range <= fp_range)[0][last_idx]
             P_thresh_opt = P_thresh_range[idx]
             self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
             P_thresh_ret = P_thresh_opt
+            print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
             print('No such P_thresh found')
         return P_thresh_ret
