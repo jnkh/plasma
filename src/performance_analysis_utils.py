@@ -448,11 +448,11 @@ class PerformanceAnalyzer():
             for (i,sig) in enumerate(signals.T):
                 ax = fig.add_subplot(len(signals.T)/2+1,2,i+1)
                 ax.plot(sig[::-1],label = labels[i])
-                ax.legend(loc='best',fontsize=10)
+                ax.legend(loc='best',fontsize=8)
                 for tick in ax.xaxis.get_major_ticks():
-                    tick.label.set_fontsize(10)
+                    tick.label.set_fontsize(8)
                 for tick in ax.yaxis.get_major_ticks():
-                    tick.label.set_fontsize(10)
+                    tick.label.set_fontsize(8)
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
             ax = fig.add_subplot(len(signals.T)+1,1,len(signals.T)+1)
@@ -462,7 +462,7 @@ class PerformanceAnalyzer():
             ax.axvline(self.T_max_warn,color='r',label='min warning time')
             ax.axhline(P_thresh_opt,color='k',label='trigger threshold')
             # ax.set_xlabel('TTD [ms]')
-            ax.legend(loc = 'best',fontsize=10)
+            # ax.legend(loc = 'best',fontsize=10)
             ax.set_ylim([1e-6,1.1e0])
             ax.grid()           
             if save_fig:
