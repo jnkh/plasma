@@ -386,7 +386,7 @@ class PerformanceAnalyzer():
 
 
 
-    def example_plots(self,P_thresh_opt,mode='test',type_to_plot = 'FP',max_plot = 5,normalize=True,plot_signals=True):
+    def example_plots(self,P_thresh_opt,mode='test',types_to_plot = ['FP'],max_plot = 5,normalize=True,plot_signals=True):
         if mode == 'test':
             pred = self.pred_test
             truth = self.truth_test
@@ -407,10 +407,10 @@ class PerformanceAnalyzer():
             shot = shot_list.shots[i]
             TP,FP,FN,TN,early,late =self.get_shot_prediction_stats(P_thresh_opt,p,t,is_disr)
             prediction_type = self.get_prediction_type(TP,FP,FN,TN,early,late)
-            if type_to_plot not in set(['FP','TP','FN','TN','late','early','any']):
-                print('warning, unkown type_to_plot')
+            if not all(_ in set(['FP','TP','FN','TN','late','early','any']) for _ in types_to_plot):
+                print('warning, unkown types_to_plot')
                 return
-            if (type_to_plot == 'any' or type_to_plot == prediction_type) and plotted < max_plot:
+            if ('any' in types_to_plot or prediction_type in types_to_plot) and plotted < max_plot:
                 if plot_signals:
                     self.plot_shot(shot,True,normalize,t,p,P_thresh_opt,prediction_type)
                 else:
