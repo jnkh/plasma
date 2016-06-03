@@ -411,7 +411,7 @@ class PerformanceAnalyzer():
                 plotted += 1
                 savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
-                    self.plot_shot(shot,True,normalize,truth,prediction)
+                    self.plot_shot(shot,True,normalize,t,p)
 
 
 
