@@ -370,7 +370,23 @@ class PerformanceAnalyzer():
 
         self.tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
-    def example_plots(self,P_thresh_opt,mode='test',type = 'FP',max_plot = 5,normalize=True,plot_signals=True):
+    def get_prediction_type(self,TP,FP,FN,TN,early,late):
+        if TP:
+            return 'TP'
+        elif FP:
+            return 'FP'
+        elif FN:
+            return 'FN'
+        elif TN:
+            return 'TN'
+        elif early:
+            return 'early'
+        elif late:
+            return 'late'
+
+
+
+    def example_plots(self,P_thresh_opt,mode='test',type_to_plot = 'FP',max_plot = 5,normalize=True,plot_signals=True):
         if mode == 'test':
             pred = self.pred_test
             truth = self.truth_test
@@ -390,26 +406,13 @@ class PerformanceAnalyzer():
             is_disr = is_disruptive[i]
             shot = shot_list.shots[i]
             TP,FP,FN,TN,early,late =self.get_shot_prediction_stats(P_thresh_opt,p,t,is_disr)
-            if type == 'FP':
-                comparison = FP
-            elif type == 'TP':
-                comparison =TP 
-            elif type == 'FN':
-                comparison =FN 
-            elif type == 'TN':
-                comparison =TN 
-            elif type == 'late':
-                comparison =late 
-            elif type == 'early':
-                comparison =early
-            elif type == 'any':
-                comparison = True
-            else:
-                print('warning, unkown type')
+            prediction_type = self.get_prediction_type(TP,FP,FN,TN,early,late)
+            if type_to_plot not in set(['FP','TP','FN','TN','late','early','any']):
+                print('warning, unkown type_to_plot')
                 return
-            if comparison and plotted < max_plot:
+            if (type_to_plot == 'any' or type_to_plot == prediction_type) and plotted < max_plot:
                 if plot_signals:
-                    self.plot_shot(shot,True,normalize,t,p,P_thresh_opt)
+                    self.plot_shot(shot,True,normalize,t,p,P_thresh_opt,prediction_type)
                 else:
                     figure()
                     semilogy((t+0.001)[::-1],label='ground truth')
@@ -426,7 +429,7 @@ class PerformanceAnalyzer():
 
 
 
-    def plot_shot(self,shot,save_fig=True,normalize=True,truth=None,prediction=None,P_thresh_opt=None):
+    def plot_shot(self,shot,save_fig=True,normalize=True,truth=None,prediction=None,P_thresh_opt=None,prediction_type=''):
         if self.normalizer is None and normalize:
             nn = Normalizer(self.conf)
             nn.train()
@@ -455,6 +458,7 @@ class PerformanceAnalyzer():
                 print('non disruptive')
 
             f,axarr = subplots(len(signals.T)+1,1,sharex=True,figsize=(13,13))
+            title(prediction_type)
             for (i,sig) in enumerate(signals.T):
                 ax = axarr[i]
                 ax.plot(sig[::-1],label = labels[i])
