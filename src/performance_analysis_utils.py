@@ -2,7 +2,7 @@ from pylab import *
 from matplotlib import pyplot
 import os
 from pprint import pprint
-from data_processing import MeanVarNormalizer as Normalizer 
+from data_processing import VarNormalizer as Normalizer 
 
 
 
@@ -411,7 +411,7 @@ class PerformanceAnalyzer():
                 plotted += 1
                 savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
-                    self.plot_shot(shot,True,normalize)
+                    self.plot_shot(shot,True,normalize,truth,prediction)
 
 
 
@@ -456,8 +456,8 @@ class PerformanceAnalyzer():
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
             ax = fig.add_subplot(len(signals.T)+1,1,len(signals.T)+1)
-            ax.semilogy((t+0.001)[::-1],label='ground truth')
-            ax.plot(p[::-1],'g',label='neural net prediction')
+            ax.semilogy((truth+0.001)[::-1],label='ground truth')
+            ax.plot(prediction[::-1],'g',label='neural net prediction')
             ax.axvline(self.T_min_warn,color='r',label='max warning time')
             ax.axvline(self.T_max_warn,color='r',label='min warning time')
             ax.axhline(P_thresh_opt,color='k',label='trigger threshold')
