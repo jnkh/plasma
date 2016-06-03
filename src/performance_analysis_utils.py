@@ -449,7 +449,7 @@ class PerformanceAnalyzer():
                 ax.plot(sig[::-1],label = labels[i])
                 ax.legend(loc='best',fontsize=8)
                 setp(ax.get_xticklabels(),visible=False)
-                setp(ax.get_yticklabels(),fintsize=7)
+                setp(ax.get_yticklabels(),fontsize=7)
                 f.subplots_adjust(hspace=0)
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
