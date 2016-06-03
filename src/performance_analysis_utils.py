@@ -2,7 +2,7 @@ from pylab import *
 from matplotlib import pyplot
 import os
 from pprint import pprint
-from data_processing import MeanVarNormalizer as Normalizer 
+from data_processing import VarNormalizer as Normalizer 
 
 
 
