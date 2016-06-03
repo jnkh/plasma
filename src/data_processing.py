@@ -93,7 +93,7 @@ class Normalizer(object):
 
             for (i,stats) in enumerate(pool.imap_unordered(self.train_on_single_shot,shot_list_picked)):
                 self.incorporate_stats(stats)
-                print('{}/{}'.format(i,len(shot_list_picked)))
+                sys.stdout.write('\r' + '{}/{}'.format(i,len(shot_list_picked)))
 
             pool.close()
             pool.join()
@@ -293,11 +293,11 @@ class Preprocessor(object):
         train_frac = conf['training']['train_frac']
         use_shots_train = int(round(train_frac*use_shots))
         use_shots_test = int(round((1-train_frac)*use_shots))
-	if len(shot_files_test) > 0:
+        if len(shot_files_test) > 0:
             return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) + \
                self.preprocess_from_files(shot_list_dir,shot_files_test,use_shots_test)
-	else:
-	    return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train)
+    	else:
+    	    return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train)
 
 
     def preprocess_from_files(self,shot_list_dir,shot_files,use_shots):
@@ -315,7 +315,7 @@ class Preprocessor(object):
         start_time = time.time()
         for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,shot_list_picked)):
         # for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,[1,2,3])):
-            print('{}/{}'.format(i,len(shot_list_picked)))
+            sys.stdout.write('\r{}/{}'.format(i,len(shot_list_picked)))
             used_shots.append_if_valid(shot)
 
         pool.close()
@@ -330,7 +330,7 @@ class Preprocessor(object):
         recompute = self.conf['data']['recompute']
         # print('({}/{}): '.format(num_processed,use_shots))
         if recompute or not shot.previously_saved(processed_prepath):
-            # print('(re)computing shot_number {}'.format(shot_number),end='')
+            sys.stdout.write('\rrecomputing {}'.format(shot_number))
           #get minmax times
             signals,times,t_min,t_max,t_thresh,valid = self.get_signals_and_times_from_file(shot.number,shot.t_disrupt) 
             #cut and resample
@@ -343,7 +343,7 @@ class Preprocessor(object):
 
         else:
             shot.restore(processed_prepath,light=True)
-            print('shot {} exists.'.format(shot.number))
+            sys.stdout.write('\r{} exists.'.format(shot.number))
         shot.make_light()
         return shot 
 
