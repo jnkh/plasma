@@ -408,20 +408,21 @@ class PerformanceAnalyzer():
                 print('warning, unkown type')
                 return
             if comparison and plotted < max_plot:
-                figure()
-                semilogy((t+0.001)[::-1],label='ground truth')
-                plot(p[::-1],'g',label='neural net prediction')
-                axvline(self.T_min_warn,color='r',label='max warning time')
-                axvline(self.T_max_warn,color='r',label='min warning time')
-                axhline(P_thresh_opt,color='k',label='trigger threshold')
-                xlabel('TTD [ms]')
-                legend(loc = (1.0,0.6))
-                ylim([1e-7,1.1e0])
-                grid()
-                plotted += 1
-                savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
                     self.plot_shot(shot,True,normalize,t,p,P_thresh_opt)
+                else:
+                    figure()
+                    semilogy((t+0.001)[::-1],label='ground truth')
+                    plot(p[::-1],'g',label='neural net prediction')
+                    axvline(self.T_min_warn,color='r',label='max warning time')
+                    axvline(self.T_max_warn,color='r',label='min warning time')
+                    axhline(P_thresh_opt,color='k',label='trigger threshold')
+                    xlabel('TTD [ms]')
+                    legend(loc = (1.0,0.6))
+                    ylim([1e-7,1.1e0])
+                    grid()
+                    plotted += 1
+                    savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
 
 
 
