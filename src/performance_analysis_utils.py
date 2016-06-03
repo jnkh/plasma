@@ -364,7 +364,7 @@ class PerformanceAnalyzer():
     def compute_tradeoffs_and_plot(self,P_thresh_range,mode,save_figure=True,plot_string=''):
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(P_thresh_range,mode)
 
-        tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
+        self.tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
     def example_plots(self,P_thresh_opt,mode='test',type = 'FP',max_plot = 5,normalize=True,plot_signals=True):
         if mode == 'test':
@@ -482,19 +482,22 @@ class PerformanceAnalyzer():
 
 
 
-def tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
-    figure()
-    # semilogx(P_thresh_range,accuracy_range,label="accuracy")
-    semilogx(P_thresh_range,missed_range,'r',label="missed")
-    plot(P_thresh_range,fp_range,'k',label="false positives")
-    # plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
-    legend(loc=(1.0,.6))
-    xlabel('Alarm threshold')
-    grid()
-    title_str = 'metrics{}'.format(plot_string)
-    title(title_str)
-    if save_figure:
-        savefig(title_str + '.png',bbox_inches='tight')
+    def tradeoff_plot(self,P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
+        figure()
+        # semilogx(P_thresh_range,accuracy_range,label="accuracy")
+        if self.pred_ttd:
+            plot(P_thresh_range,missed_range,'r',label="missed")
+        else:
+            semilogx(P_thresh_range,missed_range,'r',label="missed")
+        plot(P_thresh_range,fp_range,'k',label="false positives")
+        # plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
+        legend(loc=(1.0,.6))
+        xlabel('Alarm threshold')
+        grid()
+        title_str = 'metrics{}'.format(plot_string)
+        title(title_str)
+        if save_figure:
+            savefig(title_str + '.png',bbox_inches='tight')
 
 
 
