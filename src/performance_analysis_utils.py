@@ -443,7 +443,7 @@ class PerformanceAnalyzer():
             else:
                 print('non disruptive')
 
-            f,axarr = subplots(len(signals.T)+1,1,sharex=True)
+            f,axarr = subplots(len(signals.T)+1,1,sharex=True,figsize=(20,10))
             for (i,sig) in enumerate(signals.T):
                 ax = axarr[i]
                 ax.plot(sig[::-1],label = labels[i])
