@@ -503,6 +503,7 @@ class PerformanceAnalyzer():
         title(title_str)
         if save_figure:
             savefig(title_str + '.png',bbox_inches='tight')
+        close('all')
 
 
 
