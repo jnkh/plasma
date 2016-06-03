@@ -7,14 +7,14 @@ from data_processing import VarNormalizer as Normalizer
 
 
 class PerformanceAnalyzer():
-    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False):
+    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False,pred_ttd=False):
         self.T_min_warn = T_min_warn
         self.T_max_warn = T_max_warn
         self.verbose = verbose
         self.results_dir = results_dir
         self.shots_dir = shots_dir
         self.i = i
-
+        self.pred_ttd = pred_ttd
 
 
         self.pred_train = None
@@ -86,7 +86,10 @@ class PerformanceAnalyzer():
 
     #we are interested in the predictions of the *first alarm*
     def get_shot_prediction_stats(self,P_thresh,pred,truth,is_disruptive):
-        predictions = pred > P_thresh
+        if self.pred_ttd:
+            predictions = pred < P_thresh
+        else:
+            predictions = pred > P_thresh
         predictions = reshape(predictions,(len(predictions),))
         
         max_acceptable = self.create_acceptable_region(truth,'max')
