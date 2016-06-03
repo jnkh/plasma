@@ -214,13 +214,13 @@ def make_predictions(conf,shot_list,builder,loader):
     y_gold = []
     disruptive = []
 
+    _,model = builder.build_train_test_models()
+    weights_path = builder.get_latest_save_path()
+
     pool = mp.Pool()
     print('running in parallel on {} processes'.format(pool._processes))
     start_time = time.time()
-
     #force compilation
-    _,model = builder.build_train_test_models()
-    weights_path = builder.get_latest_save_path()
     fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap(fn,shot_list)):
