@@ -2,7 +2,7 @@ from pylab import *
 from matplotlib import pyplot
 import os
 from pprint import pprint
-from data_processing import MeanVarNormalizer as Normalizer 
+from data_processing import VarNormalizer as Normalizer 
 
 
 
@@ -411,11 +411,11 @@ class PerformanceAnalyzer():
                 plotted += 1
                 savefig('fig_{}.png'.format(shot.number),bbox_inches='tight')
                 if plot_signals:
-                    self.plot_shot(shot,True,normalize)
+                    self.plot_shot(shot,True,normalize,t,p,P_thresh_opt)
 
 
 
-    def plot_shot(self,shot,save_fig=True,normalize=True):
+    def plot_shot(self,shot,save_fig=True,normalize=True,truth=None,prediction=None,P_thresh_opt=None):
         if self.normalizer is None and normalize:
             nn = Normalizer(self.conf)
             nn.train()
@@ -443,12 +443,26 @@ class PerformanceAnalyzer():
             else:
                 print('non disruptive')
 
-            f,axarr = subplots(len(signals.T)/2,2)
+            f,axarr = subplots(len(signals.T)+1,1,sharex=True)
             for (i,sig) in enumerate(signals.T):
-                axarr.flatten()[i].plot(sig,label = labels[i])
-                axarr.flatten()[i].legend(loc='best')
+                ax = axarr[i]
+                ax.plot(sig[::-1],label = labels[i])
+                ax.legend(loc='best',fontsize=8)
+                setp(ax.get_xticklabels(),visible=False)
+                setp(ax.get_yticklabels(),fintsize=7)
+                f.subplots_adjust(hspace=0)
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
+            ax = axarr[-1] 
+            ax.semilogy((truth+0.001)[::-1],label='ground truth')
+            ax.plot(prediction[::-1],'g',label='neural net prediction')
+            ax.axvline(self.T_min_warn,color='r',label='max warning time')
+            ax.axvline(self.T_max_warn,color='r',label='min warning time')
+            ax.axhline(P_thresh_opt,color='k',label='trigger threshold')
+            # ax.set_xlabel('TTD [ms]')
+            # ax.legend(loc = 'best',fontsize=10)
+            ax.set_ylim([1e-6,1.1e0])
+            ax.grid()           
             if save_fig:
                 savefig('sig_fig_{}.png'.format(shot.number),bbox_inches='tight')
         else:

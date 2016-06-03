@@ -15,7 +15,7 @@ This work was supported by the DOE CSGF program.
 '''
 
 from __future__ import print_function
-import datetime,time,os.path
+import datetime,time,os.path,sys
 import dill
 from functools import partial
 
@@ -224,7 +224,7 @@ def make_predictions(conf,shot_list,builder,loader):
     fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap(fn,shot_list)):
-        print('Shot {}/{}'.format(i,len(shot_list)))
+        sys.stdout.write('\rShot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
