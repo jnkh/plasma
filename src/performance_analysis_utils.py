@@ -443,19 +443,17 @@ class PerformanceAnalyzer():
             else:
                 print('non disruptive')
 
-            fig = figure()
-            # f,axarr = subplots(len(signals.T)/2,2)
+            f,axarr = subplots(len(signals.T)+1,1,sharex=True)
             for (i,sig) in enumerate(signals.T):
-                ax = fig.add_subplot(len(signals.T)/2+1,2,i+1)
+                ax = axarr[i]
                 ax.plot(sig[::-1],label = labels[i])
                 ax.legend(loc='best',fontsize=8)
-                for tick in ax.xaxis.get_major_ticks():
-                    tick.label.set_fontsize(8)
-                for tick in ax.yaxis.get_major_ticks():
-                    tick.label.set_fontsize(8)
+                setp(ax.get_xticklabels(),visible=False)
+                setp(ax.get_yticklabels(),fintsize=7)
+                f.subplots_adjust(hspace=0)
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
 
-            ax = fig.add_subplot(len(signals.T)+1,1,len(signals.T)+1)
+            ax = axarr[-1] 
             ax.semilogy((truth+0.001)[::-1],label='ground truth')
             ax.plot(prediction[::-1],'g',label='neural net prediction')
             ax.axvline(self.T_min_warn,color='r',label='max warning time')
