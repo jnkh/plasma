@@ -54,7 +54,9 @@ class ModelBuilder():
 		skip = model_conf['skip']
 		stateful = model_conf['stateful']
 		return_sequences = model_conf['return_sequences']
+		output_activation = model_conf['output_activation']
 		num_signals = conf['data']['num_signals']
+
 
 		batch_size = Loader.get_batch_size(self.conf['training']['batch_size'],predict)
 		if predict:
@@ -81,11 +83,9 @@ class ModelBuilder():
 			 stateful=stateful))
 			model.add(Dropout(dropout_prob))
 		if return_sequences:
-			model.add(TimeDistributed(Dense(1)))
-			model.add(TimeDistributed(Activation('sigmoid'))) #add if probabilistic output
+			model.add(TimeDistributed(Dense(1,activation=output_activation)))
 		else:
-			model.add(Dense(1))
-			model.add(Activation('sigmoid')) #add if probabilistic output
+			model.add(Dense(1,activation=output_activation))
 		model.compile(loss=loss_fn, optimizer=optimizer)
 		model.reset_states()
 		#model.compile(loss='mean_squared_error', optimizer='sgd') #for numerical output
