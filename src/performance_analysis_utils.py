@@ -443,7 +443,7 @@ class PerformanceAnalyzer():
             else:
                 print('non disruptive')
 
-            f,axarr = subplots(len(signals.T)+1,1,sharex=True)
+            f,axarr = subplots(len(signals.T)+1,1,sharex=True,figsize=(20,10))
             for (i,sig) in enumerate(signals.T):
                 ax = axarr[i]
                 ax.plot(sig[::-1],label = labels[i])
@@ -461,8 +461,9 @@ class PerformanceAnalyzer():
             ax.axhline(P_thresh_opt,color='k',label='trigger threshold')
             # ax.set_xlabel('TTD [ms]')
             # ax.legend(loc = 'best',fontsize=10)
-            ax.set_ylim([1e-6,1.1e0])
-            ax.grid()           
+            ax.set_ylim([1e-5,1.1e0])
+            setp(ax.get_yticklabels(),fontsize=7)
+            # ax.grid()           
             if save_fig:
                 savefig('sig_fig_{}.png'.format(shot.number),bbox_inches='tight')
         else:
