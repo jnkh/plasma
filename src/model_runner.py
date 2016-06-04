@@ -110,10 +110,11 @@ def make_predictions(conf,shot_list,loader):
 
     _,model = builder.build_train_test_models()
     builder.load_model_weights(model)
+    model_save_path = builder.get_latest_save_path()
 
     start_time = time.time()
     pool = mp.Pool()
-    fn = partial(make_single_prediction,builder=builder,loader=loader)
+    fn = partial(make_single_prediction,builder=builder,loader=loader,model_save_path=model_save_path)
 
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
@@ -130,9 +131,9 @@ def make_predictions(conf,shot_list,loader):
 
 
 
-def make_single_prediction(shot,builder,loader):
+def make_single_prediction(shot,builder,loader,model_save_path):
     _,model = builder.build_train_test_models()
-    builder.load_model_weights(model)
+    model.load_model_weights(model_save_path)
     model.reset_states()
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
