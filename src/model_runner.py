@@ -1,6 +1,9 @@
 
+
+from __future__ import print_function
 import numpy as np
 from data_processing import Loader
+
 
 def train(conf,shot_list_train,loader):
     #####################################################
