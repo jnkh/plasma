@@ -5,6 +5,7 @@ import numpy as np
 from data_processing import Loader
 import os
 from conf import conf
+from itertools import imap
 
 
 def train(conf,shot_list_train,loader):
@@ -112,7 +113,7 @@ def make_predictions(conf,shot_list,builder,loader):
     fn = partial(make_single_prediction,builder=builder,loader=loader,model=model)
 
 
-    for (i,(y_p,y,is_disruptive)) in enumerate(map(fn,shot_list)):
+    for (i,(y_p,y,is_disruptive)) in enumerate(imap(fn,shot_list)):
         print('Shot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
