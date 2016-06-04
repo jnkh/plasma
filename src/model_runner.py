@@ -94,7 +94,7 @@ from functools import partial
 import pathos.multiprocessing as mp
 
 
-def make_predictions(conf,shot_list,builder,loader):
+def make_predictions(conf,shot_list,loader):
 
     os.environ['THEANO_FLAGS'] = 'device=cpu' #=cpu
     import theano
