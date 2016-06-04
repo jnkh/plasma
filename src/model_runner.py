@@ -13,7 +13,7 @@ def train(conf,shot_list_train,loader):
     np.random.seed(5)
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
-    os.environ["THEANO_FLAGS"] = "device=gpu,floatX=float32"
+    os.environ['THEANO_FLAGS'] = 'device=gpu'
     import theano
     from keras.utils.generic_utils import Progbar 
     import model_builder #from model_builder import ModelBuilder, LossHistory
@@ -98,7 +98,7 @@ import pathos.multiprocessing as mp
 def make_predictions(conf,shot_list,builder,loader):
 
 
-    os.environ["THEANO_FLAGS"] = "device=gpu,floatX=float32" #=cpu
+    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
     import theano
     from keras.utils.generic_utils import Progbar 
 
