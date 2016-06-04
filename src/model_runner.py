@@ -7,6 +7,11 @@ from itertools import imap
 from keras.utils.generic_utils import Progbar 
 import model_builder #from model_builder import ModelBuilder, LossHistory
 
+import time,sys
+from functools import partial
+import pathos.multiprocessing as mp
+
+
 
 def train(conf,shot_list_train,loader):
 
@@ -85,19 +90,7 @@ def train(conf,shot_list_train,loader):
 
 
 
-import model_builder
-import time,sys
-from functools import partial
-import pathos.multiprocessing as mp
-
-
 def make_predictions(conf,shot_list,builder,loader):
-
-
-    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
-    import theano
-    from keras.utils.generic_utils import Progbar 
-
     y_prime = []
     y_gold = []
     disruptive = []
