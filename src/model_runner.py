@@ -119,7 +119,7 @@ def make_predictions(conf,shot_list,loader):
     fn = partial(make_single_prediction,builder=builder,loader=loader,model_save_path=model_save_path)
 
     print('running in parallel on {} processes'.format(pool._processes))
-    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
+    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap(fn,shot_list)):
     # for (i,(y_p,y,is_disruptive)) in enumerate(imap(fn,shot_list)):
         print('Shot {}/{}'.format(i,len(shot_list)))
         sys.stdout.flush()
