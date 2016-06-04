@@ -96,10 +96,13 @@ import pathos.multiprocessing as mp
 
 def make_predictions(conf,shot_list,builder,loader):
 
-
-    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    os.environ['THEANO_FLAGS'] = 'device=cpu' #=cpu
     import theano
     from keras.utils.generic_utils import Progbar 
+    from model_builder import ModelBuilder
+    builder = ModelBuilder(conf) 
+    
+
 
     y_prime = []
     y_gold = []
@@ -109,14 +112,18 @@ def make_predictions(conf,shot_list,builder,loader):
     builder.load_model_weights(model)
 
     start_time = time.time()
+    pool = mp.Pool()
     fn = partial(make_single_prediction,builder=builder,loader=loader,model=model)
 
 
-    for (i,(y_p,y,is_disruptive)) in enumerate(imap(fn,shot_list)):
+    for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
+    # for (i,(y_p,y,is_disruptive)) in enumerate(imap(fn,shot_list)):
         print('Shot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
+    pool.close()
+    pool.join()
     print('Finished Predictions in {} seconds'.format(time.time()-start_time))
     return y_prime,y_gold,disruptive
 
