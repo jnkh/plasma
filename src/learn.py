@@ -85,21 +85,18 @@ print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),le
 #####################################################
 ######################TRAINING#######################
 #####################################################
-import multiprocessing as old_mp
+os.environ['THEANO_FLAGS'] = 'device=gpu'
+import theano
 from model_runner import train
-p = old_mp.Process(target = train,args=(conf,shot_list_train,loader))
-p.start()
-p.join()
-
+train(conf,shot_list_train,loader)
 
 #####################################################
 ####################PREDICTING#######################
 #####################################################
 
-
 from model_runner import make_predictions
-from model_builder import ModelBuilder
-builder = ModelBuilder(conf)
+import model_builder
+builder = model_builder.ModelBuilder(conf)
 
 
 #load last model for testing
@@ -107,24 +104,16 @@ print('saving results')
 y_prime = []
 y_prime_test = []
 y_prime_train = []
-
 y_gold = []
 y_gold_test = []
 y_gold_train = []
-
 disruptive= []
 disruptive_train= []
 disruptive_test= []
 
 
-
-
-
-
 y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,builder,loader)
 y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,builder,loader)
-
-
 
 disruptive_train = np.array(disruptive_train)
 disruptive_test = np.array(disruptive_test)
@@ -144,9 +133,6 @@ np.savez(conf['paths']['results_prepath']+save_str,
     disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test,
     shot_list=shot_list,shot_list_train=shot_list_train,shot_list_test=shot_list_test,
     conf = conf)
-
-
-
 print('finished.')
 
 
