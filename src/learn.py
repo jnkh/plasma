@@ -217,7 +217,7 @@ def make_predictions(conf,shot_list,builder,loader):
     _,model = builder.build_train_test_models()
     weights_path = builder.get_latest_save_path()
 
-    pool = mp.Pool()
+    pool = mp.Pool(1)
     print('running in parallel on {} processes'.format(pool._processes))
     start_time = time.time()
     #force compilation
