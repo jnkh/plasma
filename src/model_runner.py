@@ -4,6 +4,7 @@ from __future__ import print_function
 import numpy as np
 from data_processing import Loader
 import os
+from conf import conf
 
 
 def train(conf,shot_list_train,loader):
@@ -45,6 +46,7 @@ def train(conf,shot_list_train,loader):
 
 
 
+    num_epochs = conf['training']['num_epochs']
     num_at_once = conf['training']['num_shots_at_once']
     print('{} epochs left to go'.format(num_epochs - 1 - e))
     while e < num_epochs-1:
