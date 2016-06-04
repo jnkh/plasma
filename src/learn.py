@@ -40,7 +40,6 @@ else:
     print('unkown normalizer. exiting')
     exit(1)
 
-num_epochs = conf['training']['num_epochs']
 shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
