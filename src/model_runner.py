@@ -102,6 +102,7 @@ def train(conf,shot_list_train,loader):
 import pathos.multiprocessing as mp
 os.environ["THEANO_FLAGS"] = "device=cpu"
 import theano
+theano.gof.compilelock.set_lock_status(True)
 from keras.utils.generic_utils import Progbar 
 import model_builder
 import time,sys
@@ -125,7 +126,7 @@ def make_predictions(conf,shot_list,builder,loader):
     fn = partial(make_single_prediction,builder=builder,loader=loader,weights_path=weights_path)
 
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap(fn,shot_list)):
-        sys.stdout.write('\rShot {}/{}'.format(i,len(shot_list)))
+        print('Shot {}/{}'.format(i,len(shot_list)))
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
