@@ -133,7 +133,7 @@ def make_predictions(conf,shot_list,loader):
 
 def make_single_prediction(shot,builder,loader,model_save_path):
     _,model = builder.build_train_test_models()
-    model.load_model_weights(model_save_path)
+    model.load_weights(model_save_path)
     model.reset_states()
     X,y = loader.load_as_X_y(shot,prediction_mode=True)
     assert(X.shape[0] == y.shape[0])
