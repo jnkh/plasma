@@ -8,12 +8,8 @@ from conf import conf
 
 
 def train(conf,shot_list_train,loader):
-    #####################################################
-    ####################Training#########################
-    #####################################################
 
     np.random.seed(5)
-
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
     os.environ["THEANO_FLAGS"] = "device=gpu1"
@@ -26,11 +22,8 @@ def train(conf,shot_list_train,loader):
     train_model,test_model = builder.build_train_test_models()
     print('...done')
 
-
-
     #load the latest epoch we did. Returns -1 if none exist yet
     e = builder.load_model_weights(train_model)
-
 
     if conf['training']['data_parallel']:
         #elephas
@@ -42,8 +35,6 @@ def train(conf,shot_list_train,loader):
         adam = elephas_optimizers.Adam()
         spark_model = SparkModel(sc,train_model,optimizer=adam,frequency='batch',
             mode='synchronous',num_workers=2)
-
-
 
 
     num_epochs = conf['training']['num_epochs']
@@ -86,8 +77,6 @@ def train(conf,shot_list_train,loader):
         else:
             builder.save_model_weights(train_model,e)
 
-
-
         #validation
         if conf['training']['evaluate']:
             builder.load_model_weights(test_model)
@@ -99,18 +88,18 @@ def train(conf,shot_list_train,loader):
 
 
 
-import pathos.multiprocessing as mp
-os.environ["THEANO_FLAGS"] = "device=cpu"
-import theano
-theano.gof.compilelock.set_lock_status(True)
-from keras.utils.generic_utils import Progbar 
 import model_builder
 import time,sys
 from functools import partial
+import pathos.multiprocessing as mp
 
 
 def make_predictions(conf,shot_list,builder,loader):
 
+
+    os.environ["THEANO_FLAGS"] = "device=cpu"
+    import theano
+    from keras.utils.generic_utils import Progbar 
 
     y_prime = []
     y_gold = []
