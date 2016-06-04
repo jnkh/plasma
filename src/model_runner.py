@@ -8,6 +8,11 @@ from conf import conf
 from itertools import imap
 
 
+import time,sys
+from functools import partial
+import pathos.multiprocessing as mp
+
+
 def train(conf,shot_list_train,loader):
 
     np.random.seed(5)
@@ -89,9 +94,6 @@ def train(conf,shot_list_train,loader):
 
 
 
-import time,sys
-from functools import partial
-import pathos.multiprocessing as mp
 
 
 def make_predictions(conf,shot_list,loader):
@@ -120,6 +122,7 @@ def make_predictions(conf,shot_list,loader):
     for (i,(y_p,y,is_disruptive)) in enumerate(pool.imap_unordered(fn,shot_list)):
     # for (i,(y_p,y,is_disruptive)) in enumerate(imap(fn,shot_list)):
         print('Shot {}/{}'.format(i,len(shot_list)))
+        sys.stdout.flush()
         y_prime.append(y_p)
         y_gold.append(y)
         disruptive.append(is_disruptive)
