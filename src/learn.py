@@ -98,9 +98,6 @@ p.join()
 
 
 from model_runner import make_predictions
-from model_builder import ModelBuilder
-builder = ModelBuilder(conf)
-
 
 #load last model for testing
 print('saving results')
