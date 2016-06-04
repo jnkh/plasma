@@ -99,6 +99,7 @@ def make_predictions(conf,shot_list,builder,loader):
 
 
     os.environ["THEANO_FLAGS"] = "device=gpu" #=cpu
+    print(os.environ["THEANO_FLAGS"])
     import theano
     from keras.utils.generic_utils import Progbar 
 
