@@ -498,9 +498,10 @@ class PerformanceAnalyzer():
         # semilogx(P_thresh_range,accuracy_range,label="accuracy")
         if self.pred_ttd:
             semilogx(abs(P_thresh_range[::-1]),missed_range,'r',label="missed")
+            plot(abs(P_thresh_range[::-1]),fp_range,'k',label="false positives")
         else:
             semilogx(P_thresh_range,missed_range,'r',label="missed")
-        plot(P_thresh_range,fp_range,'k',label="false positives")
+            plot(P_thresh_range,fp_range,'k',label="false positives")
         # plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
         legend(loc=(1.0,.6))
         xlabel('Alarm threshold')
