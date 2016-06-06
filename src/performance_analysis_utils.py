@@ -497,7 +497,7 @@ class PerformanceAnalyzer():
         figure()
         # semilogx(P_thresh_range,accuracy_range,label="accuracy")
         if self.pred_ttd:
-            plot(P_thresh_range,missed_range,'r',label="missed")
+            semilogx(P_thresh_range,missed_range,'r',label="missed")
         else:
             semilogx(P_thresh_range,missed_range,'r',label="missed")
         plot(P_thresh_range,fp_range,'k',label="false positives")
