@@ -151,3 +151,70 @@ def make_single_prediction(shot,builder,loader,model_save_path):
     is_disruptive = shot.is_disruptive_shot()
     model.reset_states()
     return y_p,y,is_disruptive
+
+##############
+#############
+#############
+#############
+#########################
+#############
+#############
+#############
+#############
+
+def make_predictions_gpu(conf,shot_list,loader):
+
+    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    import theano
+    from keras.utils.generic_utils import Progbar 
+    from model_builder import ModelBuilder
+    builder = ModelBuilder(conf) 
+    
+
+
+    y_prime = []
+    y_gold = []
+    disruptive = []
+
+    _,model = builder.build_train_test_models()
+    builder.load_model_weights(model)
+    model.reset_states()
+
+
+    shot_sublists = shot_list.sublists(num_at_once)
+        for (i,shot_sublist) in enumerate(shot_sublists):
+            X_list,y_list = loader.load_as_X_y_list(shot_sublist,prediction_mode=True)
+            for j,(X,y) in enumerate(zip(X_list,y_list)):
+                else:
+                    #load data and fit on data
+                    y_p = mode.predict(X,
+                        batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
+                        nb_epoch=1,shuffle=False,verbose=0,
+                        validation_split=0.0,callbacks=[history])
+                    model.reset_states()
+                    y_p = loader.batch_output_to_array(y_p)
+                    y = loader.batch_output_to_array(y)
+
+                # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
+                pbar.add(1.0*len(shot_sublist)/len(X_list))
+                loader.verbose=False#True during the first iteration
+  return y_prime,y_gold,disruptive
+
+
+ 
+
+def make_single_prediction(shot,builder,loader,model_save_path):
+
+    X,y = loader.load_as_X_y(shot,prediction_mode=True)
+    assert(X.shape[0] == y.shape[0])
+    y_p = model.predict(X,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True),verbose=0)
+    answer_dims = y_p.shape[-1]
+    if conf['model']['return_sequences']:
+        shot_length = y_p.shape[0]*y_p.shape[1]
+    else:
+        shot_length = y_p.shape[0]
+    y_p = np.reshape(y_p,(shot_length,answer_dims))
+    y = np.reshape(y,(shot_length,answer_dims))
+    is_disruptive = shot.is_disruptive_shot()
+    model.reset_states()
+    return y_p,y,is_disruptive

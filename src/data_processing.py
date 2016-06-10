@@ -651,7 +651,11 @@ class Loader(object):
                 results.append(shot.ttd)
             shot.make_light()
 
-        sig_patches, res_patches = self.make_patches(signals,results)
+        if not prediction_mode:
+            sig_patches, res_patches = self.make_patches(signals,results)
+        else:
+            sig_patches, res_patches = self.make_prediction_patches(signals,results)
+
         X_list,y_list = self.arange_patches(sig_patches,res_patches)
 
         effective_length = len(res_patches)*len(res_patches[0])
@@ -661,6 +665,9 @@ class Loader(object):
             print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
 
         return X_list,y_list
+
+    def batch_output_to_array(self,output):
+        raise Exception('Not implemented')
 
 
     def make_deterministic_patches(self,signals,results):
@@ -703,10 +710,15 @@ class Loader(object):
         
 
     def get_min_len(self,arrs,length):
-        length = self.conf['model']['length']
         min_len = min([len(a) for a in arrs] + [self.conf['training']['max_patch_length']])
         min_len = max(1,min_len // length) * length 
         return min_len
+
+
+    def get_max_len(self,arrs,length):
+        max_len = max([len(a) for a in arrs])
+        max_len = int(ceil(1.0*max_len / length) * length )
+        return max_len
 
     def make_patches(self,signals,results):
         length = self.conf['model']['length']
@@ -723,6 +735,29 @@ class Loader(object):
         if self.verbose:
             print('random to deterministic ratio: {}/{}'.format(num_additional,num_already))
         return sig_patches_det + sig_patches_rand,res_patches_det + res_patches_rand 
+
+
+
+    def make_prediction_patches(self,signals,results):
+        total_num = self.conf['training']['batch_size'] 
+        length = self.conf['model']['pred_length']
+        sig_patches = []
+        res_patches = []
+        max_len = self.get_max_len(signals,length)
+        for sig,res in zip(signals,results):
+            sig_patches += Loader.pad_array_to_length(sig,max_len)
+            res_patches += Loader.pad_array_to_length(res,max_len)
+        return sig_patches, res_patches
+
+    @staticmethod
+    def pad_array_to_length(arr,length):
+        dlength = max(0,length - arr.shape[0])
+        tuples = [(0,dlength)]
+        for l in arr.shape[1:]:
+            tuples.append((0,0))
+        return pad(arr,tuples,mode='constant',constant_values=0)
+
+
 
 
     def arange_patches(self,sig_patches,res_patches):
