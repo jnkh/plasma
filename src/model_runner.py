@@ -218,18 +218,21 @@ def make_evaluations_gpu(conf,shot_list,loader):
     disruptive = []
     batch_size = min(len(shot_list),conf['model']['pred_batch_size'])
 
-    print('evaluating {} shots using batchsize {}'.format(len(shot_list),batch_size))
-    model = builder.build_model(True,custom_batch_size=batch_size)
-    builder.load_model_weights(model)
-    model.reset_states()
-
     pbar =  Progbar(len(shot_list))
-    shot_sublists = shot_list.sublists(batch_size,equal_size=True)
+    print('evaluating {} shots using batchsize {}'.format(len(shot_list),batch_size))
+
+    shot_sublists = shot_list.sublists(batch_size,equal_size=False)
     all_metrics = []
+    all_weights = []
     for (i,shot_sublist) in enumerate(shot_sublists):
+        batch_size = len(shot_sublist)
+        model = builder.build_model(True,custom_batch_size=batch_size)
+        builder.load_model_weights(model)
+        model.reset_states()
         X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist,custom_batch_size=batch_size)
         #load data and fit on data
         all_metrics.append(model.evaluate(X,y,batch_size=batch_size,verbose=False))
+        all_weights.append(batch_size)
         model.reset_states()
 
         pbar.add(1.0*len(shot_sublist))
@@ -237,6 +240,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
 
     if len(all_metrics) > 1:
         print('evaluations all: {}'.format(all_metrics))
-    print('Evaluation Loss: {}'.format(np.mean(all_metrics)))
-    return np.mean(all_metrics)
+    loss = np.average(all_metrics,weights = all_weights)
+    print('Evaluation Loss: {}'.format(loss))
+    return loss 
 
