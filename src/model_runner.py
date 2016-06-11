@@ -18,7 +18,7 @@ def train(conf,shot_list_train,loader):
     np.random.seed(5)
 
     if conf['training']['validation_frac'] > 0.0:
-        shot_list_train,shot_list_validate = shot_list_train.split_direct(conf['training']['validation_frac'])
+        shot_list_train,shot_list_validate = shot_list_train.split_direct(1.0-conf['training']['validation_frac'])
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
     os.environ['THEANO_FLAGS'] = 'device=gpu'
