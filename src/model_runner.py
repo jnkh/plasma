@@ -41,7 +41,6 @@ def train(conf,shot_list_train,loader):
     #load the latest epoch we did. Returns -1 if none exist yet
     e = builder.load_model_weights(train_model)
 
-
     num_epochs = conf['training']['num_epochs']
     num_at_once = conf['training']['num_shots_at_once']
     print('{} epochs left to go'.format(num_epochs - 1 - e))
@@ -67,7 +66,6 @@ def train(conf,shot_list_train,loader):
                 train_loss = np.mean(history.losses)
                 training_losses_tmp.append(train_loss)
 
-                # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
                 pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", train_loss)])
                 loader.verbose=False#True during the first iteration
 
@@ -76,6 +74,12 @@ def train(conf,shot_list_train,loader):
 
         if conf['training']['validation_frac'] > 0.0:
             validation_losses.append(make_evaluations_gpu(conf,shot_list_validate,loader))
+
+        print('=========Summary========')
+        print('Training Loss: {:.3e}'.format(training_losses[-1]))
+        if conf['training']['validation_frac'] > 0.0:
+            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+
 
     plot_losses(conf,training_losses,builder,name='training')
     if conf['training']['validation_frac'] > 0.0:
@@ -200,8 +204,6 @@ def make_predictions_gpu(conf,shot_list,loader):
     return y_prime,y_gold,disruptive
 
 def make_evaluations_gpu(conf,shot_list,loader):
-    print('evaluating:')
-
     os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
     import theano
     from keras.utils.generic_utils import Progbar 
@@ -224,7 +226,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
     for (i,shot_sublist) in enumerate(shot_sublists):
         X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist,custom_batch_size=batch_size)
         #load data and fit on data
-        all_metrics.append(model.evaluate(X,y,batch_size=batch_size))
+        all_metrics.append(model.evaluate(X,y,batch_size=batch_size,verbose=False))
         model.reset_states()
 
         pbar.add(1.0*len(shot_sublist))
@@ -232,6 +234,6 @@ def make_evaluations_gpu(conf,shot_list,loader):
 
     if len(all_metrics) > 1:
         print('evaluations all: {}'.format(all_metrics))
-    print('evaluations mean: {}'.format(np.mean(all_metrics)))
+    print('Evaluation Loss: {}'.format(np.mean(all_metrics)))
     return np.mean(all_metrics)
 
