@@ -626,7 +626,7 @@ class Loader(object):
 
 
     def load_as_X_y_list(self,shot_list,verbose=False,prediction_mode=False):
-        signals,results = self.get_signals_results_from_shotlist(shot_list) 
+        signals,results,total_length = self.get_signals_results_from_shotlist(shot_list) 
         sig_patches, res_patches = self.make_patches(signals,results)
 
         X_list,y_list = self.arange_patches(sig_patches,res_patches)
@@ -678,7 +678,7 @@ class Loader(object):
                 results.append(shot.ttd)
             shot.make_light()
         if not prediction_mode:
-            return signals,results
+            return signals,results,total_length
         else:
             return signals,results,shot_lengths
 
