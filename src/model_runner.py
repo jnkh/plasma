@@ -151,3 +151,42 @@ def make_single_prediction(shot,builder,loader,model_save_path):
     is_disruptive = shot.is_disruptive_shot()
     model.reset_states()
     return y_p,y,is_disruptive
+
+
+def make_predictions_gpu(conf,shot_list,loader):
+
+    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    import theano
+    from keras.utils.generic_utils import Progbar 
+    from model_builder import ModelBuilder
+    builder = ModelBuilder(conf) 
+    
+
+
+    y_prime = []
+    y_gold = []
+    disruptive = []
+
+    _,model = builder.build_train_test_models()
+    builder.load_model_weights(model)
+    model.reset_states()
+
+
+    pbar =  Progbar(len(shot_list))
+    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
+    for (i,shot_sublist) in enumerate(shot_sublists):
+        X,y = loader.load_as_X_y_pred(shot_sublist,prediction_mode=True)
+        #load data and fit on data
+        y_p = mode.predict(X,
+            batch_size=conf['model']['pred_batch_size'])
+        model.reset_states()
+        y_p = loader.batch_output_to_array(y_p)
+        y = loader.batch_output_to_array(y)
+
+        # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
+        pbar.add(1.0*len(shot_sublist)/len(X_list))
+        loader.verbose=False#True during the first iteration
+        y_prime += y_p
+        y_gold += y
+    return y_prime,y_gold,disruptive
+
