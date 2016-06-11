@@ -690,7 +690,7 @@ class Loader(object):
         if batch_size is None:
             batch_size = self.conf['model']['pred_batch_size']
         assert(output.shape[0] % batch_size == 0)
-        num_chuncks = output.shape[0] / batch_size
+        num_chunks = output.shape[0] / batch_size
         length = output.shape[1]
         feature_size = output.shape[2]
 
@@ -698,7 +698,7 @@ class Loader(object):
         for batch_idx in range(batch_size):
             out = empty(num_chunks*length,feature_size)
             for chunk in range(num_chunks):
-                out[chunk*length:(chunck+1)*length,:] = output[chunk*batch_size+batch_idx,:,:]
+                out[chunk*length:(chunk+1)*length,:] = output[chunk*batch_size+batch_idx,:,:]
             outs.append(out)
         return outs 
 
