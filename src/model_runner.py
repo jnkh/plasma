@@ -1,9 +1,9 @@
+from __future__ import print_function
 import matplotlib
 matplotlib.use('Agg')
 import pylab as pl
 
 
-from __future__ import print_function
 import numpy as np
 from data_processing import Loader
 import os
