@@ -41,17 +41,6 @@ def train(conf,shot_list_train,loader):
     #load the latest epoch we did. Returns -1 if none exist yet
     e = builder.load_model_weights(train_model)
 
-    if conf['training']['data_parallel']:
-        #elephas
-        from pyspark import SparkConf, SparkContext
-        sc = SparkContext()
-        from elephas.utils.rdd_utils import to_simple_rdd
-        from elephas.spark_model import SparkModel
-        from elephas import optimizers as elephas_optimizers
-        adam = elephas_optimizers.Adam()
-        spark_model = SparkModel(sc,train_model,optimizer=adam,frequency='batch',
-            mode='synchronous',num_workers=2)
-
 
     num_epochs = conf['training']['num_epochs']
     num_at_once = conf['training']['num_shots_at_once']
@@ -75,12 +64,13 @@ def train(conf,shot_list_train,loader):
                     validation_split=0.0,callbacks=[history])
                 train_model.reset_states()
                 train_loss = np.mean(history.losses)
-                training_losses.append(train_loss)
+                training_losses_tmp.append(train_loss)
 
                 # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
                 pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", train_loss)])
                 loader.verbose=False#True during the first iteration
 
+        training_losses.append(np.mean(training_losses_tmp))
         builder.save_model_weights(train_model,e)
 
         if conf['training']['validation_frac'] > 0.0:
