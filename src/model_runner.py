@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+import pylab as pl
 
 
 from __future__ import print_function
@@ -11,7 +14,6 @@ from itertools import imap
 import time,sys
 from functools import partial
 import pathos.multiprocessing as mp
-import pylab as pl
 
 
 def train(conf,shot_list_train,loader):
