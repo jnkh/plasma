@@ -814,7 +814,7 @@ class Loader(object):
     def arange_patches_single(self,sig_patches,res_patches,prediction_mode=False):
         if prediction_mode:
             length = self.conf['model']['pred_length']
-            batch_size = self.conf['model']['pre_batch_size']
+            batch_size = self.conf['model']['pred_batch_size']
         else:
             length = self.conf['model']['length']
             batch_size = self.conf['training']['batch_size']
