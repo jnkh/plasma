@@ -331,7 +331,7 @@ class Preprocessor(object):
         recompute = self.conf['data']['recompute']
         # print('({}/{}): '.format(num_processed,use_shots))
         if recompute or not shot.previously_saved(processed_prepath):
-            sys.stdout.write('\rrecomputing {}'.format(shot_number))
+            sys.stdout.write('\rrecomputing {}'.format(shot.number))
           #get minmax times
             signals,times,t_min,t_max,t_thresh,valid = self.get_signals_and_times_from_file(shot.number,shot.t_disrupt) 
             #cut and resample
