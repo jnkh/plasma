@@ -18,7 +18,7 @@ import pathos.multiprocessing as mp
 
 def train(conf,shot_list_train,loader):
 
-    np.random.seed(5)
+    np.random.seed(1)
 
     validation_losses = []
     training_losses = []
