@@ -11,7 +11,8 @@ This work was supported by the DOE CSGF program.
 from __future__ import print_function
 from os import listdir,remove
 import os.path
-import time,random,sys
+import time,sys
+import random as rnd
 import abc
 
 from pylab import *
@@ -509,7 +510,7 @@ class ShotList(object):
         for i in range(0,len(self),num):
             subl = self.shots[i:i+num]
             while equal_size and len(subl) < num:
-                subl.append(random.choice(self.shots))
+                subl.append(rnd.choice(self.shots))
             lists.append(subl)
         return [ShotList(l) for l in lists]
 
