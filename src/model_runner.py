@@ -177,7 +177,7 @@ def make_predictions_gpu(conf,shot_list,loader):
     for (i,shot_sublist) in enumerate(shot_sublists):
         X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
         #load data and fit on data
-        y_p = mode.predict(X,
+        y_p = model.predict(X,
             batch_size=conf['model']['pred_batch_size'])
         model.reset_states()
         y_p = loader.batch_output_to_array(y_p)
