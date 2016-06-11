@@ -53,6 +53,7 @@ def train(conf,shot_list_train,loader):
         #shuffle during every iteration
         shot_list_train.shuffle() 
         shot_sublists = shot_list_train.sublists(num_at_once)
+        training_losses_tmp = []
         for (i,shot_sublist) in enumerate(shot_sublists):
             X_list,y_list = loader.load_as_X_y_list(shot_sublist)
             for j,(X,y) in enumerate(zip(X_list,y_list)):
@@ -195,7 +196,7 @@ def make_predictions_gpu(conf,shot_list,loader):
         disruptive += disr
     y_prime = y_prime[:len(shot_list)]
     y_gold = y_gold[:len(shot_list)]
-    disruptive = disruptive[:len(disruptive)]
+    disruptive = disruptive[:len(shot_list)]
     return y_prime,y_gold,disruptive
 
 def make_evaluations_gpu(conf,shot_list,loader):
