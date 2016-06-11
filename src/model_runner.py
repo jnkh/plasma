@@ -194,7 +194,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
     disruptive = []
     batch_size = min(len(shot_list),conf['model']['pred_batch_size'])
 
-    model = builder.build_model(True,batch_size)
+    model = builder.build_model(True,custom_batch_size=batch_size)
     builder.load_model_weights(model)
     model.reset_states()
 
@@ -202,7 +202,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
     shot_sublists = shot_list.sublists(batch_size,equal_size=True)
     all_metrics = []
     for (i,shot_sublist) in enumerate(shot_sublists):
-        X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
+        X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist,custom_batch_size=batch_size)
         #load data and fit on data
         all_metrics.append(model.evaluate(X,y,batch_size=batch_size))
         model.reset_states()
