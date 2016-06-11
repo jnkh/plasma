@@ -187,7 +187,7 @@ def make_predictions_gpu(conf,shot_list,loader):
         y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
 
         # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
-        pbar.add(1.0*len(shot_sublist)/len(X_list))
+        pbar.add(1.0*len(shot_sublist))
         loader.verbose=False#True during the first iteration
         y_prime += y_p
         y_gold += y
