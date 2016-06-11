@@ -776,8 +776,8 @@ class Loader(object):
         res_patches = []
         max_len = self.get_max_len(signals,length)
         for sig,res in zip(signals,results):
-            sig_patches += Loader.pad_array_to_length(sig,max_len)
-            res_patches += Loader.pad_array_to_length(res,max_len)
+            sig_patches.append(Loader.pad_array_to_length(sig,max_len))
+            res_patches.append(Loader.pad_array_to_length(res,max_len))
         return sig_patches, res_patches
 
     @staticmethod
