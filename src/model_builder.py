@@ -34,7 +34,7 @@ class ModelBuilder():
 		return unique_id
 
 
-	def build_model(self,predict):
+	def build_model(self,predict,custom_batch_size=None):
 		conf = self.conf
 		model_conf = conf['model']
 		rnn_size = model_conf['rnn_size']
@@ -67,6 +67,8 @@ class ModelBuilder():
 			else:
 				length = 1
 
+		if custom_batch_size is not None:
+			batch_size = custom_batch_size
 
 		if rnn_type == 'LSTM':
 			rnn_model = LSTM
