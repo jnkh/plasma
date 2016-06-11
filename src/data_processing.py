@@ -502,11 +502,15 @@ class ShotList(object):
         shots_picked = np.random.choice(self.shots,size=num,replace=False)
         return ShotList(shots_picked)
 
-    def sublists(self,num,shuffle=True):
+    def sublists(self,num,shuffle=True,equal_size=False):
         lists = []
-        self.shuffle()
+        if shuffle:
+            self.shuffle()
         for i in range(0,len(self),num):
-            lists.append(self.shots[i:i+num])
+            subl = self.shots[i:i+num]
+            while equal_size and len(subl) < num:
+                subl.append(random.choice(self.shots))
+            lists.append(subl)
         return [ShotList(l) for l in lists]
 
 
@@ -621,9 +625,30 @@ class Loader(object):
 
 
     def load_as_X_y_list(self,shot_list,verbose=False,prediction_mode=False):
+        signals,results = self.get_signals_results_from_shotlist(shot_list) 
+        sig_patches, res_patches = self.make_patches(signals,results)
+
+        X_list,y_list = self.arange_patches(sig_patches,res_patches)
+
+        effective_length = len(res_patches)*len(res_patches[0])
+        if self.verbose:
+            print('multiplication factor: {}'.format(1.0*effective_length/total_length))
+            print('effective/total length : {}/{}'.format(effective_length,total_length))
+            print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
+        return X_list,y_list
+
+    def load_as_X_y_pred(self,shot_list,verbose=False):
+        signals,results,shot_lengths = self.get_signals_results_from_shotlist(shot_list,prediction_mode=True) 
+        sig_patches, res_patches = self.make_prediction_patches(signals,results)
+        X,y = self.arange_patches_single(sig_patches,res_patches,prediction_mode=True)
+        return X,y,shot_lengths
+
+
+    def get_signals_results_from_shotlist(self,shot_list,prediction_mode=True):
         prepath = self.conf['paths']['processed_prepath']
         signals = []
         results = []
+        shot_lengths = []
         total_length = 0
         for shot in shot_list:
             assert(isinstance(shot,Shot))
@@ -645,29 +670,34 @@ class Loader(object):
             total_length += len(shot.ttd)
             signals.append(shot.signals)
             res = shot.ttd
+            shot_lengths.append(len(shot.ttd))
             if len(res.shape) == 1:
                 results.append(expand_dims(res,axis=1))
             else:
                 results.append(shot.ttd)
             shot.make_light()
-
         if not prediction_mode:
-            sig_patches, res_patches = self.make_patches(signals,results)
+            return signals,results
         else:
-            sig_patches, res_patches = self.make_prediction_patches(signals,results)
+            return signals,results,shot_lengths
 
-        X_list,y_list = self.arange_patches(sig_patches,res_patches)
 
-        effective_length = len(res_patches)*len(res_patches[0])
-        if self.verbose:
-            print('multiplication factor: {}'.format(1.0*effective_length/total_length))
-            print('effective/total length : {}/{}'.format(effective_length,total_length))
-            print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
 
-        return X_list,y_list
+    def batch_output_to_array(self,output,batch_size = None):
+        if batch_size is None:
+            batch_size = self.conf['model']['pred_batch_size']
+        assert(output.shape[0] % batch_size == 0)
+        num_chuncks = output.shape[0] / batch_size
+        length = output.shape[1]
+        feature_size = output.shape[2]
 
-    def batch_output_to_array(self,output):
-        raise Exception('Not implemented')
+        outs = []
+        for batch_idx in range(batch_size):
+            out = empty(num_chunks*length,feature_size)
+            for chunk in range(num_chunks):
+                out[chunk*length:(chunck+1)*length,:] = output[chunk*batch_size+batch_idx,:,:]
+            outs.append(out)
+        return outs 
 
 
     def make_deterministic_patches(self,signals,results):
@@ -780,9 +810,13 @@ class Loader(object):
             y_list.append(y)
         return X_list,y_list
 
-    def arange_patches_single(self,sig_patches,res_patches):
-        length = self.conf['model']['length']
-        batch_size = self.conf['training']['batch_size']
+    def arange_patches_single(self,sig_patches,res_patches,prediction_mode=False):
+        if prediction_mode:
+            length = self.conf['model']['pred_length']
+            batch_size = self.conf['model']['pre_batch_size']
+        else:
+            length = self.conf['model']['length']
+            batch_size = self.conf['training']['batch_size']
         return_sequences = self.conf['model']['return_sequences']
 
         assert(len(sig_patches) == batch_size)

@@ -97,7 +97,7 @@ p.join()
 #####################################################
 
 
-from model_runner import make_predictions
+from model_runner import make_predictions,make_predictions_gpu
 
 #load last model for testing
 print('saving results')

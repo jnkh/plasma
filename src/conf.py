@@ -1,6 +1,6 @@
 from numpy import log10
 #paths#
-base_path = '/tigress/jk7/'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
+base_path = '../'#'/tigress/jk7/'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
@@ -29,8 +29,8 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
-        'shot_files' :['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
-        'shot_files_test' :['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
+        'shot_files' : ['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
+        'shot_files_test' : [],#['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
         #processed data
         'processed_prepath' : base_path + 'data/processed_shots/',
@@ -48,12 +48,12 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 1000,
+        'use_shots' : 8,
         #normalization timescale
         'dt' : 0.0001,
         #maximum TTD considered
         'T_max' : 1000.0,
-        'T_warning' : 1.0,
+        'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target_ttd,
         'normalizer' : 'var',           #TODO optimize
@@ -62,6 +62,7 @@ conf = {
    'model': {
         #length of LSTM memory
         'pred_length' : 400,
+        'pred_batch_size' : 128,
         'length' : 128,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
@@ -81,7 +82,7 @@ conf = {
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
-        'train_frac' : 0.75,
+        'train_frac' : 0.5,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
