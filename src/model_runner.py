@@ -16,6 +16,9 @@ import pathos.multiprocessing as mp
 def train(conf,shot_list_train,loader):
 
     np.random.seed(5)
+
+    if conf['training']['validation_frac'] > 0.0:
+        shot_list_train,shot_list_validate = shot_list_train.split_direct(conf['training']['validation_frac'])
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
     os.environ['THEANO_FLAGS'] = 'device=gpu'
@@ -58,37 +61,27 @@ def train(conf,shot_list_train,loader):
             X_list,y_list = loader.load_as_X_y_list(shot_sublist)
             for j,(X,y) in enumerate(zip(X_list,y_list)):
                 history = model_builder.LossHistory()
-
-                if conf['training']['data_parallel']:
-                    rdd = to_simple_rdd(sc,X,y)
-                    spark_model.train(rdd,
+                #load data and fit on data
+                train_model.fit(X,y,
                     batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
-                    nb_epoch=1,verbose=1,
-                    validation_split=0.0)
-
-                else:
-                    #load data and fit on data
-                    train_model.fit(X,y,
-                        batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=False),
-                        nb_epoch=1,shuffle=False,verbose=0,
-                        validation_split=0.0,callbacks=[history])
-                    train_model.reset_states()
+                    nb_epoch=1,shuffle=False,verbose=0,
+                    validation_split=0.0,callbacks=[history])
+                train_model.reset_states()
 
                 # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
                 pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", np.mean(history.losses))])
                 loader.verbose=False#True during the first iteration
 
-        if conf['training']['data_parallel']:
-            builder.save_model_weights(spark_model,e)
-        else:
-            builder.save_model_weights(train_model,e)
+        builder.save_model_weights(train_model,e)
 
-        #validation
-        if conf['training']['evaluate']:
-            builder.load_model_weights(test_model)
-            for (i,shot) in enumerate(shot_list_train):
-                X,y = loader.load_as_X_y(shot,prediction_mode=True)
-                print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True)))
+        if conf['training']['validation_frac'] > 0.0:
+            make_evaluations_gpu(conf,shot_list_validate,loader)
+        # #validation
+        # if conf['training']['evaluate']:
+        #     builder.load_model_weights(test_model)
+        #     for (i,shot) in enumerate(shot_list_train):
+        #         X,y = loader.load_as_X_y(shot,prediction_mode=True)
+        #         print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True)))
 
     print('...done')
 
@@ -160,8 +153,6 @@ def make_predictions_gpu(conf,shot_list,loader):
     from keras.utils.generic_utils import Progbar 
     from model_builder import ModelBuilder
     builder = ModelBuilder(conf) 
-    
-
 
     y_prime = []
     y_gold = []
@@ -170,7 +161,6 @@ def make_predictions_gpu(conf,shot_list,loader):
     _,model = builder.build_train_test_models()
     builder.load_model_weights(model)
     model.reset_states()
-
 
     pbar =  Progbar(len(shot_list))
     shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
@@ -196,4 +186,36 @@ def make_predictions_gpu(conf,shot_list,loader):
     y_gold = y_gold[:len(shot_list)]
     disruptive = disruptive[:len(disruptive)]
     return y_prime,y_gold,disruptive
+
+def make_evaluations_gpu(conf,shot_list,loader):
+
+    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    import theano
+    from keras.utils.generic_utils import Progbar 
+    from model_builder import ModelBuilder
+    builder = ModelBuilder(conf) 
+
+    y_prime = []
+    y_gold = []
+    disruptive = []
+    batch_size = min(len(shot_list),conf['model']['pred_batch_size'])
+
+    _,model = builder.build_model(True,batch_size)
+    builder.load_model_weights(model)
+    model.reset_states()
+
+    pbar =  Progbar(len(shot_list))
+    shot_sublists = shot_list.sublists(batch_size,equal_size=True)
+    all_metrics = []
+    for (i,shot_sublist) in enumerate(shot_sublists):
+        X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
+        #load data and fit on data
+        all_metrics.append(model.evaluate(X,y,batch_size=batch_size))
+        model.reset_states()
+
+        pbar.add(1.0*len(shot_sublist))
+        loader.verbose=False#True during the first iteration
+
+    print(all_metrics)
+    return mean(all_metrics)
 

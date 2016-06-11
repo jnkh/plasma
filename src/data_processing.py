@@ -468,10 +468,16 @@ class ShotList(object):
             shot_numbers_test,_ = ShotList.get_multiple_shots_and_disruption_times(shot_list_dir,shot_files_test)
 
         
-	print(len(shot_numbers_train),len(shot_numbers_test))
+    	print(len(shot_numbers_train),len(shot_numbers_test))
         shots_train = self.filter_by_number(shot_numbers_train)
         shots_test = self.filter_by_number(shot_numbers_test)
         return shots_train.random_sublist(use_shots_train),shots_test.random_sublist(use_shots_test)
+
+
+    def split_direct(self,frac,shuffle=True):
+        shot_list_one,shot_list_two = train_test_split(self.shots,frac,shuffle)
+        return ShotList(shot_list_one),ShotList(shot_list_two)
+
 
 
     def filter_by_number(self,numbers):

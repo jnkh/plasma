@@ -83,11 +83,11 @@ conf = {
         'as_array_of_shots':True,
         'shuffle_training' : True,
         'train_frac' : 0.5,
+        'validation_frac' : 0.05,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
         'num_epochs' : 10,
-        'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
    },
