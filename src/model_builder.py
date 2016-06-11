@@ -58,8 +58,9 @@ class ModelBuilder():
 		num_signals = conf['data']['num_signals']
 
 
-		batch_size = Loader.get_batch_size(self.conf['training']['batch_size'],predict)
+		batch_size = self.conf['training']['batch_size']
 		if predict:
+			batch_size = self.conf['model']['pred_batch_size']
 		    #so we can predict with one time point at a time!
 			if return_sequences:
 				length =pred_length
