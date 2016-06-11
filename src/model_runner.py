@@ -97,8 +97,8 @@ def plot_losses(conf,losses,builder,name=''):
 
     save_path = os.path.join(savedir,'{}_loss_{}.png'.format(name,unique_id))
     pl.semilogy(losses)
-    xlabel('Epoch')
-    ylabel('Loss')
+    pl.xlabel('Epoch')
+    pl.ylabel('Loss')
     pl.savefig(save_path)
 
 
