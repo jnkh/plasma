@@ -23,6 +23,13 @@ def remap_target_ttd(ttd,T_warning):
     ttd[~mask] = log10(T_warning)
     return ttd
 
+def remap_target_ttd_nolog(ttd,T_warning):
+    ttd = 10**(ttd)
+    mask = ttd < T_warning
+    ttd[~mask] = 0#T_warning
+    ttd[mask] = T_warning - ttd[mask]#T_warning
+    return ttd
+
 conf = {
     'paths': {
         'base_path' : base_path,
@@ -55,7 +62,7 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0,
         'current_thresh' : 750000,
-        'ttd_remapper' : remap_target_ttd,
+        'ttd_remapper' : remap_target_ttd_nolog,
         'normalizer' : 'var',           #TODO optimize
    },
 
@@ -75,7 +82,7 @@ conf = {
         'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.3,
+        'dropout_prob' : 0.2,
     },
 
     'training': {
@@ -85,7 +92,7 @@ conf = {
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
-        'num_epochs' : 10,
+        'num_epochs' : 5,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
