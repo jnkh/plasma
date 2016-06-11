@@ -696,7 +696,7 @@ class Loader(object):
 
         outs = []
         for batch_idx in range(batch_size):
-            out = empty(num_chunks*length,feature_size)
+            out = np.empty((num_chunks*length,feature_size))
             for chunk in range(num_chunks):
                 out[chunk*length:(chunk+1)*length,:] = output[chunk*batch_size+batch_idx,:,:]
             outs.append(out)
