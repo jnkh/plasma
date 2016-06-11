@@ -644,10 +644,10 @@ class Loader(object):
             print('patch length: {} num patches: {}'.format(len(res_patches[0]),len(res_patches)))
         return X_list,y_list
 
-    def load_as_X_y_pred(self,shot_list,verbose=False):
+    def load_as_X_y_pred(self,shot_list,verbose=False,custom_batch_size=None):
         signals,results,shot_lengths,disruptive = self.get_signals_results_from_shotlist(shot_list,prediction_mode=True) 
         sig_patches, res_patches = self.make_prediction_patches(signals,results)
-        X,y = self.arange_patches_single(sig_patches,res_patches,prediction_mode=True)
+        X,y = self.arange_patches_single(sig_patches,res_patches,prediction_mode=True,custom_batch_size=custom_batch_size)
         return X,y,shot_lengths,disruptive
 
 
@@ -819,7 +819,7 @@ class Loader(object):
             y_list.append(y)
         return X_list,y_list
 
-    def arange_patches_single(self,sig_patches,res_patches,prediction_mode=False):
+    def arange_patches_single(self,sig_patches,res_patches,prediction_mode=False,custom_batch_size=None):
         if prediction_mode:
             length = self.conf['model']['pred_length']
             batch_size = self.conf['model']['pred_batch_size']
@@ -827,6 +827,8 @@ class Loader(object):
             length = self.conf['model']['length']
             batch_size = self.conf['training']['batch_size']
         return_sequences = self.conf['model']['return_sequences']
+        if custom_batch_size is not None:
+            batch_size = custom_batch_size
 
         assert(len(sig_patches) == batch_size)
         assert(len(sig_patches[0]) % length == 0)
