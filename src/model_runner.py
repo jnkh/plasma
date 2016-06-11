@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+import pylab as pl
 
 
 from __future__ import print_function
@@ -17,6 +20,8 @@ def train(conf,shot_list_train,loader):
 
     np.random.seed(5)
 
+    validation_losses = []
+    training_losses = []
     if conf['training']['validation_frac'] > 0.0:
         shot_list_train,shot_list_validate = shot_list_train.split_direct(1.0-conf['training']['validation_frac'],shuffle=False)
         print('validate: {} shots, {} disruptive'.format(len(shot_list_validate),shot_list_validate.num_disruptive()))
@@ -69,17 +74,37 @@ def train(conf,shot_list_train,loader):
                     nb_epoch=1,shuffle=False,verbose=0,
                     validation_split=0.0,callbacks=[history])
                 train_model.reset_states()
+                train_loss = np.mean(history.losses)
+                training_losses.append(train_loss)
 
                 # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
-                pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", np.mean(history.losses))])
+                pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", train_loss)])
                 loader.verbose=False#True during the first iteration
 
         builder.save_model_weights(train_model,e)
 
         if conf['training']['validation_frac'] > 0.0:
-            make_evaluations_gpu(conf,shot_list_validate,loader)
+            validation_losses.append(make_evaluations_gpu(conf,shot_list_validate,loader))
 
+    plot_losses(conf,training_losses,builder,name='training')
+    if conf['training']['validation_frac'] > 0.0:
+        plot_losses(conf,validation_losses,builder,name='validation')
     print('...done')
+
+
+
+
+def plot_losses(conf,losses,builder,name=''):
+    unique_id = builder.get_unique_id()
+    savedir = 'losses'
+    if not os.path.exists(savedir):
+        os.makedirs(savedir)
+
+    save_path = os.path.join(savedir,'{}_loss_{}.png'.format(name,unique_id))
+    pl.semilogy(losses)
+    xlabel('Epoch')
+    ylabel('Loss')
+    pl.savefig(save_path)
 
 
 
