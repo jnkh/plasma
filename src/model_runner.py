@@ -175,18 +175,25 @@ def make_predictions_gpu(conf,shot_list,loader):
     pbar =  Progbar(len(shot_list))
     shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
     for (i,shot_sublist) in enumerate(shot_sublists):
-        X,y = loader.load_as_X_y_pred(shot_sublist)
+        X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
         #load data and fit on data
         y_p = mode.predict(X,
             batch_size=conf['model']['pred_batch_size'])
         model.reset_states()
         y_p = loader.batch_output_to_array(y_p)
         y = loader.batch_output_to_array(y)
+        #cut arrays back
+        y_p = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y_p)]
+        y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
 
         # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
         pbar.add(1.0*len(shot_sublist)/len(X_list))
         loader.verbose=False#True during the first iteration
         y_prime += y_p
         y_gold += y
+        disruptive += disr
+    y_prime = [:len(shot_list)]
+    y_gold = [:len(shot_list)]
+    disruptive = [:len(disruptive)]
     return y_prime,y_gold,disruptive
 

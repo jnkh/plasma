@@ -639,16 +639,17 @@ class Loader(object):
         return X_list,y_list
 
     def load_as_X_y_pred(self,shot_list,verbose=False):
-        signals,results,shot_lengths = self.get_signals_results_from_shotlist(shot_list,prediction_mode=True) 
+        signals,results,shot_lengths,disruptive = self.get_signals_results_from_shotlist(shot_list,prediction_mode=True) 
         sig_patches, res_patches = self.make_prediction_patches(signals,results)
         X,y = self.arange_patches_single(sig_patches,res_patches,prediction_mode=True)
-        return X,y,shot_lengths
+        return X,y,shot_lengths,disruptive
 
 
     def get_signals_results_from_shotlist(self,shot_list,prediction_mode=False):
         prepath = self.conf['paths']['processed_prepath']
         signals = []
         results = []
+        disruptive = []
         shot_lengths = []
         total_length = 0
         for shot in shot_list:
@@ -672,6 +673,7 @@ class Loader(object):
             signals.append(shot.signals)
             res = shot.ttd
             shot_lengths.append(len(shot.ttd))
+            disruptive.append(shot.is_disruptive)
             if len(res.shape) == 1:
                 results.append(expand_dims(res,axis=1))
             else:
@@ -680,7 +682,7 @@ class Loader(object):
         if not prediction_mode:
             return signals,results,total_length
         else:
-            return signals,results,shot_lengths
+            return signals,results,shot_lengths,disruptive
 
 
 
