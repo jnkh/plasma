@@ -182,6 +182,7 @@ def make_predictions_gpu(conf,shot_list,loader):
     return y_prime,y_gold,disruptive
 
 def make_evaluations_gpu(conf,shot_list,loader):
+    print('evaluating:')
 
     os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
     import theano
@@ -194,6 +195,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
     disruptive = []
     batch_size = min(len(shot_list),conf['model']['pred_batch_size'])
 
+    print('evaluating {} shots using batchsize {}'.format(len(shot_list),batch_size))
     model = builder.build_model(True,custom_batch_size=batch_size)
     builder.load_model_weights(model)
     model.reset_states()
@@ -210,6 +212,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
         pbar.add(1.0*len(shot_sublist))
         loader.verbose=False#True during the first iteration
 
-    print(all_metrics)
-    return mean(all_metrics)
+    print('evaluations all: {}'.format(all_metrics))
+    print('evaluations mean: {}'.format(np.mean(all_metrics)))
+    return np.mean(all_metrics)
 
