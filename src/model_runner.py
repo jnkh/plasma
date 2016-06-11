@@ -192,8 +192,8 @@ def make_predictions_gpu(conf,shot_list,loader):
         y_prime += y_p
         y_gold += y
         disruptive += disr
-    y_prime = [:len(shot_list)]
-    y_gold = [:len(shot_list)]
-    disruptive = [:len(disruptive)]
+    y_prime = y_prime[:len(shot_list)]
+    y_gold = y_gold[:len(shot_list)]
+    disruptive = disruptive[:len(disruptive)]
     return y_prime,y_gold,disruptive
 
