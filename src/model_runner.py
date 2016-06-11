@@ -214,7 +214,8 @@ def make_evaluations_gpu(conf,shot_list,loader):
         pbar.add(1.0*len(shot_sublist))
         loader.verbose=False#True during the first iteration
 
-    print('evaluations all: {}'.format(all_metrics))
+    if len(all_metrics) > 1:
+        print('evaluations all: {}'.format(all_metrics))
     print('evaluations mean: {}'.format(np.mean(all_metrics)))
     return np.mean(all_metrics)
 
