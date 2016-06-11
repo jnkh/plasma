@@ -76,12 +76,6 @@ def train(conf,shot_list_train,loader):
 
         if conf['training']['validation_frac'] > 0.0:
             make_evaluations_gpu(conf,shot_list_validate,loader)
-        # #validation
-        # if conf['training']['evaluate']:
-        #     builder.load_model_weights(test_model)
-        #     for (i,shot) in enumerate(shot_list_train):
-        #         X,y = loader.load_as_X_y(shot,prediction_mode=True)
-        #         print(test_model.evaluate(X,y,batch_size=Loader.get_batch_size(conf['training']['batch_size'],prediction_mode=True)))
 
     print('...done')
 
@@ -200,7 +194,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
     disruptive = []
     batch_size = min(len(shot_list),conf['model']['pred_batch_size'])
 
-    _,model = builder.build_model(True,batch_size)
+    model = builder.build_model(True,batch_size)
     builder.load_model_weights(model)
     model.reset_states()
 
