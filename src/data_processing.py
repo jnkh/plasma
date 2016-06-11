@@ -645,7 +645,7 @@ class Loader(object):
         return X,y,shot_lengths
 
 
-    def get_signals_results_from_shotlist(self,shot_list,prediction_mode=True):
+    def get_signals_results_from_shotlist(self,shot_list,prediction_mode=False):
         prepath = self.conf['paths']['processed_prepath']
         signals = []
         results = []
