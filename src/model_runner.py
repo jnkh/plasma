@@ -81,24 +81,27 @@ def train(conf,shot_list_train,loader):
             print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
 
 
-    plot_losses(conf,training_losses,builder,name='training')
+    plot_losses(conf,[training_losses],builder,name='training')
     if conf['training']['validation_frac'] > 0.0:
-        plot_losses(conf,validation_losses,builder,name='validation')
+        plot_losses(conf,[training_losses,validation_losses],builder,name='validation')
     print('...done')
 
 
 
 
-def plot_losses(conf,losses,builder,name=''):
+def plot_losses(conf,losses_list,builder,name=''):
     unique_id = builder.get_unique_id()
     savedir = 'losses'
     if not os.path.exists(savedir):
         os.makedirs(savedir)
 
     save_path = os.path.join(savedir,'{}_loss_{}.png'.format(name,unique_id))
-    pl.semilogy(losses)
+    pl.figure()
+    for losses in losses_list:
+        pl.semilogy(losses)
     pl.xlabel('Epoch')
     pl.ylabel('Loss')
+    pl.grid()
     pl.savefig(save_path)
 
 
