@@ -55,9 +55,9 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2000,
+        'use_shots' : 100000,
         #normalization timescale
-        'dt' : 0.0001,
+        'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
@@ -79,8 +79,8 @@ conf = {
         'rnn_layers' : 3,                   #TODO optimize
         'output_activation' : 'linear',
         'optimizer' : 'adam', #have not found a difference yet
-        'loss' : 'mse', #binary crossentropy performs slightly better?
-        'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'loss' : 'mae', #binary crossentropy performs slightly better?
+        'lr' : 0.000001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.3,
@@ -93,8 +93,8 @@ conf = {
         'validation_frac' : 0.05,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
-        'num_shots_at_once' :  200,
-        'num_epochs' : 8,
+        'num_shots_at_once' :  200, #How many shots are we loading at once?
+        'num_epochs' : 20,
         'use_mock_data' : False,
         'data_parallel' : False,
    },
