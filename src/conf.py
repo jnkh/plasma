@@ -30,6 +30,14 @@ def remap_target_ttd_nolog(ttd,T_warning):
     ttd[mask] = T_warning - ttd[mask]#T_warning
     return ttd
 
+def remap_target_hinge(ttd,T_warning,as_array_of_shots=True):
+    binary_ttd = 0*ttd
+    mask = ttd < log10(T_warning)
+    binary_ttd[mask] = 1.0
+    binary_ttd[~mask] = -1.0
+    return binary_ttd
+
+
 conf = {
     'paths': {
         'base_path' : base_path,
@@ -55,7 +63,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 100000,
+        'use_shots' : 2000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -80,7 +88,7 @@ conf = {
         'output_activation' : 'linear',
         'optimizer' : 'adam', #have not found a difference yet
         'loss' : 'mae', #binary crossentropy performs slightly better?
-        'lr' : 0.000001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.3,
