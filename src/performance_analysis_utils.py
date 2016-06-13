@@ -528,7 +528,7 @@ class PerformanceAnalyzer():
         ylim([0,1])
         if save_figure:
             savefig(title_str + '_roc.png',bbox_inches='tight')
-        print('ROC area is {}'.format(trapz(1-missed_range,x=fp_range)))
+        print('ROC area ({}) is {}'.format(plot_string,-trapz(1-missed_range,x=fp_range)))
 
 
 
