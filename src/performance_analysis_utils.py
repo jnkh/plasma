@@ -522,7 +522,7 @@ class PerformanceAnalyzer():
         ax.set_yticks(major_ticks)
         ax.set_xticks(minor_ticks,minor=True)
         ax.set_yticks(minor_ticks,minor=True)
-        ax.grid(which=both)
+        ax.grid(which='both')
         ax.grid(which='major',alpha=0.5)
         ax.grid(which='minor',alpha=0.3)
         xlim([0,1])
