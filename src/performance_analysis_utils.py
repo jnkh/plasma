@@ -474,10 +474,11 @@ class PerformanceAnalyzer():
                 ax.plot(-prediction[::-1]+0.0001,'g',label='neural net prediction')
                 ax.axhline(-P_thresh_opt,color='k',label='trigger threshold')
             else:
-                ax.semilogy((truth+0.001)[::-1],label='ground truth')
+                ax.plot((truth+0.001)[::-1],label='ground truth')
                 ax.plot(prediction[::-1],'g',label='neural net prediction')
                 ax.axhline(P_thresh_opt,color='k',label='trigger threshold')
-            ax.set_ylim([1e-5,1.1e0])
+            #ax.set_ylim([1e-5,1.1e0])
+	    ax.set_ylim([-2,2])
             ax.axvline(self.T_min_warn,color='r',label='max warning time')
             ax.axvline(self.T_max_warn,color='r',label='min warning time')
             # ax.set_xlabel('TTD [ms]')
