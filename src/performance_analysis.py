@@ -8,14 +8,15 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 0
+file_num = 2
 save_figure = True
 pred_ttd = False
 
 if pred_ttd:
     P_thresh_range = -1*logspace(0,-4,100)#concatenate((linspace(-1,-0.10,5),linspace(-0.1,0,100)))#array([-0.2,-0.1,-0.05,-0.02,-0.01,-0.005,-0.002,-0.001,0])#  #linspace(-2,0,50)
 else:
-    P_thresh_range = logspace(-4,0,100) 
+    P_thresh_range = linspace(-2,2,100) 
+    #P_thresh_range = logspace(-4,0,100) 
 
 T_max_warn = 1000
 T_min_warn = 30
