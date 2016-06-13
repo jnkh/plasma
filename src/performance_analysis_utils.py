@@ -7,7 +7,7 @@ from data_processing import VarNormalizer as Normalizer
 
 
 class PerformanceAnalyzer():
-    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False,pred_ttd=False):
+    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False,pred_ttd=False,conf=None):
         self.T_min_warn = T_min_warn
         self.T_max_warn = T_max_warn
         self.verbose = verbose
@@ -15,6 +15,7 @@ class PerformanceAnalyzer():
         self.shots_dir = shots_dir
         self.i = i
         self.pred_ttd = pred_ttd
+        self.conf = conf
 
 
         self.pred_train = None
@@ -31,25 +32,7 @@ class PerformanceAnalyzer():
 
 
 
-    def get_metrics_vs_p_thresh(self,P_thresh_range,mode):
-        correct_range = zeros_like(P_thresh_range)
-        accuracy_range = zeros_like(P_thresh_range)
-        fp_range = zeros_like(P_thresh_range)
-        missed_range = zeros_like(P_thresh_range)
-        early_alarm_range = zeros_like(P_thresh_range)
-
-        for i,P_thresh in enumerate(P_thresh_range):
-            correct,accuracy,fp_rate,missed,early_alarm_rate = self.summarize_shot_prediction_stats(P_thresh,mode=mode)
-            correct_range[i] = correct
-            accuracy_range[i] = accuracy 
-            fp_range[i] = fp_rate 
-            missed_range[i] = missed
-            early_alarm_range[i] = early_alarm_rate
-        
-        return correct_range,accuracy_range,fp_range,missed_range,early_alarm_range
-
-
-    def summarize_shot_prediction_stats(self,P_thresh,mode,verbose=False):
+    def get_metrics_vs_p_thresh(self,mode):
         if mode == 'train':
             all_preds = self.pred_train
             all_truths = self.truth_train
@@ -61,6 +44,29 @@ class PerformanceAnalyzer():
             all_truths = self.truth_test
             all_disruptive = self.disruptive_test
 
+        return get_metrics_vs_p_thresh_custom(P_thresh,all_preds,all_truths,all_disruptive)
+
+
+    def get_metrics_vs_p_thresh_custom(self,P_thresh,all_preds,all_truths,all_disruptive):
+        P_thresh_range = self.conf['data']['target'].threshold_range()
+        correct_range = zeros_like(P_thresh_range)
+        accuracy_range = zeros_like(P_thresh_range)
+        fp_range = zeros_like(P_thresh_range)
+        missed_range = zeros_like(P_thresh_range)
+        early_alarm_range = zeros_like(P_thresh_range)
+        
+        for i,P_thresh in enumerate(P_thresh_range):
+            correct,accuracy,fp_rate,missed,early_alarm_rate = self.summarize_shot_prediction_stats(P_thresh,all_preds,all_truths,all_disruptive)
+            correct_range[i] = correct
+            accuracy_range[i] = accuracy 
+            fp_range[i] = fp_rate 
+            missed_range[i] = missed
+            early_alarm_range[i] = early_alarm_rate
+        
+        return correct_range,accuracy_range,fp_range,missed_range,early_alarm_range
+
+
+    def summarize_shot_prediction_stats(self,P_thresh,all_preds,all_truths,all_disruptive):
         TPs,FPs,FNs,TNs,earlies,lates = (0,0,0,0,0,0)
 
         for i in range(len(all_preds)):
@@ -83,6 +89,8 @@ class PerformanceAnalyzer():
             print('total: {}, tp: {} fp: {} fn: {} tn: {} early: {} late: {} disr: {} nondisr: {}'.format(len(all_preds),TPs,FPs,FNs,TNs,earlies,lates,disr,nondisr))
        
         return self.get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates,verbose)
+
+
 
     #we are interested in the predictions of the *first alarm*
     def get_shot_prediction_stats(self,P_thresh,pred,truth,is_disruptive):
@@ -271,8 +279,8 @@ class PerformanceAnalyzer():
 
 
 
-    def compute_tradeoffs_and_print(self,P_thresh_range,mode):
-        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(P_thresh_range,mode)
+    def compute_tradeoffs_and_print(self,mode):
+        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(mode)
         fp_threshs = [0.01,0.05,0.1]
         missed_threshs = [0.01,0.05,0.0]
 
@@ -309,8 +317,8 @@ class PerformanceAnalyzer():
         return P_thresh_ret
 
 
-    def compute_tradeoffs_and_print_from_training(self,P_thresh_range):
-        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(P_thresh_range,'train')
+    def compute_tradeoffs_and_print_from_training(self,):
+        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh('train')
 
         fp_threshs = [0.01,0.05,0.1]
         missed_threshs = [0.01,0.05,0.0]
@@ -365,10 +373,10 @@ class PerformanceAnalyzer():
         return P_thresh_ret
 
 
-    def compute_tradeoffs_and_plot(self,P_thresh_range,mode,save_figure=True,plot_string=''):
-        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(P_thresh_range,mode)
+    def compute_tradeoffs_and_plot(self,mode,save_figure=True,plot_string=''):
+        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(mode)
 
-        self.tradeoff_plot(P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
+        self.tradeoff_plot(accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=save_figure,plot_string=plot_string)
 
     def get_prediction_type(self,TP,FP,FN,TN,early,late):
         if TP:
@@ -491,10 +499,7 @@ class PerformanceAnalyzer():
             print("Shot hasn't been processed")
 
 
-
-
-
-    def tradeoff_plot(self,P_thresh_range,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
+    def tradeoff_plot(self,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
         figure()
         # semilogx(P_thresh_range,accuracy_range,label="accuracy")
         if self.pred_ttd:
@@ -529,7 +534,19 @@ class PerformanceAnalyzer():
         ylim([0,1])
         if save_figure:
             savefig(title_str + '_roc.png',bbox_inches='tight')
-        print('ROC area ({}) is {}'.format(plot_string,-trapz(1-missed_range,x=fp_range)))
+        print('ROC area ({}) is {}'.format(plot_string,self.roc_from_missed_fp(missed_range,fp_range)))
+
+
+    def get_roc_area(self,all_preds,all_truths,all_disruptive):
+        correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = \
+         self.get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
+
+        return roc_from_missed_fp(missed_range,fp_range)
+
+    def roc_from_missed_fp(self,missed_range,fp_range):
+        return -trapz(1-missed_range,x=fp_range)
+
+
 
 
 

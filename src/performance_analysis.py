@@ -12,11 +12,6 @@ file_num = 0
 save_figure = True
 pred_ttd = False
 
-if pred_ttd:
-    P_thresh_range = -1*logspace(0,-4,100)#concatenate((linspace(-1,-0.10,5),linspace(-0.1,0,100)))#array([-0.2,-0.1,-0.05,-0.02,-0.01,-0.005,-0.002,-0.001,0])#  #linspace(-2,0,50)
-else:
-    P_thresh_range = logspace(-4,0,100) 
-
 T_max_warn = 1000
 T_min_warn = 30
 
@@ -31,10 +26,10 @@ analyzer.load_ith_file()
 
 #compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
-P_thresh_opt = analyzer.compute_tradeoffs_and_print_from_training(P_thresh_range)
+P_thresh_opt = analyzer.compute_tradeoffs_and_print_from_training()
 
-analyzer.compute_tradeoffs_and_plot(P_thresh_range,'train',save_figure=save_figure,plot_string='_train')
-analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figure,plot_string='_test')
+analyzer.compute_tradeoffs_and_plot(,'train',save_figure=save_figure,plot_string='_train')
+analyzer.compute_tradeoffs_and_plot(,'test',save_figure=save_figure,plot_string='_test')
 
 analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
 

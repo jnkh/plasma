@@ -5,15 +5,18 @@ import pylab as pl
 
 
 import numpy as np
-from data_processing import Loader
-import os
 from conf import conf
 from itertools import imap
 
 
-import time,sys
+import time,sys,os
 from functools import partial
 import pathos.multiprocessing as mp
+
+from data_processing import Loader
+from performance_analysis_utils import PerformanceAnalyzer
+
+
 
 
 def train(conf,shot_list_train,loader):
@@ -73,7 +76,7 @@ def train(conf,shot_list_train,loader):
         builder.save_model_weights(train_model,e)
 
         if conf['training']['validation_frac'] > 0.0:
-            validation_losses.append(make_evaluations_gpu(conf,shot_list_validate,loader))
+            validation_losses.append(make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader))
 
         print('=========Summary========')
         print('Training Loss: {:.3e}'.format(training_losses[-1]))
@@ -205,6 +208,14 @@ def make_predictions_gpu(conf,shot_list,loader):
     y_gold = y_gold[:len(shot_list)]
     disruptive = disruptive[:len(shot_list)]
     return y_prime,y_gold,disruptive
+
+
+
+def make_predictions_and_evaluate_gpu(conf,shot_list,loader):
+    y_prime,y_gold,disruptive = make_predictions_gpu(conf,shot_list,loader)
+    analyzer = PerformanceAnalyzer(conf=conf)
+    roc_area = analyzer.get_roc_area(y_prime,y_gold,disruptive)
+    return roc_area
 
 def make_evaluations_gpu(conf,shot_list,loader):
     os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu

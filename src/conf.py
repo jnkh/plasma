@@ -1,4 +1,4 @@
-from numpy import log10
+import targets as t
 #paths#
 base_path = '/tigress/jk7/'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
@@ -9,33 +9,6 @@ signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W]
                 'jpf/gs/bl-ptot<s', #total input power [W]
                 'jpf/gs/bl-wmhd<s'] #unkown
-
-
-def remap_target(ttd,T_warning,as_array_of_shots=True):
-    binary_ttd = 0*ttd
-    mask = ttd < log10(T_warning)
-    binary_ttd[mask] = 1.0
-    binary_ttd[~mask] = 0.0
-    return binary_ttd
-
-def remap_target_ttd(ttd,T_warning):
-    mask = ttd < log10(T_warning)
-    ttd[~mask] = log10(T_warning)
-    return ttd
-
-def remap_target_ttd_nolog(ttd,T_warning):
-    ttd = 10**(ttd)
-    mask = ttd < T_warning
-    ttd[~mask] = 0#T_warning
-    ttd[mask] = T_warning - ttd[mask]#T_warning
-    return ttd
-
-def remap_target_hinge(ttd,T_warning,as_array_of_shots=True):
-    binary_ttd = 0*ttd
-    mask = ttd < log10(T_warning)
-    binary_ttd[mask] = 1.0
-    binary_ttd[~mask] = -1.0
-    return binary_ttd
 
 
 conf = {
@@ -70,7 +43,7 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
-        'ttd_remapper' : remap_target_ttd_nolog,
+        'target' : t.TTDLinearTarget,
         'normalizer' : 'var',           #TODO optimize
    },
 
