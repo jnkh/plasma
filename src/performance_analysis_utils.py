@@ -511,6 +511,27 @@ class PerformanceAnalyzer():
         if save_figure:
             savefig(title_str + '.png',bbox_inches='tight')
         close('all')
+        plot(1-fp_range,1-missed_range,'b')
+        xlim([0,1])
+        ylim([0,1])
+        grid()
+        if save_figure:
+            savefig(title_str + '_roc.png',bbox_inches='tight')
+        print('ROC area is {}'.format(trapz(1-missed_range,x=1-fp_range)))
+
+
+
+# def cut_ttd(arr,length):
+#     return arr[length-1:]
+
+
+# def get_disruptive(is_disr_list):
+#     return array([1 if any(arr > 0.5) else 0 for arr in is_disr_list])
+
+  
+# def create_acceptable_regions(is_disrupt):
+#     end_indices = get_end_indices(is_disrupt) 
+#     acceptable = zeros_like(is_disrupt,dtype=bool)
 
 
 
