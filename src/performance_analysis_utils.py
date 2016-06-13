@@ -501,7 +501,7 @@ class PerformanceAnalyzer():
             semilogx(abs(P_thresh_range[::-1]),missed_range,'r',label="missed")
             plot(abs(P_thresh_range[::-1]),fp_range,'k',label="false positives")
         else:
-            semilogx(P_thresh_range,missed_range,'r',label="missed")
+            plot(P_thresh_range,missed_range,'r',label="missed")
             plot(P_thresh_range,fp_range,'k',label="false positives")
         # plot(P_thresh_range,early_alarm_range,'c',label="early alarms")
         legend(loc=(1.0,.6))
@@ -512,13 +512,24 @@ class PerformanceAnalyzer():
         if save_figure:
             savefig(title_str + '.png',bbox_inches='tight')
         close('all')
-        plot(1-fp_range,1-missed_range,'b')
+        plot(fp_range,1-missed_range,'b')
+        ax = gca()
+        xlabel('FP rate')
+        ylabel('TP rate')
+        major_ticks = arange(0,1.01,0.2)
+        minor_ticks = arange(0,1.01,0.05)
+        ax.set_xticks(major_ticks)
+        ax.set_yticks(major_ticks)
+        ax.set_xticks(minor_ticks,minor=True)
+        ax.set_yticks(minor_ticks,minor=True)
+        ax.grid(which=both)
+        ax.grid(which='major',alpha=0.5)
+        ax.grid(which='minor',alpha=0.3)
         xlim([0,1])
         ylim([0,1])
-        grid()
         if save_figure:
             savefig(title_str + '_roc.png',bbox_inches='tight')
-        print('ROC area is {}'.format(trapz(1-missed_range,x=1-fp_range)))
+        print('ROC area is {}'.format(trapz(1-missed_range,x=fp_range)))
 
 
 
