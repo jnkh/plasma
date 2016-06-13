@@ -81,9 +81,9 @@ def train(conf,shot_list_train,loader):
             print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
 
 
-    plot_losses(conf,[training_losses],builder,name='training')
+    # plot_losses(conf,[training_losses],builder,name='training')
     if conf['training']['validation_frac'] > 0.0:
-        plot_losses(conf,[training_losses,validation_losses],builder,name='validation')
+        plot_losses(conf,[training_losses,validation_losses],builder,name='training+validation')
     print('...done')
 
 
