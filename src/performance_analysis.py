@@ -34,7 +34,7 @@ analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figur
 
 analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
 
-analyzer.example_plots(P_thresh_opt,'test','any')
+analyzer.example_plots(P_thresh_opt,'test',['any'])
 
 alarms,disr_alarms,nondisr_alarms = analyzer.gather_first_alarms(P_thresh_opt,'test')
 analyzer.hist_alarms(disr_alarms,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)

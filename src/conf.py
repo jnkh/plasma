@@ -50,7 +50,7 @@ conf = {
         #how many shots to use
         'use_shots' : 8,
         #normalization timescale
-        'dt' : 0.0001,
+        'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
