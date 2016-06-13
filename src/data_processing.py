@@ -41,7 +41,7 @@ class Normalizer(object):
         self.num_disruptive = 0
         self.conf = conf
         self.path = conf['paths']['normalizer_path']
-        self.remapper = conf['data']['ttd_remapper']
+        self.remapper = conf['data']['target'].remapper
 
 
     @abc.abstractmethod
