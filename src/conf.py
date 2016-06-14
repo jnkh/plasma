@@ -10,7 +10,7 @@ signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/gs/bl-ptot<s', #total input power [W]
                 'jpf/gs/bl-wmhd<s'] #unkown
 
-target = t.HingeTarget
+target = t.TTDTarget
 
 conf = {
     'paths': {
@@ -37,7 +37,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 200,
+        'use_shots' : 1000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -61,18 +61,18 @@ conf = {
         'rnn_layers' : 3,                   #TODO optimize
         # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
-        'lr' : 0.000001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'lr' : 0.0001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.3,
+        'dropout_prob' : 0.2,
     },
 
     'training': {
         'as_array_of_shots':True,
         'shuffle_training' : True,
         'train_frac' : 0.5,
-        'validation_frac' : 0.5,
+        'validation_frac' : 0.05,
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200, #How many shots are we loading at once?
