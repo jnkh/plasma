@@ -47,7 +47,7 @@ class ModelBuilder():
 			optimizer = Adam(lr = lr)#lr=0.0005
 		if optimizer == 'rmsprop' and lr is not None:
 			optimizer = Adam(lr = lr)#lr=0.0005
-		loss_fn = conf['data']['targets'].loss#model_conf['loss']
+		loss_fn = conf['data']['target'].loss#model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
 		pred_length = model_conf['pred_length']
