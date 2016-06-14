@@ -47,8 +47,10 @@ class PerformanceAnalyzer():
         return self.get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
 
 
+    def get_p_thresh_range(self):
+        return self.conf['data']['target'].threshold_range()
     def get_metrics_vs_p_thresh_custom(self,all_preds,all_truths,all_disruptive):
-        P_thresh_range = self.conf['data']['target'].threshold_range()
+        P_thresh_range = self.get_p_thresh_range()
         correct_range = zeros_like(P_thresh_range)
         accuracy_range = zeros_like(P_thresh_range)
         fp_range = zeros_like(P_thresh_range)
@@ -280,6 +282,7 @@ class PerformanceAnalyzer():
 
 
     def compute_tradeoffs_and_print(self,mode):
+        P_thresh_range = self.get_p_thresh_range()
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh(mode)
         fp_threshs = [0.01,0.05,0.1]
         missed_threshs = [0.01,0.05,0.0]
@@ -318,6 +321,7 @@ class PerformanceAnalyzer():
 
 
     def compute_tradeoffs_and_print_from_training(self,):
+        P_thresh_range = self.get_p_thresh_range()
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh('train')
 
         fp_threshs = [0.01,0.05,0.1]
