@@ -44,7 +44,7 @@ class PerformanceAnalyzer():
             all_truths = self.truth_test
             all_disruptive = self.disruptive_test
 
-        return get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
+        return self.get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
 
 
     def get_metrics_vs_p_thresh_custom(self,all_preds,all_truths,all_disruptive):
