@@ -81,5 +81,5 @@ class HingeTarget(Target):
 
     @staticmethod
     def threshold_range():
-        return linspace(-2,2,100)
+        return np.linspace(-2,2,100)
 
