@@ -263,7 +263,7 @@ def make_evaluations_gpu(conf,shot_list,loader):
 
 
 def get_loss_from_list(y_pred_list,y_gold_list,mode):
-    return np.mean([get_loss(yp,yg) for yp,yg in zip(y_pred_list,y_gold_list)])
+    return np.mean([get_loss(yp,yg,mode) for yp,yg in zip(y_pred_list,y_gold_list)])
 
 def get_loss(y_pred,y_gold,mode):
     if mode == 'mae':
