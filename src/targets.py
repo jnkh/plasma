@@ -4,9 +4,8 @@ import abc
 
 #Requirement: larger value must mean disruption more likely.
 class Target(object):
-    def __init__(self):
-        self.activation = 'linear'
-        self.loss = 'mse'
+    activation = 'linear'
+    loss = 'mse'
 
     @abc.abstractmethod
     def remapper(ttd,T_warning):
@@ -18,9 +17,8 @@ class Target(object):
 
 
 class BinaryTarget(Target):
-    def __init__(self):
-        self.activation = 'sigmoid'
-        self.loss = 'binary_crossentropy'
+    activation = 'sigmoid'
+    loss = 'binary_crossentropy'
 
 
     @staticmethod
@@ -37,9 +35,8 @@ class BinaryTarget(Target):
 
 
 class TTDTarget(Target):
-    def __init__(self):
-        self.activation = 'linear'
-        self.loss = 'mae'
+    activation = 'linear'
+    loss = 'mae'
 
     @staticmethod
     def remapper(ttd,T_warning):
@@ -54,9 +51,8 @@ class TTDTarget(Target):
 
 
 class TTDLinearTarget(Target):
-    def __init__(self):
-        self.activation = 'linear'
-        self.loss = 'mae'
+    activation = 'linear'
+    loss = 'mae'
 
     @staticmethod
     def remapper(ttd,T_warning):
@@ -72,9 +68,8 @@ class TTDLinearTarget(Target):
 
 
 class HingeTarget(Target):
-    def __init__(self):
-        self.activation = 'linear'
-        self.loss = 'squared_hinge'
+    activation = 'linear'
+    loss = 'squared_hinge'
 
     @staticmethod
     def remapper(ttd,T_warning,as_array_of_shots=True):
