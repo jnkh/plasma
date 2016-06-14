@@ -44,10 +44,10 @@ class PerformanceAnalyzer():
             all_truths = self.truth_test
             all_disruptive = self.disruptive_test
 
-        return get_metrics_vs_p_thresh_custom(P_thresh,all_preds,all_truths,all_disruptive)
+        return get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
 
 
-    def get_metrics_vs_p_thresh_custom(self,P_thresh,all_preds,all_truths,all_disruptive):
+    def get_metrics_vs_p_thresh_custom(self,all_preds,all_truths,all_disruptive):
         P_thresh_range = self.conf['data']['target'].threshold_range()
         correct_range = zeros_like(P_thresh_range)
         accuracy_range = zeros_like(P_thresh_range)
