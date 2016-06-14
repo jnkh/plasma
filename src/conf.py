@@ -44,11 +44,7 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
-<<<<<<< HEAD
-        'target' : t.HingeTarget,
-=======
         'target' : target,
->>>>>>> 63d5ad254c094be2313d7c80816f57f7e74ed3bf
         'normalizer' : 'var',           #TODO optimize
    },
 
@@ -63,15 +59,10 @@ conf = {
         #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
         'rnn_layers' : 3,                   #TODO optimize
-        'output_activation' : target.activation,
+        # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
-<<<<<<< HEAD
-        'loss' : 'squared_hinge', #binary crossentropy performs slightly better?
         'lr' : 0.000001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
-=======
-        'loss' : target.loss, #binary crossentropy performs slightly better?
-        'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
->>>>>>> 63d5ad254c094be2313d7c80816f57f7e74ed3bf
+        # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.3,
