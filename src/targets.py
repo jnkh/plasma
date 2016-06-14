@@ -64,7 +64,7 @@ class TTDLinearTarget(Target):
 
     @staticmethod
     def threshold_range():
-        return np.logspace(-6,log10(T_warning),100)
+        return np.logspace(-6,np.log10(T_warning),100)
 
 
 class HingeTarget(Target):
