@@ -69,6 +69,21 @@ class PerformanceAnalyzer():
         
         return correct_range,accuracy_range,fp_range,missed_range,early_alarm_range
 
+    def summarize_shot_prediction_stats_by_mode(self,P_thresh,mode,verbose=False):
+
+        if mode == 'train':
+            all_preds = self.pred_train
+            all_truths = self.truth_train
+            all_disruptive = self.disruptive_train
+
+
+        elif mode == 'test':
+            all_preds = self.pred_test
+            all_truths = self.truth_test
+            all_disruptive = self.disruptive_test
+
+        return self.summarize_shot_prediction_stats(P_thresh,all_preds,all_truths,all_disruptive,verbose)
+
 
     def summarize_shot_prediction_stats(self,P_thresh,all_preds,all_truths,all_disruptive,verbose=False):
         TPs,FPs,FNs,TNs,earlies,lates = (0,0,0,0,0,0)
@@ -279,9 +294,6 @@ class PerformanceAnalyzer():
                     disr_alarms.append(-1)
         return array(alarms),array(disr_alarms),array(nondisr_alarms)
                 
-            
-
-
 
     def compute_tradeoffs_and_print(self,mode):
         P_thresh_range = self.get_p_thresh_range()
@@ -295,7 +307,7 @@ class PerformanceAnalyzer():
             if(any(fp_range < fp_thresh)):
                 idx = where(fp_range <= fp_thresh)[0][0]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
+                self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,mode,verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -307,7 +319,7 @@ class PerformanceAnalyzer():
             if(any(missed_range < missed_thresh)):
                 idx = where(missed_range <= missed_thresh)[0][-1]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
+                self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,mode,verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -317,12 +329,12 @@ class PerformanceAnalyzer():
         print('============= TEST PERFORMANCE: =============')
         idx = where(missed_range <= fp_range)[0][-1]
         P_thresh_opt = P_thresh_range[idx]
-        self.summarize_shot_prediction_stats(P_thresh_opt,mode,verbose=True)
+        self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,mode,verbose=True)
         P_thresh_ret = P_thresh_opt
         return P_thresh_ret
 
 
-    def compute_tradeoffs_and_print_from_training(self,):
+    def compute_tradeoffs_and_print_from_training(self):
         P_thresh_range = self.get_p_thresh_range()
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = self.get_metrics_vs_p_thresh('train')
 
@@ -342,7 +354,7 @@ class PerformanceAnalyzer():
             if(any(fp_range < fp_thresh)):
                 idx = where(fp_range <= fp_thresh)[0][first_idx]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
+                self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,'test',verbose=True)
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
             else:
                 print('No such P_thresh found')
@@ -357,7 +369,7 @@ class PerformanceAnalyzer():
             if(any(missed_range < missed_thresh)):
                 idx = where(missed_range <= missed_thresh)[0][last_idx]
                 P_thresh_opt = P_thresh_range[idx]
-                self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
+                self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,'test',verbose=True)
                 if missed_thresh == 0.05:
                     P_thresh_ret = P_thresh_opt
                 print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
@@ -371,7 +383,7 @@ class PerformanceAnalyzer():
         if(any(missed_range <= fp_range)):
             idx = where(missed_range <= fp_range)[0][last_idx]
             P_thresh_opt = P_thresh_range[idx]
-            self.summarize_shot_prediction_stats(P_thresh_opt,'test',verbose=True)
+            self.summarize_shot_prediction_stats_by_mode(P_thresh_opt,'test',verbose=True)
             P_thresh_ret = P_thresh_opt
             print('============= AT P_THRESH = {} ============='.format(P_thresh_opt))
         else:
