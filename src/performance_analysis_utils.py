@@ -85,7 +85,7 @@ class PerformanceAnalyzer():
             
         disr = earlies + lates + TPs + FNs
         nondisr = FPs + TNs
-        if verbose:
+        if self.verbose:
             print('total: {}, tp: {} fp: {} fn: {} tn: {} early: {} late: {} disr: {} nondisr: {}'.format(len(all_preds),TPs,FPs,FNs,TNs,earlies,lates,disr,nondisr))
        
         return self.get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates,verbose)
