@@ -276,7 +276,7 @@ def get_loss(y_pred,y_gold,mode):
         return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold))
     elif mode == 'squared_hinge':
         return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold)**2)
-    elif:
+    else:
         print('mode not recognized')
         exit(1)
 
