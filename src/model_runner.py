@@ -32,7 +32,7 @@ def train(conf,shot_list_train,loader):
     print('training: {} shots, {} disruptive'.format(len(shot_list_train),shot_list_train.num_disruptive()))
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
-    os.environ['THEANO_FLAGS'] = 'device=gpu'
+    os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32'
     import theano
     from keras.utils.generic_utils import Progbar 
     import model_builder #from model_builder import ModelBuilder, LossHistory
@@ -174,7 +174,7 @@ def make_single_prediction(shot,builder,loader,model_save_path):
 
 def make_predictions_gpu(conf,shot_list,loader):
 
-    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32' #=cpu
     import theano
     from keras.utils.generic_utils import Progbar 
     from model_builder import ModelBuilder
@@ -223,7 +223,7 @@ def make_predictions_and_evaluate_gpu(conf,shot_list,loader):
     return roc_area,loss
 
 def make_evaluations_gpu(conf,shot_list,loader):
-    os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
+    os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32' #=cpu
     import theano
     from keras.utils.generic_utils import Progbar 
     from model_builder import ModelBuilder
@@ -273,9 +273,9 @@ def get_loss(y_pred,y_gold,mode):
     elif mode == 'mse':
         return np.mean((y_pred-y_gold)**2)
     elif mode == 'hinge':
-        return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold))
+        return np.mean(np.maximum(0.0,1  - y_pred*y_gold))
     elif mode == 'squared_hinge':
-        return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold)**2)
+        return np.mean(np.maximum(0.0,1  - y_pred*y_gold)**2)
     else:
         print('mode not recognized')
         exit(1)
