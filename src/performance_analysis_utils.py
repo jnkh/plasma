@@ -541,7 +541,7 @@ class PerformanceAnalyzer():
         correct_range, accuracy_range, fp_range,missed_range,early_alarm_range = \
          self.get_metrics_vs_p_thresh_custom(all_preds,all_truths,all_disruptive)
 
-        return roc_from_missed_fp(missed_range,fp_range)
+        return self.roc_from_missed_fp(missed_range,fp_range)
 
     def roc_from_missed_fp(self,missed_range,fp_range):
         return -trapz(1-missed_range,x=fp_range)
