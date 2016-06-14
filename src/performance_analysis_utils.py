@@ -68,7 +68,7 @@ class PerformanceAnalyzer():
         return correct_range,accuracy_range,fp_range,missed_range,early_alarm_range
 
 
-    def summarize_shot_prediction_stats(self,P_thresh,all_preds,all_truths,all_disruptive):
+    def summarize_shot_prediction_stats(self,P_thresh,all_preds,all_truths,all_disruptive,verbose=False):
         TPs,FPs,FNs,TNs,earlies,lates = (0,0,0,0,0,0)
 
         for i in range(len(all_preds)):
@@ -87,10 +87,10 @@ class PerformanceAnalyzer():
             
         disr = earlies + lates + TPs + FNs
         nondisr = FPs + TNs
-        if self.verbose:
+        if verbose:
             print('total: {}, tp: {} fp: {} fn: {} tn: {} early: {} late: {} disr: {} nondisr: {}'.format(len(all_preds),TPs,FPs,FNs,TNs,earlies,lates,disr,nondisr))
        
-        return self.get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates,self.verbose)
+        return self.get_accuracy_and_fp_rate_from_stats(TPs,FPs,FNs,TNs,earlies,lates,verbose)
 
 
 
