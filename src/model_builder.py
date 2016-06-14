@@ -47,14 +47,14 @@ class ModelBuilder():
 			optimizer = Adam(lr = lr)#lr=0.0005
 		if optimizer == 'rmsprop' and lr is not None:
 			optimizer = Adam(lr = lr)#lr=0.0005
-		loss_fn = model_conf['loss']
+		loss_fn = conf['data']['targets'].loss#model_conf['loss']
 		dropout_prob = model_conf['dropout_prob']
 		length = model_conf['length']
 		pred_length = model_conf['pred_length']
 		skip = model_conf['skip']
 		stateful = model_conf['stateful']
 		return_sequences = model_conf['return_sequences']
-		output_activation = model_conf['output_activation']
+		output_activation = conf['data']['target'].activation#model_conf['output_activation']
 		num_signals = conf['data']['num_signals']
 
 
