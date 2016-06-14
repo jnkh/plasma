@@ -48,7 +48,7 @@ class PerformanceAnalyzer():
 
 
     def get_p_thresh_range(self):
-        return self.conf['data']['target'].threshold_range()
+        return self.conf['data']['target'].threshold_range(self.conf['data']['T_warning'])
 
 
     def get_metrics_vs_p_thresh_custom(self,all_preds,all_truths,all_disruptive):

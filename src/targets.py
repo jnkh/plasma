@@ -12,7 +12,7 @@ class Target(object):
         return -ttd
 
     @abc.abstractmethod
-    def threshold_range():
+    def threshold_range(T_warning):
         return np.logspace(-1,4,100)
 
 
@@ -30,7 +30,7 @@ class BinaryTarget(Target):
         return binary_ttd
 
     @staticmethod
-    def threshold_range():
+    def threshold_range(T_warning):
         return np.logspace(-6,0,100)
 
 
@@ -45,7 +45,7 @@ class TTDTarget(Target):
         return -ttd
 
     @staticmethod
-    def threshold_range():
+    def threshold_range(T_warning):
         return np.linspace(-np.log10(T_warning),6,100)
 
 
@@ -63,7 +63,7 @@ class TTDLinearTarget(Target):
         return ttd
 
     @staticmethod
-    def threshold_range():
+    def threshold_range(T_warning):
         return np.logspace(-6,np.log10(T_warning),100)
 
 
@@ -80,6 +80,6 @@ class HingeTarget(Target):
         return binary_ttd
 
     @staticmethod
-    def threshold_range():
+    def threshold_range(T_warning):
         return np.linspace(-2,2,100)
 
