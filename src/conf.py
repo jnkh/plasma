@@ -59,9 +59,9 @@ conf = {
         #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
         'rnn_layers' : 3,                   #TODO optimize
-        'output_activation' : target.activation,
+        # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
-        'loss' : target.loss, #binary crossentropy performs slightly better?
+        # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
         'return_sequences' : True,
