@@ -61,6 +61,7 @@ conf = {
         'rnn_layers' : 3,                   #TODO optimize
         # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
+        'clipnorm' : 10.0,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'stateful' : True,
