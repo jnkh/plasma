@@ -24,6 +24,7 @@ def train(conf,shot_list_train,loader):
     np.random.seed(1)
 
     validation_losses = []
+    validation_roc = []
     training_losses = []
     if conf['training']['validation_frac'] > 0.0:
         shot_list_train,shot_list_validate = shot_list_train.split_direct(1.0-conf['training']['validation_frac'],shuffle=True)
@@ -76,12 +77,15 @@ def train(conf,shot_list_train,loader):
         builder.save_model_weights(train_model,e)
 
         if conf['training']['validation_frac'] > 0.0:
-            validation_losses.append(make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader))
+            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
+            validation_losses.append(loss)
+            validation_roc.append(roc_area)
 
         print('=========Summary========')
         print('Training Loss: {:.3e}'.format(training_losses[-1]))
         if conf['training']['validation_frac'] > 0.0:
             print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+            print('Validation ROC: {:.3e}'.format(validation_roc[-1]))
 
 
     # plot_losses(conf,[training_losses],builder,name='training')
@@ -215,7 +219,8 @@ def make_predictions_and_evaluate_gpu(conf,shot_list,loader):
     y_prime,y_gold,disruptive = make_predictions_gpu(conf,shot_list,loader)
     analyzer = PerformanceAnalyzer(conf=conf)
     roc_area = analyzer.get_roc_area(y_prime,y_gold,disruptive)
-    return roc_area
+    loss = get_loss_from_list(y_prime,y_gold,conf['data']['target'].loss)
+    return roc_area,loss
 
 def make_evaluations_gpu(conf,shot_list,loader):
     os.environ['THEANO_FLAGS'] = 'device=gpu' #=cpu
@@ -254,4 +259,30 @@ def make_evaluations_gpu(conf,shot_list,loader):
     loss = np.average(all_metrics,weights = all_weights)
     print('Evaluation Loss: {}'.format(loss))
     return loss 
+
+
+
+def get_loss_from_list(y_pred_list,y_gold_list,mode):
+    return np.mean([get_loss(yp,yg) for yp,yg in zip(y_pred_list,y_gold_list)])
+
+def get_loss(y_pred,y_gold,mode):
+    if mode == 'mae'
+        return np.mean(np.abs(y_pred-y_gold))
+    elif mode == 'binary_crossentropy'
+        return - (y_gold*np.log(y_pred) + (1-y_gold)*np.log(1 - y_pred))
+    elif mode == 'mse'
+        return np.mean((y_pred-y_gold)**2)
+    elif mode == 'hinge'
+        return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold))
+    elif mode == 'squared_hinge'
+        return np.mean(np.max(np.zeros_like(y_pred),1  - y_pred*y_gold)**2)
+    elif:
+        print('mode not recognized')
+        exit(1)
+
+
+
+
+
+
 
