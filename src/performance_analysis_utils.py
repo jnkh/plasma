@@ -49,6 +49,8 @@ class PerformanceAnalyzer():
 
     def get_p_thresh_range(self):
         return self.conf['data']['target'].threshold_range()
+
+
     def get_metrics_vs_p_thresh_custom(self,all_preds,all_truths,all_disruptive):
         P_thresh_range = self.get_p_thresh_range()
         correct_range = zeros_like(P_thresh_range)
@@ -505,6 +507,7 @@ class PerformanceAnalyzer():
 
     def tradeoff_plot(self,accuracy_range,missed_range,fp_range,early_alarm_range,save_figure=False,plot_string=''):
         figure()
+        P_thresh_range = self.get_p_thresh_range()
         # semilogx(P_thresh_range,accuracy_range,label="accuracy")
         if self.pred_ttd:
             semilogx(abs(P_thresh_range[::-1]),missed_range,'r',label="missed")
