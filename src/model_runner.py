@@ -269,7 +269,7 @@ def get_loss(y_pred,y_gold,mode):
     if mode == 'mae':
         return np.mean(np.abs(y_pred-y_gold))
     elif mode == 'binary_crossentropy':
-        return - (y_gold*np.log(y_pred) + (1-y_gold)*np.log(1 - y_pred))
+        return np.mean(- (y_gold*np.log(y_pred) + (1-y_gold)*np.log(1 - y_pred)))
     elif mode == 'mse':
         return np.mean((y_pred-y_gold)**2)
     elif mode == 'hinge':

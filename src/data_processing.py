@@ -138,7 +138,7 @@ class MeanVarNormalizer(Normalizer):
             stats.stds = np.reshape(np.std(shot.signals,0),(1,shot.signals.shape[1]))
             stats.is_disruptive = shot.is_disruptive
         else:
-            print('Warning: shot {} not valid, omitting'.format(shot))
+            print('Warning: shot {} not valid, omitting'.format(shot.number))
         stats.valid = shot.valid
         return stats
 
@@ -213,7 +213,7 @@ class MinMaxNormalizer(Normalizer):
             stats.maximums = np.max(shot.signals,0)
             stats.is_disruptive = shot.is_disruptive
         else:
-            print('Warning: shot {} not valid, omitting'.format(shot))
+            print('Warning: shot {} not valid, omitting'.format(shot.number))
         stats.valid = shot.valid
         return stats
 
@@ -541,7 +541,7 @@ class ShotList(object):
             self.append(shot)
             return True
         else:
-            print('Warning: shot {} not valid, omitting'.format(shot))
+            print('Warning: shot {} not valid, omitting'.format(shot.number))
             return False
 
         
