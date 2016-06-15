@@ -42,6 +42,7 @@ class ModelBuilder():
 		optimizer = model_conf['optimizer']
 		lr = model_conf['lr']
 		clipnorm = model_conf['clipnorm']
+		regularization = model_conf['regularization']
 
 		if optimizer == 'sgd':
 			optimizer_class = SGD
@@ -93,7 +94,8 @@ class ModelBuilder():
 		# model.add(TimeDistributed(Dense(num_signals,bias=True),batch_input_shape=batch_input_shape))
 		for _ in range(model_conf['rnn_layers']):
 			model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
-			 stateful=stateful))
+			 stateful=stateful,W_regularizer=l2(regularization),U_regularizer=l2(regularization),
+			 b_regularizer=l2(regularization),dropout_W=dropout_prob))
 			model.add(Dropout(dropout_prob))
 		if return_sequences:
 			model.add(TimeDistributed(Dense(1,activation=output_activation)))
