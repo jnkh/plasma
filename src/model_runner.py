@@ -72,7 +72,7 @@ def train(conf,shot_list_train,loader):
 
                 pbar.add(1.0*len(shot_sublist)/len(X_list), values=[("train loss", train_loss)])
                 loader.verbose=False#True during the first iteration
-
+        sys.stdout.flush()
         training_losses.append(np.mean(training_losses_tmp))
         builder.save_model_weights(train_model,e)
 
