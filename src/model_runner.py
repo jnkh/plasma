@@ -32,7 +32,7 @@ def train(conf,shot_list_train,loader):
     print('training: {} shots, {} disruptive'.format(len(shot_list_train),shot_list_train.num_disruptive()))
     ##Need to import later because accessing the GPU from several processes via multiprocessing
     ## gives weird errors.
-    os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32'
+    os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32'#,mode=NanGuardMode'
     import theano
     from keras.utils.generic_utils import Progbar 
     import model_builder #from model_builder import ModelBuilder, LossHistory
