@@ -36,7 +36,7 @@ class BinaryTarget(Target):
 
 class TTDTarget(Target):
     activation = 'linear'
-    loss = 'mae'
+    loss = 'mse'
 
     @staticmethod
     def remapper(ttd,T_warning):
