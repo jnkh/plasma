@@ -52,7 +52,7 @@ class TTDTarget(Target):
 
 class TTDLinearTarget(Target):
     activation = 'linear'
-    loss = 'mae'
+    loss = 'mse'
 
     @staticmethod
     def remapper(ttd,T_warning):
