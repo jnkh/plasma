@@ -63,6 +63,7 @@ conf = {
         'optimizer' : 'nadam', #have not found a difference yet
         'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
         'clipnorm' : 10.0,
+        'regularization' : 0.01,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'stateful' : True,
         'return_sequences' : True,
