@@ -5,6 +5,7 @@ from keras.utils.data_utils import get_file
 from keras.layers.wrappers import TimeDistributed
 from keras.callbacks import Callback
 from keras.optimizers import *
+from keras.regularizers import l1,l2,l1l2
 
 import dill
 import re,os
