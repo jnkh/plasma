@@ -120,17 +120,20 @@ for e in range(num_epochs):
     testing_model.load_weights('./tmp1/cluster_training.%d.h5' % e)
     y_pred = []
     xx,yy = get_mock_data()
-    for i in range(len(xx)):
-        C = np.zeros([1,1,featurelen])
-        C[0,0,:] = xx[i,:]
-        pred = testing_model.predict(C)
-        pred = pred[0,0,:] # We have to pass in an entire batch at a time, but we only care about the first since we are only generation one letter
-        y_pred.append(pred)
-    y_pred = array(y_pred)
-    totalTime = time.time() - startTime
-    print('Completed epoch in ',totalTime,' seconds')
-    print('===============================')
-    print ('Test Loss: {}'.format(rms(y_pred,yy)))
+    X,y = array_to_path_and_external_pred_cut(xx,yy,length,skip,return_sequences)
+    loss = model.evaluate(X,y,batch_size=batch_size)
+    print('Testing Loss: {}'.format(loss))
+    # for i in range(len(xx)):
+    #     C = np.zeros([1,1,featurelen])
+    #     C[0,0,:] = xx[i,:]
+    #     pred = testing_model.predict(C)
+    #     pred = pred[0,0,:] # We have to pass in an entire batch at a time, but we only care about the first since we are only generation one letter
+    #     y_pred.append(pred)
+    # y_pred = array(y_pred)
+    # totalTime = time.time() - startTime
+    # print('Completed epoch in ',totalTime,' seconds')
+    # print('===============================')
+    # print ('Test Loss: {}'.format(rms(y_pred,yy)))
     if plotting:
         figure(e)
         plot(xx,'-b')
