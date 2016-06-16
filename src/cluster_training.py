@@ -68,8 +68,8 @@ class LossHistory(Callback):
     def on_batch_end(self, batch, logs={}):
         self.losses.append(logs.get('loss'))
 
-def get_mock_data():
-    x_raw = cumsum(randn(1000))
+def get_mock_data(N=1000):
+    x_raw = cumsum(randn(N))
     x_raw = vstack([x_raw]*1)
     x_raw = x_raw.T
     x_raw = 1.0*(x_raw - x_raw.min()) / (x_raw.max() - x_raw.min())
@@ -119,7 +119,7 @@ for e in range(num_epochs):
     model.save_weights('./tmp1/cluster_training.%d.h5' % e,overwrite=True)
     testing_model.load_weights('./tmp1/cluster_training.%d.h5' % e)
     y_pred = []
-    xx,yy = get_mock_data()
+    xx,yy = get_mock_data(10000)
     X,y = array_to_path_and_external_pred_cut(xx,yy,length,skip,return_sequences)
     loss = model.evaluate(X,y,batch_size=batch_size)
     print('Testing Loss: {}'.format(loss))
