@@ -35,6 +35,7 @@ def train(conf,shot_list_train,loader):
     os.environ['THEANO_FLAGS'] = 'device=gpu,floatX=float32'
     import theano
     from keras.utils.generic_utils import Progbar 
+    from keras import backend as K
     import model_builder #from model_builder import ModelBuilder, LossHistory
 
     print('Build model...',end='')
@@ -47,6 +48,8 @@ def train(conf,shot_list_train,loader):
 
     num_epochs = conf['training']['num_epochs']
     num_at_once = conf['training']['num_shots_at_once']
+    lr_decay = conf['model']['lr_decay']
+    lr = conf['model']['lr']
     print('{} epochs left to go'.format(num_epochs - 1 - e))
     while e < num_epochs-1:
         e += 1
@@ -57,6 +60,10 @@ def train(conf,shot_list_train,loader):
         shot_list_train.shuffle() 
         shot_sublists = shot_list_train.sublists(num_at_once)
         training_losses_tmp = []
+
+        #decay learning rate each epoch:
+        K.set_value(train_model.optimizer.lr, lr*lr_decay**(e+1))
+        print('Learning rate: {}'.format(train_model.lr.get_value()))
         for (i,shot_sublist) in enumerate(shot_sublists):
             X_list,y_list = loader.load_as_X_y_list(shot_sublist)
             for j,(X,y) in enumerate(zip(X_list,y_list)):

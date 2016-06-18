@@ -65,6 +65,7 @@ conf = {
         'regularization' : 0.01,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'lr_decay' : 0.5,
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.3,
