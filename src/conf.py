@@ -37,7 +37,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 1000,
+        'use_shots' : 200000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -61,10 +61,11 @@ conf = {
         'rnn_layers' : 3,                   #TODO optimize
         # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
-        'lr' : 1e-6,#None,#001, #lower better, at most 0.0001. 1e-6 seems good, possibly 5e-6
         'clipnorm' : 10.0,
-        'regularization' : 0.0,#0.000005,#0.00001,
+        'regularization' : 5e-6,#0.00001,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
+        'lr' : 1e-5,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'lr_decay' : 0.5,
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.1,
