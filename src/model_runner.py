@@ -62,7 +62,7 @@ def train(conf,shot_list_train,loader):
         training_losses_tmp = []
 
         #decay learning rate each epoch:
-        K.set_value(train_model.optimizer.lr, lr*lr_decay**(e+1))
+        K.set_value(train_model.optimizer.lr, lr*lr_decay**(e))
         print('Learning rate: {}'.format(train_model.optimizer.lr.get_value()))
         for (i,shot_sublist) in enumerate(shot_sublists):
             X_list,y_list = loader.load_as_X_y_list(shot_sublist)
