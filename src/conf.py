@@ -10,7 +10,7 @@ signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/gs/bl-ptot<s', #total input power [W]
                 'jpf/gs/bl-wmhd<s'] #unkown
 
-target = t.TTDLinearTarget
+target = t.HingeTarget
 
 conf = {
     'paths': {
@@ -37,7 +37,7 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 2000,
+        'use_shots' : 1000,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
@@ -55,19 +55,19 @@ conf = {
         'length' : 128,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
-        'rnn_size' : 20,                   #TODO optimize
+        'rnn_size' : 100,                   #TODO optimize
         #size 100 slight overfitting, size 20 no overfitting. 200 is not better than 100. Prediction much better with size 100, size 20 cannot capture the data.
         'rnn_type' : 'LSTM',
-        'rnn_layers' : 1,                   #TODO optimize
+        'rnn_layers' : 3,                   #TODO optimize
         # 'output_activation' : target.activation,
-        'optimizer' : 'nadam', #have not found a difference yet
-        'lr' : 0.00001,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
+        'optimizer' : 'adam', #have not found a difference yet
+        'lr' : 1e-6,#None,#001, #lower better, at most 0.0001. 1e-6 seems good, possibly 5e-6
         'clipnorm' : 10.0,
-        'regularization' : 0.01,
+        'regularization' : 0.0,#0.000005,#0.00001,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.2,
+        'dropout_prob' : 0.1,
     },
 
     'training': {
