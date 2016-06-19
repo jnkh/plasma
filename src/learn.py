@@ -59,27 +59,6 @@ np.random.seed(1)
 
 print("preprocessing all shots",end='')
 pp = Preprocessor(conf)
-else:
-    print('unkown normalizer. exiting')
-    exit(1)
-
-shot_list_dir = conf['paths']['shot_list_dir']
-shot_files = conf['paths']['shot_files']
-shot_files_test = conf['paths']['shot_files_test']
-train_frac = conf['training']['train_frac']
-stateful = conf['model']['stateful']
-# if stateful: 
-#     batch_size = conf['model']['length']
-# else:
-#     batch_size = conf['training']['batch_size_large']
-
-np.random.seed(1)
-#####################################################
-####################PREPROCESSING####################
-#####################################################
-
-print("preprocessing all shots",end='')
-pp = Preprocessor(conf)
 pp.clean_shot_lists()
 shot_list = pp.preprocess_all()
 sorted(shot_list)
