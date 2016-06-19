@@ -200,9 +200,10 @@ class AveragingVarNormalizer(VarNormalizer):
 
     def apply(self,shot):
         super(AveragingVarNormalizer,self).apply(shot)
-        tau = self.conf['data']['window_decay']
+        window_decay = self.conf['data']['window_decay']
         window_size = self.conf['data']['window_size']
         window = exponential(window_size,0,window_decay,False)
+        window /= np.sum(window)
         shot.signals = apply_along_axis(lambda m : correlate(m,window,'valid'),axis=0,arr=shot.signals)
         shot.ttd = shot.ttd[-shot.signals.shape[0]:]
 
