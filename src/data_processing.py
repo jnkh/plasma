@@ -18,6 +18,7 @@ import abc
 from pylab import *
 import numpy as np
 from scipy.interpolate import UnivariateSpline
+from scipy.signal import exponential,correlate
 
 import pathos.multiprocessing as mp
 
@@ -193,6 +194,19 @@ class VarNormalizer(MeanVarNormalizer):
     def __str__(self):
         stds = median(self.stds,axis=0)
         return('Var Normalizer.\nstds: {}'.format(stds))
+
+
+class AveragingVarNormalizer(VarNormalizer):
+
+    def apply(self,shot):
+        super(AveragingVarNormalizer,self).apply(shot)
+        tau = self.conf['data']['window_decay']
+        window_size = self.conf['data']['window_size']
+        window = exponential(window_size,0,window_decay,False)
+        shot.signals = apply_along_axis(lambda m : correlate(m,window,'valid'),axis=0,arr=shot.signals)
+        shot.ttd = shot.ttd[-shot.signals.shape[0]:]
+
+
 
 
 class MinMaxNormalizer(Normalizer):
