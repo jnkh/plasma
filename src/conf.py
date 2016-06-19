@@ -52,7 +52,7 @@ conf = {
         #length of LSTM memory
         'pred_length' : 200,
         'pred_batch_size' : 128,
-        'length' : 128,                     #TODO optimize
+        'length' : 32,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 100,                   #TODO optimize
@@ -62,13 +62,13 @@ conf = {
         # 'output_activation' : target.activation,
         'optimizer' : 'adam', #have not found a difference yet
         'clipnorm' : 10.0,
-        'regularization' : 5e-6,#0.00001,
+        'regularization' : 0.0,#5e-6,#0.00001,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'lr' : 1e-5,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
-        'lr_decay' : 0.5,
+        'lr_decay' : 0.8,
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.1,
+        'dropout_prob' : 0.5,
     },
 
     'training': {
@@ -76,7 +76,7 @@ conf = {
         'shuffle_training' : True,
         'train_frac' : 0.5,
         'validation_frac' : 0.05,
-        'batch_size' : 256, #100
+        'batch_size' : 2048, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200, #How many shots are we loading at once?
         'num_epochs' : 20,
