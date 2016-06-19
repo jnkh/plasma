@@ -207,7 +207,11 @@ class AveragingVarNormalizer(VarNormalizer):
         shot.signals = apply_along_axis(lambda m : correlate(m,window,'valid'),axis=0,arr=shot.signals)
         shot.ttd = shot.ttd[-shot.signals.shape[0]:]
 
-
+    def __str__(self):
+        window_decay = self.conf['data']['window_decay']
+        window_size = self.conf['data']['window_size']
+        stds = median(self.stds,axis=0)
+        return('Averaging Var Normalizer.\nstds: {}\nWindow size: {}, Window decay: {}'.format(stds,window_size,window_decay))
 
 
 class MinMaxNormalizer(Normalizer):
