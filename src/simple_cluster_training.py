@@ -8,9 +8,6 @@ def variable_on_device(name,shape,initializer=None,device='/cpu:0'):
 		var = tf.get_variable(name,shape,initializer=initializer)
 	return var
 
-
-
-
 def get_weights(num_features):
 	W = np.array([0.3,-1.2])#np.random.randn(1,num_features)
 	b = np.array([0.5])#np.random.randn(1)
@@ -32,10 +29,11 @@ def get_training_examples(batchsize,num_features):
 ##build model
 
 num_features = 2
+batchsize = 128
 # num_hidden = 2
 num_out = 2
 x = tf.placeholder(tf.float32,[None,num_features])
-labels = tf.placeholder(tf.int64, [None,1])
+labels = tf.placeholder(tf.int64, [None])
 
 W = variable_on_device('w',[num_features,num_out])
 b = variable_on_device('b',[num_out])
