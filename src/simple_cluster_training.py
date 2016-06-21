@@ -41,7 +41,7 @@ global_step = tf.Variable(0,name='global_step',trainable=False)
 
 
 with tf.device('/gpu:0'):
-	logits = tf.matmul(W,x) + b
+	logits = tf.matmul(x,W) + b
 	probs = tf.nn.softmax(logits)
 	loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
 	optimizer = tf.train.GradientDescentOptimizer(0.001)
