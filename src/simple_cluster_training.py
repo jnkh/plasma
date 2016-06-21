@@ -16,7 +16,7 @@ def get_weights(num_features):
 def get_training_examples(batchsize,num_features):
 	W,b = get_weights(num_features)
 	x = np.random.randn(num_features,batchsize)
-	y_mask = (W*x + b) > 0
+	y_mask = (np.dot(W,x) + b) > 0
 	y = np.zeros_like(y_mask)
 	y[y_mask] = 1
 	y[~y_mask] = 0
