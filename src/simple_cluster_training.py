@@ -37,6 +37,7 @@ labels = tf.placeholder(tf.int64, [None])
 
 W = variable_on_device('w',[num_features,num_out])
 b = variable_on_device('b',[num_out])
+global_step = tf.Variable(0,name='global_step',trainable=False)
 
 
 with tf.device('/gpu:0'):
@@ -44,7 +45,6 @@ with tf.device('/gpu:0'):
 	probs = tf.nn.softmax(logits)
 	loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
 	optimizer = tf.train.GradientDescentOptimizer(0.001)
-	global_step = tf.Variable(0,name='global_step',trainable=False)
 	train_op = optimizer.minimize(loss,global_step=global_step)
 
 init = tf.initialize_all_variables()
