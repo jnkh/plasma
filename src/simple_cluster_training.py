@@ -18,8 +18,8 @@ def get_training_examples(batchsize,num_features):
 	x = np.random.randn(num_features,batchsize)
 	y_mask = (np.dot(W,x) + b) > 0
 	y = np.zeros_like(y_mask)
-	y[y_mask] = 1
-	y[~y_mask] = 0
+	y[y_mask] = 1.0
+	y[~y_mask] = 0.0
 	return x.T,y
 
 
@@ -43,9 +43,9 @@ global_step = tf.Variable(0,name='global_step',trainable=False)
 with tf.device('/gpu:0'):
 	logits = tf.matmul(x,W) + b
 	probs = tf.nn.softmax(logits)
-	loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
+	loss_op = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
 	optimizer = tf.train.GradientDescentOptimizer(0.001)
-	train_op = optimizer.minimize(loss,global_step=global_step)
+	train_op = optimizer.minimize(loss_op,global_step=global_step)
 
 init = tf.initialize_all_variables()
 
@@ -53,5 +53,5 @@ with tf.Session() as sess:
 	sess.run(init)
 	for i in xrange(1000):
 		x_batch,y_batch = get_training_examples(batchsize,num_features)
-		_,loss = sess.run([train_op,loss],feed_dict = {x : x_batch, labels : y_batch})
+		_,loss = sess.run([train_op,loss_op],feed_dict = {x : x_batch, labels : y_batch})
 
