@@ -38,7 +38,7 @@ x = tf.placeholder(tf.float32,[None,num_features])
 labels = tf.placeholder(tf.int64, [None,1])
 
 W = variable_on_device('w',[num_features,num_out])
-b = variable_on_device('w',[num_out])
+b = variable_on_device('b',[num_out])
 
 
 with tf.device('/gpu:0'):
