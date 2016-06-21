@@ -16,7 +16,7 @@ W = variable_on_device('w',[num_features,num_out])
 b = variable_on_device('w',[num_out])
 
 
-with tf.device('/gpu:0')
+with tf.device('/gpu:0'):
 	logits = tf.matmul(W,x) + b
 	probs = tf.nn.softmax(logits)
 	loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
