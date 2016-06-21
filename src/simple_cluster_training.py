@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 
@@ -54,4 +55,5 @@ with tf.Session() as sess:
 	for i in xrange(1000):
 		x_batch,y_batch = get_training_examples(batchsize,num_features)
 		_,loss = sess.run([train_op,loss_op],feed_dict = {x : x_batch, labels : y_batch})
+		print(loss)
 
