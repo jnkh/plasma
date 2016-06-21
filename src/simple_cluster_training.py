@@ -3,6 +3,30 @@ import numpy as np
 
 
 
+def variable_on_device(name,shape,initializer=None,device='/cpu:0'):
+	with tf.device(device):
+		var = tf.get_variable(name,shape,initializer=initializer)
+	return var
+
+
+
+
+def get_weights(num_features):
+	W = np.array([0.3,-1.2])#np.random.randn(1,num_features)
+	b = np.array([0.5])#np.random.randn(1)
+	return W,b
+
+def get_training_examples(batchsize,num_features):
+	W,b = get_weights(num_features)
+	x = np.random.randn(num_features,batchsize)
+	y_mask = (W*x + b) > 0
+	y = np.zeros_like(y_mask)
+	y[y_mask] = 1
+	y[~y_mask] = 0
+	return x.T,y
+
+
+
 
 
 ##build model
@@ -32,28 +56,4 @@ with tf.Session() as sess:
 	for i in xrange(1000):
 		x_batch,y_batch = get_training_examples(batchsize,num_features)
 		_,loss = sess.run([train_op,loss],feed_dict = {x : x_batch, y : y_batch})
-
-
-
-def variable_on_device(name,shape,initializer=None,device='/cpu:0'):
-	with tf.device(device):
-		var = tf.get_variable(name,shape,initializer=initializer)
-	return var
-
-
-
-
-def get_weights(num_features):
-	W = np.array([0.3,-1.2])#np.random.randn(1,num_features)
-	b = np.array([0.5])#np.random.randn(1)
-	return W,b
-
-def get_training_examples(batchsize,num_features):
-	W,b = get_weights(num_features)
-	x = np.random.randn(num_features,batchsize)
-	y_mask = (W*x + b) > 0
-	y = np.zeros_like(y_mask)
-	y[y_mask] = 1
-	y[~y_mask] = 0
-	return x.T,y
 
