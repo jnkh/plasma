@@ -53,5 +53,5 @@ with tf.Session() as sess:
 	sess.run(init)
 	for i in xrange(1000):
 		x_batch,y_batch = get_training_examples(batchsize,num_features)
-		_,loss = sess.run([train_op,loss],feed_dict = {x : x_batch, y : y_batch})
+		_,loss = sess.run([train_op,loss],feed_dict = {x : x_batch, labels : y_batch})
 
