@@ -1,6 +1,7 @@
 from __future__ import print_function
 import tensorflow as tf
 import numpy as np
+import sys
 
 
 
@@ -10,12 +11,15 @@ def variable_on_device(name,shape,initializer=None,device='/cpu:0'):
 	return var
 
 def get_weights(num_features):
-	W = np.array([0.3,-1.2])#np.random.randn(1,num_features)
-	b = np.array([0.5])#np.random.randn(1)
+	W = np.random.randn(num_features)
+	b = np.random.randn(1)
+	#W = np.array([0.3,-1.2])#np.random.randn(1,num_features)
+	#b = np.array([0.5])#np.random.randn(1)
 	return W,b
 
-def get_training_examples(batchsize,num_features):
-	W,b = get_weights(num_features)
+
+def get_training_examples(batchsize,num_features,W,b):
+	#W,b = get_weights(num_features)
 	x = np.random.randn(num_features,batchsize)
 	y_mask = (np.dot(W,x) + b) > 0
 	y = np.zeros_like(y_mask)
@@ -29,7 +33,8 @@ def get_training_examples(batchsize,num_features):
 
 ##build model
 
-num_features = 2
+num_features = 20
+W_true,b_true = get_weights(num_features)
 batchsize = 128
 # num_hidden = 2
 num_out = 2
@@ -45,7 +50,7 @@ with tf.device('/gpu:0'):
 	logits = tf.matmul(x,W) + b
 	probs = tf.nn.softmax(logits)
 	loss_op = tf.nn.sparse_softmax_cross_entropy_with_logits(logits,labels)
-	optimizer = tf.train.GradientDescentOptimizer(0.001)
+	optimizer = tf.train.GradientDescentOptimizer(0.0001)
 	train_op = optimizer.minimize(loss_op,global_step=global_step)
 
 	correct = tf.equal(tf.argmax(probs,1),labels)
@@ -55,8 +60,9 @@ init = tf.initialize_all_variables()
 
 with tf.Session() as sess:
 	sess.run(init)
-	for i in xrange(1000):
-		x_batch,y_batch = get_training_examples(batchsize,num_features)
+	for i in xrange(10000):
+		x_batch,y_batch = get_training_examples(batchsize,num_features,W_true,b_true)
 		_,loss,acc = sess.run([train_op,loss_op,accuracy],feed_dict = {x : x_batch, labels : y_batch})
-		print(np.mean(loss),acc)
+		sys.stdout.write('\r mean: {:.3f}, acc: {:.3f}'.format(np.mean(loss),acc))
+		sys.stdout.flush()
 
