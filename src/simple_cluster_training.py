@@ -48,12 +48,15 @@ with tf.device('/gpu:0'):
 	optimizer = tf.train.GradientDescentOptimizer(0.001)
 	train_op = optimizer.minimize(loss_op,global_step=global_step)
 
+	correct = tf.equal(tf.argmax(probs,1),labels)
+	accuracy = tf.reduce_mean(tf.cast(correct,tf.float32))
+
 init = tf.initialize_all_variables()
 
 with tf.Session() as sess:
 	sess.run(init)
 	for i in xrange(1000):
 		x_batch,y_batch = get_training_examples(batchsize,num_features)
-		_,loss = sess.run([train_op,loss_op],feed_dict = {x : x_batch, labels : y_batch})
-		print(loss)
+		_,loss,acc = sess.run([train_op,loss_op,accuracy],feed_dict = {x : x_batch, labels : y_batch})
+		print(np.mean(loss),acc)
 
