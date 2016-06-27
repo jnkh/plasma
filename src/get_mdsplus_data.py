@@ -16,12 +16,11 @@ import os
 import errno
 
 
-
-prepath = '/p/datad/jkatesha/data/'
+prepath = '/p/datad/kfelker/data/'
+#prepath = '/u/kfelker/plasma/data/'
 shot_numbers_path = 'shot_lists/'
-save_path = 'signal_data1'
+save_path = 'signal_test_data'
 machine = 'jet'
-
 
 if machine == 'nstx':
 	shot_numbers_files = ['disrupt_nstx.txt'] 
@@ -35,7 +34,7 @@ if machine == 'nstx':
 	'efit02/wpdot/']
 
 elif machine == 'jet':
-	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
+	shot_numbers_files = ['CWall_clear.txt']#,'CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
 	signal_paths = ['jpf/da/c2-ipla',
