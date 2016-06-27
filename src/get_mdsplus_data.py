@@ -33,7 +33,11 @@ if machine == 'nstx':
 	'efit02/wpdot/']
 
 elif machine == 'jet':
+<<<<<<< HEAD
 	shot_numbers_files = ['CFC_unint.txt']#'CWall_clear.txt']#,'CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
+=======
+	shot_numbers_files = ['CWall_clear.txt']#,'CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
+>>>>>>> initial commit to 1D data branch of RNN application. Modified directory structure to run in the /u/kfelker/ directory while downloading and referencing shot data on /p/datad
 	server_path = 'mdsplus.jet.efda.org'
 
 	signal_paths = ['jpf/da/c2-ipla',
