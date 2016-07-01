@@ -6,7 +6,7 @@ signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
                 'jpf/df/g1r-lid:003', #Density [m^-2]
                 'jpf/gs/bl-li<s', #Plasma Internal Inductance
-                'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W]
+                'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W] Might cause a lot of false positives!
                 'jpf/gs/bl-ptot<s', #total input power [W]
                 'jpf/gs/bl-wmhd<s'] #unkown
 
@@ -44,17 +44,17 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
-        'window_decay' : 10, #the characteristic decay length of the decaying moving average window. A decay length of 10 is too large, degrades performance. Length of 2 doesn't improve.
-        'window_size' : 70, #the width of the actual window. 
+        'window_decay' : 2, #the characteristic decay length of the decaying moving average window
+        'window_size' : 10, #the width of the actual window
         'target' : target,
-        'normalizer' : 'averagevar',           #TODO optimize
+        'normalizer' : 'var',           #TODO optimize
    },
 
    'model': {
         #length of LSTM memory
         'pred_length' : 200,
         'pred_batch_size' : 128,
-        'length' : 32,                     #TODO optimize
+        'length' : 128,                     #TODO optimize
         'skip' : 1,
         #hidden layer size
         'rnn_size' : 100,                   #TODO optimize
@@ -66,11 +66,11 @@ conf = {
         'clipnorm' : 10.0,
         'regularization' : 0.0,#5e-6,#0.00001,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
-        'lr' : 1e-5,#None,#001, #lower better, at most 0.0001. 0.00001 is too low
-        'lr_decay' : 0.8,
+        'lr' : 5e-5,#1e-4 is too high, 5e-7 is too low. 5e-5 seems best at 256 batch size, full dataset and ~10 epochs, and lr decay of 0.90
+        'lr_decay' : 0.9,
         'stateful' : True,
         'return_sequences' : True,
-        'dropout_prob' : 0.5,
+        'dropout_prob' : 0.3,
     },
 
     'training': {
@@ -78,10 +78,10 @@ conf = {
         'shuffle_training' : True,
         'train_frac' : 0.5,
         'validation_frac' : 0.05,
-        'batch_size' : 2048, #100
+        'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200, #How many shots are we loading at once?
-        'num_epochs' : 20,
+        'num_epochs' : 10,
         'use_mock_data' : False,
         'data_parallel' : False,
    },
