@@ -44,8 +44,8 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
-        'window_decay' : 10, #the characteristic decay length of the decaying moving average window
-        'window_size' : 70, #the width of the actual window
+        'window_decay' : 10, #the characteristic decay length of the decaying moving average window. A decay length of 10 is too large, degrades performance. Length of 2 doesn't improve.
+        'window_size' : 70, #the width of the actual window. 
         'target' : target,
         'normalizer' : 'averagevar',           #TODO optimize
    },
