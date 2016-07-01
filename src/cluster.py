@@ -1,5 +1,5 @@
 import tensorflow as tf
-import math,os,sys
+import math,os,sys,time
 from tensorflow.examples.tutorials.mnist import input_data
 
 # Flags for defining the tf.train.ClusterSpec
@@ -99,7 +99,8 @@ def main(_):
     with sv.prepare_or_wait_for_session(server.target,config=config) as sess:
       # Loop until the supervisor shuts down or 1000000 steps have completed.
       step = 0
-      while not sv.should_stop() and step < 1000000:
+      start = time.time()
+      while not sv.should_stop() and step < 10000:
         # Run a training step asynchronously.
         # See `tf.train.SyncReplicasOptimizer` for additional details on how to
         # perform *synchronous* training.
@@ -108,11 +109,12 @@ def main(_):
         train_feed = {x: batch_xs, y_: batch_ys}
 
         _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step,loss,accuracy], feed_dict=train_feed)
-	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(FLAGS.task_index,step,curr_loss,curr_accuracy))
-	sys.stdout.flush()
+      	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(FLAGS.task_index,step,curr_loss,curr_accuracy))
+      	sys.stdout.flush()
 
     # Ask for all the services to stop.
     sv.stop()
+    print('Elapsed: {}'.format(time.time() - start))
 
 if __name__ == "__main__":
   tf.app.run()
