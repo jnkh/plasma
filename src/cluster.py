@@ -26,6 +26,8 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 def main(_):
   cluster,server,jobname = get_mpi_cluster_server_jobname()
+  sys.stdout.write('***')
+  sys.stdout.flush()
   if FLAGS.job_name == "ps":
     os.environ['CUDA_VISIBLE_DEVICES'] = ''
   #ps_hosts = FLAGS.ps_hosts.split(",")
