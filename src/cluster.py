@@ -16,8 +16,6 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 # FLAGS = tf.app.flags.FLAGS
 NUM_GPUS = 4
-#if FLAGS.job_name == "worker":
-#  os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
 IMAGE_PIXELS = 28
 hidden_units = 20
 batch_size = 2048
@@ -31,6 +29,8 @@ def main(_):
   sys.stdout.flush()
   if job_name == "ps":
     os.environ['CUDA_VISIBLE_DEVICES'] = ''
+  if FLAGS.job_name == "worker":
+    os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
   #ps_hosts = FLAGS.ps_hosts.split(",")
   #worker_hosts = FLAGS.worker_hosts.split(",")
 
