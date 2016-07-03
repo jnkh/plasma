@@ -1,8 +1,5 @@
 from __future__ import print_function
 from mpi4py import MPI
-comm = MPI.COMM_WORLD
-task_index = comm.Get_rank()
-task_num = comm.Get_size()
 
 from hostlist import expand_hostlist
 import tensorflow as tf
@@ -46,6 +43,9 @@ def get_ps_host(base_port,num_ps,num_workers,task_id):
   return get_ps_host_list(base_port,num_ps)[task_id - num_workers]
 
 def get_mpi_cluster_server_jobname():      
+  comm = MPI.COMM_WORLD
+  task_index = comm.Get_rank()
+  task_num = comm.Get_size()
   NUM_GPUS = 4
   num_ps = 1
   num_ps_per_host = 1
