@@ -26,7 +26,7 @@ data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 def main(_):
-  cluster,server,jobname = get_mpi_cluster_server_jobname()
+  cluster,server,job_name = get_mpi_cluster_server_jobname()
   sys.stdout.write('***')
   sys.stdout.flush()
   if job_name == "ps":
