@@ -42,9 +42,9 @@ def main(_):
   elif FLAGS.job_name == "worker":
 
     # Assigns ops to the local worker by default.
-    with tf.device(tf.train.replica_device_setter(worker_device="/job:worker/task:%d" % FLAGS.task_index,
-		cluster=cluster)):
-     with tf.device('/gpu:{}'.format(MY_GPU)):
+    with tf.device(tf.train.replica_device_setter(\
+      worker_device='/job:worker/task:{}/gpu:{}'.format(FLAGS.task_index,MY_GPU),
+		  cluster=cluster)):
 
 
 
