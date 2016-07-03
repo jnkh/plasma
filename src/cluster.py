@@ -15,8 +15,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 # tf.app.flags.DEFINE_string("data_dir", '/tigress/jk7/tmp/data', "Data dir")
 
 # FLAGS = tf.app.flags.FLAGS
-# NUM_GPUS = 4
-# MY_GPU = FLAGS.task_index % NUM_GPUS
+NUM_GPUS = 4
 #if FLAGS.job_name == "worker":
 #  os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
 IMAGE_PIXELS = 28
@@ -27,6 +26,7 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 def main(_):
   cluster,server,job_name,task_index = get_mpi_cluster_server_jobname()
+  MY_GPU = task_index % NUM_GPUS
   sys.stdout.write('***')
   sys.stdout.flush()
   if job_name == "ps":
