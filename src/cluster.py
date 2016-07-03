@@ -3,32 +3,33 @@ import math,os,sys,time
 from tensorflow.examples.tutorials.mnist import input_data
 
 # Flags for defining the tf.train.ClusterSpec
-tf.app.flags.DEFINE_string("ps_hosts", "",
-                           "Comma-separated list of hostname:port pairs")
-tf.app.flags.DEFINE_string("worker_hosts", "",
-                           "Comma-separated list of hostname:port pairs")
+# tf.app.flags.DEFINE_string("ps_hosts", "",
+#                            "Comma-separated list of hostname:port pairs")
+# tf.app.flags.DEFINE_string("worker_hosts", "",
+#                            "Comma-separated list of hostname:port pairs")
+# # Flags for defining the tf.train.Server
+# tf.app.flags.DEFINE_string("job_name", "", "One of 'ps', 'worker'")
+# tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
+# tf.app.flags.DEFINE_integer("hidden_units", 20, "Number of hidden units")
+# tf.app.flags.DEFINE_integer("batch_size", 2048, "Batch size")
+# tf.app.flags.DEFINE_string("data_dir", '/tigress/jk7/tmp/data', "Data dir")
 
-# Flags for defining the tf.train.Server
-tf.app.flags.DEFINE_string("job_name", "", "One of 'ps', 'worker'")
-tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
-tf.app.flags.DEFINE_integer("hidden_units", 20, "Number of hidden units")
-tf.app.flags.DEFINE_integer("batch_size", 2048, "Batch size")
-tf.app.flags.DEFINE_string("data_dir", '/tigress/jk7/tmp/data', "Data dir")
-
-FLAGS = tf.app.flags.FLAGS
-IMAGE_PIXELS = 28
-NUM_GPUS = 4
-MY_GPU = FLAGS.task_index % NUM_GPUS
+# FLAGS = tf.app.flags.FLAGS
+# NUM_GPUS = 4
+# MY_GPU = FLAGS.task_index % NUM_GPUS
 #if FLAGS.job_name == "worker":
 #  os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
+IMAGE_PIXELS = 28
+hidden_units = 20
+batch_size = 2048
+data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
-
 
 def main(_):
   cluster,server,jobname = get_mpi_cluster_server_jobname()
   sys.stdout.write('***')
   sys.stdout.flush()
-  if FLAGS.job_name == "ps":
+  if job_name == "ps":
     os.environ['CUDA_VISIBLE_DEVICES'] = ''
   #ps_hosts = FLAGS.ps_hosts.split(",")
   #worker_hosts = FLAGS.worker_hosts.split(",")
@@ -41,27 +42,27 @@ def main(_):
     #                       job_name=FLAGS.job_name,
     #                       task_index=FLAGS.task_index)
 
-  if FLAGS.job_name == "ps":
+  if job_name == "ps":
     server.join()
-  elif FLAGS.job_name == "worker":
+  elif job_name == "worker":
 
     # Assigns ops to the local worker by default.
     with tf.device(tf.train.replica_device_setter(\
-      worker_device='/job:worker/task:{}/gpu:{}'.format(FLAGS.task_index,MY_GPU),
+      worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
 		  cluster=cluster)):
 
 
 
       # Variables of the hidden layer
       hid_w = tf.Variable(
-          tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, FLAGS.hidden_units],
+          tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, hidden_units],
                               stddev=1.0 / IMAGE_PIXELS), name="hid_w")
-      hid_b = tf.Variable(tf.zeros([FLAGS.hidden_units]), name="hid_b")
+      hid_b = tf.Variable(tf.zeros([hidden_units]), name="hid_b")
 
       # Variables of the softmax layer
       sm_w = tf.Variable(
-          tf.truncated_normal([FLAGS.hidden_units, 10],
-                              stddev=1.0 / math.sqrt(FLAGS.hidden_units)),
+          tf.truncated_normal([hidden_units, 10],
+                              stddev=1.0 / math.sqrt(hidden_units)),
           name="sm_w")
       sm_b = tf.Variable(tf.zeros([10]), name="sm_b")
 
@@ -86,7 +87,7 @@ def main(_):
       init_op = tf.initialize_all_variables()
 
     # Create a "supervisor", which oversees the training process.
-    sv = tf.train.Supervisor(is_chief=(FLAGS.task_index == 0),
+    sv = tf.train.Supervisor(is_chief=(task_index == 0),
                              logdir="/tmp/train_logs",
                              init_op=init_op,
                              summary_op=summary_op,
@@ -94,7 +95,7 @@ def main(_):
                              global_step=global_step,
                              save_model_secs=600)
 
-    mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=True)
+    mnist = input_data.read_data_sets(data_dir, one_hot=True)
     
 
     # The supervisor takes care of session initialization, restoring from
@@ -109,11 +110,11 @@ def main(_):
         # See `tf.train.SyncReplicasOptimizer` for additional details on how to
         # perform *synchronous* training.
 
-        batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
+        batch_xs, batch_ys = mnist.train.next_batch(batch_size)
         train_feed = {x: batch_xs, y_: batch_ys}
 
         _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step,loss,accuracy], feed_dict=train_feed)
-      	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(FLAGS.task_index,step,curr_loss,curr_accuracy))
+      	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(task_index,step,curr_loss,curr_accuracy))
       	sys.stdout.flush()
 
     # Ask for all the services to stop.
