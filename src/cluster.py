@@ -19,23 +19,25 @@ FLAGS = tf.app.flags.FLAGS
 IMAGE_PIXELS = 28
 NUM_GPUS = 4
 MY_GPU = FLAGS.task_index % NUM_GPUS
-if FLAGS.job_name == "ps":
-  os.environ['CUDA_VISIBLE_DEVICES'] = ''
 #if FLAGS.job_name == "worker":
 #  os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
+from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
 def main(_):
-  ps_hosts = FLAGS.ps_hosts.split(",")
-  worker_hosts = FLAGS.worker_hosts.split(",")
+  cluster,server,jobname = get_mpi_cluster_server_jobname()
+  if FLAGS.job_name == "ps":
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''
+  #ps_hosts = FLAGS.ps_hosts.split(",")
+  #worker_hosts = FLAGS.worker_hosts.split(",")
 
   # Create a cluster from the parameter server and worker hosts.
-  cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
+  #cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
 
   # Create and start a server for the local task.
-  server = tf.train.Server(cluster,
-                           job_name=FLAGS.job_name,
-                           task_index=FLAGS.task_index)
+  #server = tf.train.Server(cluster,
+    #                       job_name=FLAGS.job_name,
+    #                       task_index=FLAGS.task_index)
 
   if FLAGS.job_name == "ps":
     server.join()
