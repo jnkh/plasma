@@ -27,10 +27,10 @@ def main(_):
   MY_GPU = task_index % NUM_GPUS
   sys.stdout.write('***')
   sys.stdout.flush()
-  if job_name == "ps":
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''
-  if job_name == "worker":
-    os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
+  # if job_name == "ps":
+  #   os.environ['CUDA_VISIBLE_DEVICES'] = ''
+  # if job_name == "worker":
+  #   os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
   #ps_hosts = FLAGS.ps_hosts.split(",")
   #worker_hosts = FLAGS.worker_hosts.split(",")
 

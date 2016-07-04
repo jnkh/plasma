@@ -70,6 +70,12 @@ def get_mpi_cluster_server_jobname():
       job_name = 'ps'
       task_index = task_index - NUM_GPUS 
       num_per_host = num_ps_per_host
+      os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
+
+  #     if job_name == "ps":
+  # if job_name == "worker":
+  #   os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
   
   if task_index == 0:
       print('{} superfluous processes'.format(task_num - num_total))
