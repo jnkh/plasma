@@ -3,6 +3,7 @@ import math,os,sys,time
 os.environ['KERAS_BACKEND'] = 'tensorflow'
 
 from keras import backend as K
+from keras.layers import Dense, Dropout
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -112,7 +113,7 @@ def main(_):
       while not sv.should_stop() and step < 10000:
 
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
-        train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
+        train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys,K.learning_phase(): 1}
 
         _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step, loss, accuracy], feed_dict=train_feed)
       	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(task_index,step,curr_loss,curr_accuracy))
