@@ -19,6 +19,7 @@ NUM_GPUS = 4
 IMAGE_PIXELS = 28
 hidden_units = 20
 batch_size = 2048
+sync_mode = True
 data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
@@ -44,6 +45,7 @@ def main(_):
     server.join()
   elif job_name == "worker":
 
+    is_chief = (task_index == 0)
     # Assigns ops to the local worker by default.
     with tf.device(tf.train.replica_device_setter(\
       worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
@@ -78,8 +80,13 @@ def main(_):
       global_step = tf.Variable(0,trainable=False)
 
       optimizer = tf.train.AdagradOptimizer(0.01)
-      optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
-        replica_id=task_index,total_num_replicas=num_workers)
+      if sync_mode:
+        optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
+          replica_id=task_index,total_num_replicas=num_workers)
+        if is_chief:
+          # Initial token and chief queue runners required by the sync_replicas mode
+          chief_queue_runner = optimizer.get_chief_queue_runner()
+          init_tokens_op = optimizer.get_init_tokens_op()
 
 
 
@@ -91,7 +98,7 @@ def main(_):
       init_op = tf.initialize_all_variables()
 
     # Create a "supervisor", which oversees the training process.
-    sv = tf.train.Supervisor(is_chief=(task_index == 0),
+    sv = tf.train.Supervisor(is_chief=is_chief,
                              logdir="/tmp/train_logs",
                              init_op=init_op,
                              summary_op=summary_op,
@@ -106,6 +113,9 @@ def main(_):
     # a checkpoint, and closing when done or an error occurs.
     config = tf.ConfigProto(allow_soft_placement=True)
     with sv.prepare_or_wait_for_session(server.target,config=config) as sess:
+      if sync_mode and is_chief:
+        sv.start_queue_runners(sess,[chief_queue_runner])
+        sess.run(init_tokens_op)
       # Loop until the supervisor shuts down or 1000000 steps have completed.
       step = 0
       start = time.time()
