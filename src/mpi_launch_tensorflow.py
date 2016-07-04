@@ -88,7 +88,7 @@ def get_mpi_cluster_server_jobname():
       print('ps_hosts: {}\n, worker hosts: {}\n'.format(ps_hosts,worker_hosts))
   # Create a cluster from the parameter server and worker hosts.
   global_task_index = get_my_host_id()*num_per_host+task_index
-  if global_task_index >= num_ps: 
+  if job_name == 'ps' and global_task_index >= num_ps: 
       exit(0)
   cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
   
