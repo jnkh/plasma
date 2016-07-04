@@ -56,8 +56,6 @@ def get_mpi_cluster_server_jobname():
   
   num_total = num_workers + num_ps 
   assert(task_num >= num_total)
-  if task_index >= num_total: 
-      exit(0)
   print('{}, task_id: {}, host_id: {}'.format(socket.gethostname(),task_index,get_my_host_id()))
   
   tasks_per_node = task_num / num_hosts
@@ -90,6 +88,8 @@ def get_mpi_cluster_server_jobname():
       print('ps_hosts: {}\n, worker hosts: {}\n'.format(ps_hosts,worker_hosts))
   # Create a cluster from the parameter server and worker hosts.
   global_task_index = get_my_host_id()*num_per_host+task_index
+  if global_task_index >= num_ps: 
+      exit(0)
   cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
   
   # Create and start a server for the local task.
