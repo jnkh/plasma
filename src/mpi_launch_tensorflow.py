@@ -55,7 +55,7 @@ def get_mpi_cluster_server_jobname():
   num_workers = num_workers_per_host*num_hosts 
   
   num_total = num_workers + num_ps 
-  assert(task_num > num_total)
+  assert(task_num >= num_total)
   if task_index >= num_total: 
       exit(0)
   print('{}, task_id: {}, host_id: {}'.format(socket.gethostname(),task_index,get_my_host_id()))
