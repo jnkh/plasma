@@ -1,5 +1,9 @@
-import tensorflow as tf
+from __future__ import print_function
 import math,os,sys,time
+os.environ['KERAS_BACKEND'] = 'tensorflow'
+
+from keras import backend as K
+import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 # Flags for defining the tf.train.ClusterSpec
@@ -26,40 +30,39 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
 def get_loss_accuracy_ops():
-  # Variables of the hidden layer
-  hid_w = tf.Variable(
-      tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, hidden_units],
-                          stddev=1.0 / IMAGE_PIXELS), name="hid_w")
-  hid_b = tf.Variable(tf.zeros([hidden_units]), name="hid_b")
 
-  # Variables of the softmax layer
-  sm_w = tf.Variable(
-      tf.truncated_normal([hidden_units, 10],
-                          stddev=1.0 / math.sqrt(hidden_units)),
-      name="sm_w")
-  sm_b = tf.Variable(tf.zeros([10]), name="sm_b")
 
-  x = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
-  y_ = tf.placeholder(tf.float32, [None, 10])
+  input_tensor = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
+  true_output_tensor = tf.placeholder(tf.float32, [None, 10])
 
-  hid_lin = tf.nn.xw_plus_b(x, hid_w, hid_b)
-  hid = tf.nn.relu(hid_lin)
 
-  y = tf.nn.softmax(tf.nn.xw_plus_b(hid, sm_w, sm_b))
-  loss = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0)))
-  correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+  # # Variables of the hidden layer
+  # hid_w = tf.Variable(tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, hidden_units],stddev=1.0 / IMAGE_PIXELS), name="hid_w")
+  # hid_b = tf.Variable(tf.zeros([hidden_units]), name="hid_b")
+
+  # # Variables of the softmax layer
+  # sm_w = tf.Variable(tf.truncated_normal([hidden_units, 10],stddev=1.0 / math.sqrt(hidden_units)),name="sm_w")
+  # sm_b = tf.Variable(tf.zeros([10]), name="sm_b")
+
+  # hid_lin = tf.nn.xw_plus_b(input_tensor, hid_w, hid_b)
+  # hid = tf.nn.relu(hid_lin)
+  # output_tensor = tf.nn.softmax(tf.nn.xw_plus_b(hid, sm_w, sm_b))
+
+  x = Dense(hidden_units,activation='relu')(input_tensor)
+  x = Dropout(0.1)(x)
+  output_tensor = Dense(10,activation='softmax')(x) 
+
+
+  loss = -tf.reduce_sum(true_output_tensor * tf.log(tf.clip_by_value(output_tensor, 1e-10, 1.0)))
+  correct_prediction = tf.equal(tf.argmax(output_tensor, 1), tf.argmax(true_output_tensor, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-  return loss,accuracy,x,y_
+  return loss,accuracy,input_tensor,true_output_tensor
 
 
 
 def main(_):
   cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 2, num_workers = None)
   MY_GPU = task_index % NUM_GPUS
-  # if job_name == "ps":
-  #   os.environ['CUDA_VISIBLE_DEVICES'] = ''
-  # if job_name == "worker":
-  #   os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
 
   if job_name == "ps":
     server.join()
@@ -71,7 +74,7 @@ def main(_):
       worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
 		  cluster=cluster)):
 
-      loss,accuracy,x,y_ = get_loss_accuracy_ops()
+      loss,accuracy,input_tensor,true_output_tensor = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
       optimizer = tf.train.AdagradOptimizer(0.01)
@@ -108,9 +111,9 @@ def main(_):
       start = time.time()
       while not sv.should_stop() and step < 1000:
         batch_xs, batch_ys = mnist.train.next_batch(batch_size)
-        train_feed = {x: batch_xs, y_: batch_ys}
+        train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
 
-        _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step,loss,accuracy], feed_dict=train_feed)
+        _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step, loss, accuracy], feed_dict=train_feed)
       	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(task_index,step,curr_loss,curr_accuracy))
       	sys.stdout.flush()
 
