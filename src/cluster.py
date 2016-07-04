@@ -121,7 +121,7 @@ def main(_):
       # Loop until the supervisor shuts down or 1000000 steps have completed.
       step = 0
       start = time.time()
-      while not sv.should_stop() and step < 10000:
+      while not sv.should_stop() and step < 1000:
         # Run a training step asynchronously.
         # See `tf.train.SyncReplicasOptimizer` for additional details on how to
         # perform *synchronous* training.
