@@ -23,7 +23,7 @@ data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 def main(_):
-  cluster,server,job_name,task_index = get_mpi_cluster_server_jobname(num_ps = 1, num_workers = None)
+  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 1, num_workers = None)
   MY_GPU = task_index % NUM_GPUS
   # if job_name == "ps":
   #   os.environ['CUDA_VISIBLE_DEVICES'] = ''
@@ -77,7 +77,13 @@ def main(_):
 
       global_step = tf.Variable(0,trainable=False)
 
-      train_op = tf.train.AdagradOptimizer(0.01).minimize(
+      optimizer = tf.train.AdagradOptimizer(0.01)
+      optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
+        replica_id=task_index,total_num_replicas=num_workers)
+
+
+
+      train_op = optimizer.minimize(
           loss, global_step=global_step)
 
       saver = tf.train.Saver()
