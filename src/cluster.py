@@ -70,7 +70,7 @@ def get_loss_accuracy_ops():
 
 
 def main(_):
-  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 2, num_workers = 5)
+  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 4, num_workers = 5)
   MY_GPU = task_index % NUM_GPUS
 
   if job_name == "ps":
