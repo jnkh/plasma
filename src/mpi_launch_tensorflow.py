@@ -60,7 +60,6 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   num_total = num_workers + num_ps 
   assert(task_num >= num_total)
   
-  print('{}, task_id: {}, host_id: {}'.format(socket.gethostname(),task_index,get_my_host_id()))
   
   tasks_per_node = task_num / num_hosts
   task_index = task_index % tasks_per_node 
@@ -68,11 +67,13 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   if task_index < NUM_GPUS:
       job_name = 'worker'
       num_per_host = num_workers_per_host
+      global_task_index = get_my_host_id()*num_per_host+task_index
   else:
       job_name = 'ps'
       task_index = task_index - NUM_GPUS 
       num_per_host = num_ps_per_host
       os.environ['CUDA_VISIBLE_DEVICES'] = ''
+      global_task_index = num_hosts*task_index+get_my_host_id()
 
   #     if job_name == "ps":
   # if job_name == "worker":
@@ -81,29 +82,24 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   if task_index == 0:
       print('{} superfluous processes'.format(task_num - num_total))
       print('{} superfluous workers'.format(num_workers_per_host*num_hosts - num_workers))
-      print('{} superfluous ps'.format(num_workers_per_host*num_hosts - num_workers))
+      print('{} superfluous ps'.format(num_ps_per_host*num_hosts - num_ps))
   
   
-  print('task id: {}'.format(task_index))
-  print('hostname: {}'.format(socket.gethostname()))
+  print('{}, task_id: {}, host_id: {}'.format(socket.gethostname(),task_index,get_my_host_id()))
   
   worker_hosts = get_worker_host_list(2222,num_workers_per_host)[:num_workers]
   ps_hosts = get_ps_host_list(2322,num_ps)
-  if task_index == 0:
+  if global_task_index == 0:
       print('ps_hosts: {}\n, worker hosts: {}\n'.format(ps_hosts,worker_hosts))
   # Create a cluster from the parameter server and worker hosts.
-  global_task_index = get_my_host_id()*num_per_host+task_index
   if job_name == 'ps' and global_task_index >= num_ps: 
       exit(0)
   if job_name == 'worker' and global_task_index >= num_workers:
       exit(0)
 
   cluster = tf.train.ClusterSpec({"ps": ps_hosts, "worker": worker_hosts})
-  
   # Create and start a server for the local task.
-  server = tf.train.Server(cluster,
-                             job_name=job_name,
-                             task_index=global_task_index)
+  server = tf.train.Server(cluster,job_name=job_name,task_index=global_task_index)
   
   return cluster,server,job_name,global_task_index
 
