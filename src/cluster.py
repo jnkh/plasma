@@ -4,8 +4,8 @@ os.environ['KERAS_BACKEND'] = 'tensorflow'
 
 from mpi4py import MPI
 mpi_comm = MPI.COMM_WORLD
-mpi_task_index = comm.Get_rank()
-mpi_task_num = comm.Get_size()
+mpi_task_index = mpi_comm.Get_rank()
+mpi_task_num = mpi_comm.Get_size()
 for i in range(mpi_task_num):
   mpi_comm.Barrier()
   if i == mpi_task_index:
