@@ -2,6 +2,7 @@ from __future__ import print_function
 import math,os,sys,time
 os.environ['KERAS_BACKEND'] = 'tensorflow'
 
+#import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 from mpi4py import MPI
 mpi_comm = MPI.COMM_WORLD
 mpi_task_index = mpi_comm.Get_rank()
