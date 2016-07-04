@@ -23,7 +23,7 @@ data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 def main(_):
-  cluster,server,job_name,task_index = get_mpi_cluster_server_jobname()
+  cluster,server,job_name,task_index = get_mpi_cluster_server_jobname(num_ps = 1, num_workers = None)
   MY_GPU = task_index % NUM_GPUS
   sys.stdout.write('***')
   sys.stdout.flush()
