@@ -101,5 +101,5 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   # Create and start a server for the local task.
   server = tf.train.Server(cluster,job_name=job_name,task_index=global_task_index)
   
-  return cluster,server,job_name,global_task_index
+  return cluster,server,job_name,global_task_index,num_workers
 
