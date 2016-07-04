@@ -83,15 +83,17 @@ def main(_):
       if sync_mode:
         optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
           replica_id=task_index,total_num_replicas=num_workers)
-        if is_chief:
-          # Initial token and chief queue runners required by the sync_replicas mode
-          chief_queue_runner = optimizer.get_chief_queue_runner()
-          init_tokens_op = optimizer.get_init_tokens_op()
-
-
 
       train_op = optimizer.minimize(
           loss, global_step=global_step)
+
+      if sync_mode and is_chief:
+        # Initial token and chief queue runners required by the sync_replicas mode
+        chief_queue_runner = optimizer.get_chief_queue_runner()
+        init_tokens_op = optimizer.get_init_tokens_op()
+
+
+
 
       saver = tf.train.Saver()
       summary_op = tf.merge_all_summaries()
