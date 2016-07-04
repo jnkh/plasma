@@ -2,8 +2,16 @@ from __future__ import print_function
 import math,os,sys,time
 os.environ['KERAS_BACKEND'] = 'tensorflow'
 
-from keras import backend as K
-from keras.layers import Dense, Dropout
+from mpi4py import MPI
+mpi_comm = MPI.COMM_WORLD
+mpi_task_index = comm.Get_rank()
+mpi_task_num = comm.Get_size()
+for i in range(mpi_task_num):
+  mpi_comm.Barrier()
+  if i == mpi_task_index:
+    from keras import backend as K
+    from keras.layers import Dense, Dropout
+
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
