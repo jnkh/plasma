@@ -49,7 +49,7 @@ def get_loss_accuracy_ops():
   loss = -tf.reduce_sum(y_ * tf.log(tf.clip_by_value(y, 1e-10, 1.0)))
   correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
   accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-  return loss,accuracy
+  return loss,accuracy,x,y_
 
 
 
@@ -71,7 +71,7 @@ def main(_):
       worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
 		  cluster=cluster)):
 
-      loss,accuracy = get_loss_accuracy_ops()
+      loss,accuracy,x,y_ = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
       optimizer = tf.train.AdagradOptimizer(0.01)
