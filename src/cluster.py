@@ -25,8 +25,6 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 def main(_):
   cluster,server,job_name,task_index = get_mpi_cluster_server_jobname(num_ps = 2, num_workers = 15)
   MY_GPU = task_index % NUM_GPUS
-  sys.stdout.write('***')
-  sys.stdout.flush()
   # if job_name == "ps":
   #   os.environ['CUDA_VISIBLE_DEVICES'] = ''
   # if job_name == "worker":
