@@ -15,11 +15,10 @@ import Queue
 import os
 import errno
 
-
 prepath = '/p/datad/kfelker/data/'
 #prepath = '/u/kfelker/plasma/data/'
 shot_numbers_path = 'shot_lists/'
-save_path = 'signal_test_data'
+save_path = 'signal_data'
 machine = 'jet'
 
 if machine == 'nstx':
@@ -34,16 +33,25 @@ if machine == 'nstx':
 	'efit02/wpdot/']
 
 elif machine == 'jet':
-	shot_numbers_files = ['CWall_clear.txt']#,'CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
+	shot_numbers_files = ['CFC_unint.txt']#'CWall_clear.txt']#,'CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
 	signal_paths = ['jpf/da/c2-ipla',
 	'jpf/da/c2-loca',
 	'jpf/db/b5r-ptot>out',
-	'jpf/df/g1r-lid:003',
+	'jpf/df/g1r-lid:003', #this is a central channel of the Density [m^-2]  . How do I download all channels?
+#for now, simply specify all channels 001:008
+        'jpf/df/g1r-lid:004',						
+        'jpf/df/g1r-lid:005',			
+	'jpf/df/g1r-lid:006',		
+        'jpf/df/g1r-lid:007',
+	'jpf/df/g1r-lid:008',
+	'jpf/df/g1r-lid:001',			
+        'jpf/df/g1r-lid:002',
 	'jpf/gs/bl-li<s',
 	'jpf/gs/bl-fdwdt<s',
 	'jpf/gs/bl-ptot<s',
+	#add 1D signals here
 	'jpf/gs/bl-wmhd<s']
 else:
 	print('unkown machine. exiting')
