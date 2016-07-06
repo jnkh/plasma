@@ -1,5 +1,31 @@
+'''
+#########################################################
+This file trains a deep learning model to predict
+disruptions on time series data from plasma discharges.
+
+Dependencies:
+conf.py: configuration of model,training,paths, and data
+model_builder.py: logic to construct the ML architecture
+data_processing.py: classes to handle data processing
+
+Author: Julian Kates-Harbeck, jkatesharbeck@g.harvard.edu
+
+This work was supported by the DOE CSGF program.
+#########################################################
+'''
+
+#system
 from __future__ import print_function
-import math,os,sys,time
+import math,os,sys,time,datetime,os.path
+import dill
+from functools import partial
+
+#matplotlib
+import matplotlib
+matplotlib.use('Agg')
+import numpy as np
+
+
 os.environ['KERAS_BACKEND'] = 'tensorflow'
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
@@ -12,9 +38,8 @@ for i in range(mpi_task_num):
   if i == mpi_task_index:
     from keras import backend as K
     from keras.layers import Dense, Dropout
-
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+import tflearn as tfl
 
 
 NUM_GPUS = 4
@@ -27,24 +52,49 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
 
-def get_loss_accuracy_ops():
-  input_tensor = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
-  true_output_tensor = tf.placeholder(tf.float32, [None, 10])
+def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
 
-  '''How to deal with RNN preserved state between runs?
-  Probably need to explicitly feed the last state into the model as the current input state. 
-  Or maybe set an explicity variable overwriting the Keras state, and capture it as an explicity output.'''
+    num_layers = 2
+    num_hidden = 10
+    dropout = 0.1
 
-  x = Dense(hidden_units,activation='relu')(input_tensor)
-  x = Dropout(0.1)(x)
-  output_tensor = Dense(10,activation='softmax')(x) 
+    initial_states_defaults = [tf.Variable(tf.float32,(batch_size,num_hidden)) for _ in range(num_layers)] 
+    initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,num_hidden)) for i in range(num_layers)] 
+    final_states = [None for i in range(num_layers)]
+
+    batch_input_shape = (batch_size,timesteps,featurelen)
+
+    input_tensor = tf.placeholder(tf.float32, batch_input_shape)
+    true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,1) )
+
+    x = input_tensor
+    for layer_index in range(num_layers):
+      x,final_states[layer_index] = tfl.layers.recurrent.lstm(x,num_hidden,dropout = dropout,
+      return_seq=return_sequences,return_state=True,initial_state=initial_states[layer_index])
+    #x.shape is now (batchsize,timesteps,num_hidden)
+    x = tf.reshape(x,[batch_size*timesteps,num_hidden])
+    #x.shape is now (batchsize*timesteps,num_hidden)
+    x = tfl.fully_connected(x,activation = 'tanh')
+    #x.shape is now (batchsize,timesteps,num_hidden)
+    output_tensor = tf.reshape(x,[batch_size,timesteps,num_hidden])
+    loss = tf.reduce_mean(tfl.losses.L2(output_tensor - true_output_tensor))
+
+    return loss,initial_states,final_states,input_tensor,true_output_tensor
+    # x = Dense(hidden_units,activation='relu')(input_tensor)
+    # x = Dropout(0.1)(x)
+    # output_tensor = Dense(10,activation='softmax')(x) 
 
 
-  loss = -tf.reduce_sum(true_output_tensor * tf.log(tf.clip_by_value(output_tensor, 1e-10, 1.0)))
-  correct_prediction = tf.equal(tf.argmax(output_tensor, 1), tf.argmax(true_output_tensor, 1))
-  accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-  return loss,accuracy,input_tensor,true_output_tensor
+    # loss = -tf.reduce_sum(true_output_tensor * tf.log(tf.clip_by_value(output_tensor, 1e-10, 1.0)))
+    # correct_prediction = tf.equal(tf.argmax(output_tensor, 1), tf.argmax(true_output_tensor, 1))
+    # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+    # return loss,accuracy,input_tensor,true_output_tensor
 
+def next_batch(batch_size=32,timesteps = 64,featurelen = 1):
+  lag = 20
+  x = np.randn(32,64+lag,1) 
+  x = np.cumsum(x,axis=1)
+  return x[:,lag:,:],x[:,:-lag,:]
 
 
 def main(_):
@@ -61,7 +111,7 @@ def main(_):
       worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
 		  cluster=cluster)):
 
-      loss,accuracy,input_tensor,true_output_tensor = get_loss_accuracy_ops()
+      loss,initial_states,final_states,input_tensor,true_output_tensor = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
       optimizer = tf.train.AdagradOptimizer(0.01)
@@ -84,7 +134,6 @@ def main(_):
     sv = tf.train.Supervisor(is_chief=is_chief,logdir="/tmp/train_logs",init_op=init_op,summary_op=summary_op,
                              saver=saver,global_step=global_step,save_model_secs=600)
 
-    mnist = input_data.read_data_sets(data_dir, one_hot=True)
 
     # The supervisor takes care of session initialization, restoring from
     # a checkpoint, and closing when done or an error occurs.
@@ -97,11 +146,14 @@ def main(_):
       step = 0
       start = time.time()
       while not sv.should_stop() and step < 1000:
-        batch_xs, batch_ys = mnist.train.next_batch(batch_size)
-        train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys,K.learning_phase(): 1}
+        batch_xs, batch_ys = next_batch(batch_size)
+        if step == 0:
+          train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
+        else:
+          train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys,initial_states: curr_final_states}
 
-        _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step, loss, accuracy], feed_dict=train_feed)
-      	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(task_index,step,curr_loss,curr_accuracy))
+        _, step, curr_loss, curr_final_states = sess.run([train_op, global_step, loss, final_states], feed_dict=train_feed)
+      	sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,curr_loss))
       	sys.stdout.flush()
 
     # Ask for all the services to stop.
