@@ -86,7 +86,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     #x.shape is now (batchsize*timesteps,num_hidden)
     x = tfl.fully_connected(x,num_output,activation = 'tanh')
     #x.shape is now (batchsize,timesteps,num_hidden)
-    output_tensor = tf.reshape(x,[batch_size,timesteps,num_hidden])
+    output_tensor = tf.reshape(x,[batch_size,timesteps,num_output])
     loss = tf.reduce_mean(tfl.losses.L2(output_tensor - true_output_tensor))
 
     return loss,initial_states,final_states,input_tensor,true_output_tensor
