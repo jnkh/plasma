@@ -167,6 +167,11 @@ def main(_):
           train_feed = { k:v for (k,v) in l}
 
 
+	print('train_op: {}'.format(train_op))
+	print('global_step: {}'.format(global_step))
+	print('loss: {}'.format(loss))
+	print('final_states: {}'.format(final_states))
+	print('train_feed: {}'.format(train_feed))
         outs = sess.run([train_op, global_step, loss] +  final_states, feed_dict=train_feed)
         step = outs[1]
         curr_loss = outs[2]
