@@ -120,7 +120,10 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
   lag = 20
   x = np.random.randn(batch_size,timesteps+lag,featurelen) 
   x = np.cumsum(x,axis=1)
-  return x[:,lag:,:],x[:,:-lag,:]
+  if lag == 0:
+    return x,x
+  else:
+    return x[:,lag:,:],x[:,:-lag,:]
 
 
 def main(_):
