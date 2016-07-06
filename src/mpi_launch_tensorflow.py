@@ -56,8 +56,6 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
     if num_workers == 0:
       print('Num workers set to 0, should be positive. Setting to default of {} for {} hosts'.format(num_workers_per_host*num_hosts,num_hosts))
     num_workers = num_workers_per_host*num_hosts 
-  num_total = num_workers + num_ps 
-  assert(task_num >= num_total)
   
   
   tasks_per_node = task_num / num_hosts
@@ -90,6 +88,8 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   #     if job_name == "ps":
   # if job_name == "worker":
   #   os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)
+  num_total = num_workers + num_ps 
+  assert(task_num >= num_total)
   
   if task_index == 0:
       print('{} superfluous processes'.format(task_num - num_total))
