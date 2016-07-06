@@ -77,8 +77,10 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
 
     x = input_tensor
     for layer_index in range(num_layers):
-      x,final_states[layer_index] = recurrent_layer(x,num_hidden,dropout = dropout,
+      x,final_states_curr = recurrent_layer(x,num_hidden,dropout = dropout,
       return_seq=True,return_states=True,initial_state=initial_states[layer_index])
+      x = tf.pack(x)
+      final_states[layer_index] = tf.pack(final_states_curr)
     #x is now list of len timesteps with shape (batchsize,num_hidden)
     x = tf.pack(x)
     #x.shape is now (timesteps,batchsize,num_hidden)
