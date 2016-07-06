@@ -62,7 +62,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     state_size = 2*num_hidden
 
 
-    initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([state_size]),[batchsize,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
+    initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
     initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
     final_states = [None for i in range(num_layers)]
 
