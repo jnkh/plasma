@@ -117,7 +117,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1,is_train
     # return loss,accuracy,input_tensor,true_output_tensor
 
 def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
-  lag = 20
+  lag = 0
   x = np.random.randn(batch_size,timesteps+lag,featurelen) 
   x = np.cumsum(x,axis=1)
   if lag == 0:
@@ -127,7 +127,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
 
 
 def main(_):
-  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 4, num_workers = 5)
+  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 4, num_workers = None)
   MY_GPU = task_index % NUM_GPUS
 
   if job_name == "ps":
@@ -143,7 +143,7 @@ def main(_):
       loss,initial_states,final_states,input_tensor,true_output_tensor,state_shapes = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
-      optimizer = tf.train.AdagradOptimizer(0.001)
+      optimizer = tf.train.AdagradOptimizer(0.01)
       if sync_mode:
         optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
           replica_id=task_index,total_num_replicas=num_workers)
