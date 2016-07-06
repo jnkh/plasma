@@ -174,11 +174,11 @@ def main(_):
       curr_final_states = np.zeros(state_shapes)
       while not sv.should_stop() and step < 1000:
         batch_xs, batch_ys = next_batch(batch_size)
-        if step == 0:
-          train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
-        else:
-          l = [(input_tensor, batch_xs),(true_output_tensor, batch_ys),(initial_states,curr_final_states)]
-          train_feed = { k:v for (k,v) in l}
+        # if step == 0:
+        #   train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
+        # else:
+        l = [(input_tensor, batch_xs),(true_output_tensor, batch_ys),(initial_states,curr_final_states)]
+        train_feed = { k:v for (k,v) in l}
 
 
 	print('train_op: {}'.format(train_op))
