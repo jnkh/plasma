@@ -157,7 +157,7 @@ def main(_):
 
       step = 0
       start = time.time()
-      curr_final_states = [np.zeros(state_shapes[i]) for i in range(len(final_states))]
+      curr_final_states = [np.zeros(s_) for s_ in state_shapes]
       while not sv.should_stop() and step < 1000:
         batch_xs, batch_ys = next_batch(batch_size)
         if step == 0:
