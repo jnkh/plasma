@@ -105,7 +105,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1):
 
 def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
   lag = 20
-  x = np.random.randn(32,64+lag,1) 
+  x = np.random.randn(batch_size,timesteps+lag,1) 
   x = np.cumsum(x,axis=1)
   return x[:,lag:,:],x[:,:-lag,:]
 
