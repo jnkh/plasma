@@ -1,139 +1,112 @@
-import math
-import time
+from __future__ import print_function
+import math,os,sys,time
+os.environ['KERAS_BACKEND'] = 'tensorflow'
+
+#import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
+from mpi4py import MPI
+mpi_comm = MPI.COMM_WORLD
+mpi_task_index = mpi_comm.Get_rank()
+mpi_task_num = mpi_comm.Get_size()
+for i in range(mpi_task_num):
+  mpi_comm.Barrier()
+  if i == mpi_task_index:
+    from keras import backend as K
+    from keras.layers import Dense, Dropout
 
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-WORKER_TASKS = ['/job:worker/task:0', '/job:worker/task:1']
-PS_DEVICE = '/job:ps/task:0'
-GRPC_SERVER = "grpc://localhost:2222"
-
-HIDDEN_SIZE = 512
-LAYERS = 2
-ITERATIONS = 1000
-EVAL_EVERY = 50
-BATCH_SIZE = 64
-L2_REGULARIZER = 1E-5
+NUM_GPUS = 4
+IMAGE_PIXELS = 28
+hidden_units = 20
+batch_size = 2048
+sync_mode = True
+data_dir = '/tigress/jk7/tmp/data'
+from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
-class Model(object):
-    def __init__(self, variable_device, variable_scope, worker_device, worker_name_scope, reuse, optimizer):
 
-        weights = []
-        biases = []
-        with tf.device(variable_device):
-            with tf.variable_scope(variable_scope, reuse=reuse):
-                for i in range(0, LAYERS + 1):
-                    ws = [784 if i == 0 else HIDDEN_SIZE, 10 if i == LAYERS else HIDDEN_SIZE]
+def get_loss_accuracy_ops():
+  input_tensor = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
+  true_output_tensor = tf.placeholder(tf.float32, [None, 10])
 
-                    # Xavier initialization
-                    weights.append(tf.get_variable("weight{}".format(i), ws,
-                                                   initializer=tf.truncated_normal_initializer(
-                                                       stddev=math.sqrt(3.0 / (ws[0] + ws[1])))))
-                    biases.append(tf.get_variable("bias{}".format(i), ws[1:],
-                                                  initializer=tf.constant_initializer(value=0, dtype=tf.float32)))
-            # tf.get_variable_scope().reuse_variables()
+  '''How to deal with RNN preserved state between runs?
+  Probably need to explicitly feed the last state into the model as the current input state. 
+  Or maybe set an explicity variable overwriting the Keras state, and capture it as an explicity output.'''
 
-        with tf.device(worker_device):
-            with tf.name_scope(worker_name_scope):
-                self.inp = tf.placeholder(tf.float32, shape=[None, 784])
-                self.labels = tf.placeholder(tf.float32, shape=[None, 10])
-
-                self.hiddens = []
-                for i in range(0, LAYERS):
-                    x = self.inp if i == 0 else self.hiddens[i - 1]
-                    self.hiddens.append(tf.nn.relu(tf.matmul(x, weights[i]) + biases[i]))
-
-                self.predicts = tf.nn.softmax(tf.matmul(self.hiddens[-1], weights[-1]) + biases[-1])
-
-                regularizers = tf.add_n([tf.nn.l2_loss(x) for x in weights + biases])
-
-                self.loss = (-tf.reduce_sum(self.labels * tf.log(tf.maximum(self.predicts, 1E-10))) +
-                             L2_REGULARIZER * regularizers)
-
-                self.correct_prediction = tf.equal(tf.argmax(self.predicts, 1), tf.argmax(self.labels, 1))
-                self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
-
-                self.grad_op = optimizer.compute_gradients(self.loss)
-
-        self.my_device = worker_device
-        self.my_name_scope = worker_name_scope
+  x = Dense(hidden_units,activation='relu')(input_tensor)
+  x = Dropout(0.1)(x)
+  output_tensor = Dense(10,activation='softmax')(x) 
 
 
-with tf.Graph().as_default():
-    batch_idx = tf.Variable(0, trainable=False)
+  loss = -tf.reduce_sum(true_output_tensor * tf.log(tf.clip_by_value(output_tensor, 1e-10, 1.0)))
+  correct_prediction = tf.equal(tf.argmax(output_tensor, 1), tf.argmax(true_output_tensor, 1))
+  accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+  return loss,accuracy,input_tensor,true_output_tensor
 
-    # learning_rate = tf.train.exponential_decay(0.01, batch_idx * BATCH_SIZE,
-    #                                            decay_steps=1000, decay_rate=0.95, staircase=True)
-    # opt = tf.train.MomentumOptimizer(learning_rate, 0.9)
-    opt = tf.train.GradientDescentOptimizer(0.01)
 
-    models = []
 
-    for i, w in enumerate(WORKER_TASKS):
-        models.append(Model(variable_device=PS_DEVICE,
-                            variable_scope='mnist_variables',
-                            worker_device=w, worker_name_scope='worker_name_scope_{}'.format(i),
-                            reuse=i != 0,
-                            optimizer=opt))
+def main(_):
+  cluster,server,job_name,task_index,num_workers = get_mpi_cluster_server_jobname(num_ps = 4, num_workers = 5)
+  MY_GPU = task_index % NUM_GPUS
 
-    # compute gradients of workers
-    all_grads_and_vars = []
-    all_losses = []
-    for m in models:
-        all_grads_and_vars.append(m.grad_op)
-        all_losses.append(m.loss)
+  if job_name == "ps":
+    server.join()
+  elif job_name == "worker":
 
-    # compute average gradient
-    if len(all_grads_and_vars) > 1:
-        average_grads = []
-        for grads_and_vars in zip(*all_grads_and_vars):
-            grads = []
-            for g, _ in grads_and_vars:
-                grads.append(tf.expand_dims(g, 0))
+    is_chief = (task_index == 0)
+    # Assigns ops to the local worker by default.
+    with tf.device(tf.train.replica_device_setter(\
+      worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
+		  cluster=cluster)):
 
-            grad = tf.reduce_mean(tf.concat(0, grads), 0)
-            average_grads.append((grad, grads_and_vars[0][1]))
-    else:
-        average_grads = all_grads_and_vars[0]
+      loss,accuracy,input_tensor,true_output_tensor = get_loss_accuracy_ops()
 
-    average_loss = tf.add_n(all_losses) / len(all_losses)
+      global_step = tf.Variable(0,trainable=False)
+      optimizer = tf.train.AdagradOptimizer(0.01)
+      if sync_mode:
+        optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
+          replica_id=task_index,total_num_replicas=num_workers)
 
-    # apply the average gradient
-    apply_gradient_op = opt.apply_gradients(average_grads, global_step=batch_idx)
+      train_op = optimizer.minimize(loss, global_step=global_step)
 
-    init_op = tf.initialize_all_variables()
+      if sync_mode and is_chief:
+        # Initial token and chief queue runners required by the sync_replicas mode
+        chief_queue_runner = optimizer.get_chief_queue_runner()
+        init_tokens_op = optimizer.get_init_tokens_op()
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
-    sess_config = tf.ConfigProto(log_device_placement=True, gpu_options=gpu_options)
+      saver = tf.train.Saver()
+      summary_op = tf.merge_all_summaries()
+      init_op = tf.initialize_all_variables()
 
-    with tf.Session(GRPC_SERVER, config=sess_config) as sess:
-        sess.run(init_op)
+    # Create a "supervisor", which oversees the training process.
+    sv = tf.train.Supervisor(is_chief=is_chief,logdir="/tmp/train_logs",init_op=init_op,summary_op=summary_op,
+                             saver=saver,global_step=global_step,save_model_secs=600)
 
-        mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+    mnist = input_data.read_data_sets(data_dir, one_hot=True)
 
-        training_time = time.time()
-        for i in range(ITERATIONS):
-            feeds = {}
-            for m in models:
-                # data-parallel
-                batch_xs, batch_ys = mnist.train.next_batch(BATCH_SIZE)
-                feeds[m.inp] = batch_xs
-                feeds[m.labels] = batch_ys
+    # The supervisor takes care of session initialization, restoring from
+    # a checkpoint, and closing when done or an error occurs.
+    config = tf.ConfigProto(allow_soft_placement=True)
+    with sv.prepare_or_wait_for_session(server.target,config=config) as sess:
+      if sync_mode and is_chief:
+        sv.start_queue_runners(sess,[chief_queue_runner])
+        sess.run(init_tokens_op)
 
-            _, avg_loss = sess.run([apply_gradient_op, average_loss], feed_dict=feeds)
+      step = 0
+      start = time.time()
+      while not sv.should_stop() and step < 1000:
+        batch_xs, batch_ys = mnist.train.next_batch(batch_size)
+        train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys,K.learning_phase(): 1}
 
-            if i % EVAL_EVERY == 0:
-                # we only need to evaluate on a single model, because there is only one set of parameters
-                m = models[0]
-                acc = sess.run(m.accuracy, feed_dict={m.inp: mnist.validation.images,
-                                                      m.labels: mnist.validation.labels})
-                print 'Step {}: validation accuracy = {}, average training loss = {}'.format(
-                    tf.train.global_step(sess, batch_idx), acc, avg_loss)
+        _, step, curr_loss, curr_accuracy = sess.run([train_op, global_step, loss, accuracy], feed_dict=train_feed)
+      	sys.stdout.write('\rWorker {}, step: {}, loss: {}, accuracy: {}'.format(task_index,step,curr_loss,curr_accuracy))
+      	sys.stdout.flush()
 
-        training_time = time.time() - training_time
-        print 'Training time: {} seconds'.format(training_time)
+    # Ask for all the services to stop.
+    sv.stop()
+    print('Elapsed: {}'.format(time.time() - start))
 
-        m = models[0]
-        acc = sess.run(m.accuracy, feed_dict={m.inp: mnist.test.images, m.labels: mnist.test.labels})
-        print 'Test accuracy: {}'.format(acc)
+if __name__ == "__main__":
+  tf.app.run()
+

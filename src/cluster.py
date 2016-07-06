@@ -2,6 +2,7 @@ from __future__ import print_function
 import math,os,sys,time
 os.environ['KERAS_BACKEND'] = 'tensorflow'
 
+#import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 from mpi4py import MPI
 mpi_comm = MPI.COMM_WORLD
 mpi_task_index = mpi_comm.Get_rank()
@@ -15,19 +16,7 @@ for i in range(mpi_task_num):
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-# Flags for defining the tf.train.ClusterSpec
-# tf.app.flags.DEFINE_string("ps_hosts", "",
-#                            "Comma-separated list of hostname:port pairs")
-# tf.app.flags.DEFINE_string("worker_hosts", "",
-#                            "Comma-separated list of hostname:port pairs")
-# # Flags for defining the tf.train.Server
-# tf.app.flags.DEFINE_string("job_name", "", "One of 'ps', 'worker'")
-# tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
-# tf.app.flags.DEFINE_integer("hidden_units", 20, "Number of hidden units")
-# tf.app.flags.DEFINE_integer("batch_size", 2048, "Batch size")
-# tf.app.flags.DEFINE_string("data_dir", '/tigress/jk7/tmp/data', "Data dir")
 
-# FLAGS = tf.app.flags.FLAGS
 NUM_GPUS = 4
 IMAGE_PIXELS = 28
 hidden_units = 20
@@ -39,23 +28,12 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
 def get_loss_accuracy_ops():
-
-
   input_tensor = tf.placeholder(tf.float32, [None, IMAGE_PIXELS * IMAGE_PIXELS])
   true_output_tensor = tf.placeholder(tf.float32, [None, 10])
 
-
-  # # Variables of the hidden layer
-  # hid_w = tf.Variable(tf.truncated_normal([IMAGE_PIXELS * IMAGE_PIXELS, hidden_units],stddev=1.0 / IMAGE_PIXELS), name="hid_w")
-  # hid_b = tf.Variable(tf.zeros([hidden_units]), name="hid_b")
-
-  # # Variables of the softmax layer
-  # sm_w = tf.Variable(tf.truncated_normal([hidden_units, 10],stddev=1.0 / math.sqrt(hidden_units)),name="sm_w")
-  # sm_b = tf.Variable(tf.zeros([10]), name="sm_b")
-
-  # hid_lin = tf.nn.xw_plus_b(input_tensor, hid_w, hid_b)
-  # hid = tf.nn.relu(hid_lin)
-  # output_tensor = tf.nn.softmax(tf.nn.xw_plus_b(hid, sm_w, sm_b))
+  '''How to deal with RNN preserved state between runs?
+  Probably need to explicitly feed the last state into the model as the current input state. 
+  Or maybe set an explicity variable overwriting the Keras state, and capture it as an explicity output.'''
 
   x = Dense(hidden_units,activation='relu')(input_tensor)
   x = Dropout(0.1)(x)
