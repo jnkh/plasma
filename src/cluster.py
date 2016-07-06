@@ -56,6 +56,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
 
     num_layers = 2
     num_hidden = 10
+    num_output = 1
     dropout = 0.1
 
     recurrent_layer = tfl.layers.recurrent.lstm
@@ -69,7 +70,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     batch_input_shape = (batch_size,timesteps,featurelen)
 
     input_tensor = tf.placeholder(tf.float32, batch_input_shape)
-    true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,1) )
+    true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,num_output) )
 
 
     x = input_tensor
@@ -83,7 +84,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     #x.shape is now (batchsize,timesteps,num_hidden)
     x = tf.reshape(x,[batch_size*timesteps,num_hidden])
     #x.shape is now (batchsize*timesteps,num_hidden)
-    x = tfl.fully_connected(x,activation = 'tanh')
+    x = tfl.fully_connected(x,num_output,activation = 'tanh')
     #x.shape is now (batchsize,timesteps,num_hidden)
     output_tensor = tf.reshape(x,[batch_size,timesteps,num_hidden])
     loss = tf.reduce_mean(tfl.losses.L2(output_tensor - true_output_tensor))
