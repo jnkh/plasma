@@ -58,8 +58,12 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     num_hidden = 10
     dropout = 0.1
 
-    initial_states_defaults = [tf.Variable(tf.zeros([batch_size,num_hidden]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
-    initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,num_hidden)) for i in range(num_layers)] 
+    recurrent_layer = tfl.layers.recurrent.lstm
+    state_size = 2*num_hidden
+
+
+    initial_states_defaults = [tf.Variable(tf.zeros([batch_size,state_size]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
+    initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
     final_states = [None for i in range(num_layers)]
 
     batch_input_shape = (batch_size,timesteps,featurelen)
@@ -67,9 +71,10 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     input_tensor = tf.placeholder(tf.float32, batch_input_shape)
     true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,1) )
 
+
     x = input_tensor
     for layer_index in range(num_layers):
-      x,final_states[layer_index] = tfl.layers.recurrent.lstm(x,num_hidden,dropout = dropout,
+      x,final_states[layer_index] = recurrent_layer(x,num_hidden,dropout = dropout,
       return_seq=True,return_states=True,initial_state=initial_states[layer_index])
     #x.shape is now (batchsize,timesteps,num_hidden)
     x = tf.reshape(x,[batch_size*timesteps,num_hidden])
