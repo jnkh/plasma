@@ -171,20 +171,20 @@ def main(_):
 
       step = 0
       start = time.time()
-      curr_final_states = [np.zeros(s_) for s_ in state_shapes]
+      curr_final_states = np.zeros(state_shapes)
       while not sv.should_stop() and step < 1000:
         batch_xs, batch_ys = next_batch(batch_size)
         if step == 0:
           train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
         else:
-          l = [(input_tensor, batch_xs),(true_output_tensor, batch_ys)] + zip(initial_states,curr_final_states)
+          l = [(input_tensor, batch_xs),(true_output_tensor, batch_ys),(initial_states,curr_final_states)]
           train_feed = { k:v for (k,v) in l}
 
 
-        outs = sess.run([train_op, global_step, loss] +  final_states, feed_dict=train_feed)
+        outs = sess.run([train_op, global_step, loss, final_states], feed_dict=train_feed)
         step = outs[1]
         curr_loss = outs[2]
-        curr_final_states = outs[3:]
+        curr_final_states = outs[3]
       	sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,curr_loss))
       	sys.stdout.flush()
 
