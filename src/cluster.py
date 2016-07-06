@@ -140,7 +140,7 @@ def main(_):
       loss,initial_states,final_states,input_tensor,true_output_tensor,state_shapes = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
-      optimizer = tf.train.AdagradOptimizer(0.01)
+      optimizer = tf.train.AdagradOptimizer(0.001)
       if sync_mode:
         optimizer = tf.train.SyncReplicasOptimizer(optimizer,replicas_to_aggregate=num_workers,
           replica_id=task_index,total_num_replicas=num_workers)
