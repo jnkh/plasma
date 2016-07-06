@@ -52,7 +52,7 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 
 
 
-def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1):
+def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     num_layers = 2
     num_hidden = 10
