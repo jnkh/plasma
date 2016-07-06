@@ -160,7 +160,9 @@ def main(_):
         if step == 0:
           train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
         else:
-          train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys,initial_states: curr_final_states}
+          train_feed = { k:v for (k,v) in [(input_tensor, batch_xs),(true_output_tensor, batch_ys)] 
+          + zip(initial_states,curr_final_states)}
+
 
         _, step, curr_loss, curr_final_states = sess.run([train_op, global_step, loss, final_states], feed_dict=train_feed)
       	sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,curr_loss))
