@@ -55,7 +55,7 @@ from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
 def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
 
     num_layers = 2
-    num_hidden = 10
+    num_hidden = 15
     dropout = 0.1
 
     initial_states_defaults = [tf.Variable(tf.zeros([batch_size,num_hidden]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
