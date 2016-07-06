@@ -62,6 +62,18 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   
   
   tasks_per_node = task_num / num_hosts
+
+  max_ps = num_hosts*(tasks_per_node - num_workers_per_host)
+  if num_ps == 0 or num_ps > max_ps:
+    print('Invalid number of ps {} (maximum {}, minimum 0)'.format(num_ps,max_ps))
+    if num_ps == 0:
+      print('Setting to 1')
+      num_ps = 1
+    else:
+      print('Setting to {}'.format(max_ps))
+      num_ps = max_ps
+
+
   task_index = task_index % tasks_per_node 
   
   if task_index < NUM_GPUS:
