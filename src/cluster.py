@@ -167,7 +167,10 @@ def main(_):
           + zip(initial_states,curr_final_states)}
 
 
-        _, step, curr_loss, curr_final_states = sess.run([train_op, global_step, loss, final_states], feed_dict=train_feed)
+        outs = sess.run([train_op, global_step, loss] +  final_states, feed_dict=train_feed)
+        step = outs[1]
+        curr_loss = outs[2]
+        curr_final_states = outs[3:]
       	sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,curr_loss))
       	sys.stdout.flush()
 
