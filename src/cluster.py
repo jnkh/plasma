@@ -70,7 +70,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     x = input_tensor
     for layer_index in range(num_layers):
       x,final_states[layer_index] = tfl.layers.recurrent.lstm(x,num_hidden,dropout = dropout,
-      return_seq=return_sequences,return_state=True,initial_state=initial_states[layer_index])
+      return_seq=True,return_state=True,initial_state=initial_states[layer_index])
     #x.shape is now (batchsize,timesteps,num_hidden)
     x = tf.reshape(x,[batch_size*timesteps,num_hidden])
     #x.shape is now (batchsize*timesteps,num_hidden)
