@@ -66,13 +66,13 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1,is_train
     #use this when tensorflow doesn't throw an error anymore? Maybe in tensorflow 0.9?
     #initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([1,state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
     #initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
-    initial_states = tf.placeholder(tf.float32,state_shapes) 
+    initial_states = tf.placeholder(tf.float32,state_shapes,name='initial_states_placeholder') 
     # final_states = [None for i in range(num_layers)]
 
     batch_input_shape = (batch_size,timesteps,featurelen)
 
-    input_tensor = tf.placeholder(tf.float32, batch_input_shape)
-    true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,num_output) )
+    input_tensor = tf.placeholder(tf.float32, batch_input_shape,name='input_placeholder')
+    true_output_tensor = tf.placeholder(tf.float32, (batch_size,timesteps,num_output),name='output_placeholder')
 
 
     x = input_tensor
@@ -118,7 +118,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1,is_train
 
 def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
   lag = 20
-  x = np.random.randn(batch_size,timesteps+lag,1) 
+  x = np.random.randn(batch_size,timesteps+lag,featurelen) 
   x = np.cumsum(x,axis=1)
   return x[:,lag:,:],x[:,:-lag,:]
 
