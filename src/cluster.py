@@ -45,7 +45,7 @@ import tflearn as tfl
 NUM_GPUS = 4
 IMAGE_PIXELS = 28
 hidden_units = 20
-batch_size = 2048
+batch_size = 32
 sync_mode = True
 data_dir = '/tigress/jk7/tmp/data'
 from mpi_launch_tensorflow import get_mpi_cluster_server_jobname
@@ -173,7 +173,7 @@ def main(_):
       start = time.time()
       curr_final_states = np.zeros(state_shapes)
       while not sv.should_stop() and step < 1000:
-        batch_xs, batch_ys = next_batch(batch_size)
+        batch_xs, batch_ys = next_batch()
         # if step == 0:
         #   train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
         # else:
