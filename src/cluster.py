@@ -61,13 +61,13 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1):
 
     recurrent_layer = tfl.layers.recurrent.lstm
     state_size = 2*num_hidden
-    state_shapes = [(batch_size,state_size) for _ in range(num_layers)]
+    state_shapes = (batch_size*state_size*num_layers)
 
     #use this when tensorflow doesn't throw an error anymore? Maybe in tensorflow 0.9?
     #initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([1,state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
     #initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
-    initial_states = [tf.placeholder(tf.float32,state_shapes[i]) for i in range(num_layers)] 
-    final_states = [None for i in range(num_layers)]
+    initial_states = tf.placeholder(tf.float32,state_shapes) 
+    # final_states = [None for i in range(num_layers)]
 
     batch_input_shape = (batch_size,timesteps,featurelen)
 
@@ -76,12 +76,25 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1):
 
 
     x = input_tensor
-    for layer_index in range(num_layers):
-      x,final_states_curr = recurrent_layer(x,num_hidden,dropout = dropout,
-      return_seq=True,return_states=True,initial_state=initial_states[layer_index])
-      #x and final_states_curr are now list of len timesteps with shape (batchsize,num_hidden)
-      x = tf.pack(x)
-      final_states[layer_index] = tf.pack(final_states_curr)
+
+    lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_hidden)
+    if is_training:
+      lstm_cell = tf.nn.rnn_cell.DropoutWrapper(lstm_cell,output_keep_prob=dropout)
+    cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell]*num_layers)
+
+    x = tf.transpose(x,[1,0,2])
+    x = tf.unpack(x)
+    x,final_states = tf.nn.rnn(cell,x,initial_state =initial_states,sequence_length=timesteps)
+    x = tf.pack(x)
+
+
+
+    # for layer_index in range(num_layers):
+    #   x,final_states_curr = recurrent_layer(x,num_hidden,dropout = dropout,
+    #   return_seq=True,return_states=True,initial_state=initial_states[layer_index])
+    #   #x and final_states_curr are now list of len timesteps with shape (batchsize,num_hidden)
+    #   x = tf.pack(x)
+    #   final_states[layer_index] = tf.pack(final_states_curr)
     #x.shape is now (timesteps,batchsize,num_hidden)
     x = tf.transpose(x,[1,0,2])
     #x.shape is now (batchsize,timesteps,num_hidden)
