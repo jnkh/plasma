@@ -81,7 +81,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1,is_train
     if is_training:
       lstm_cell = tf.nn.rnn_cell.DropoutWrapper(lstm_cell,output_keep_prob=dropout)
     cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell]*num_layers)
-    print('state size: {}'.format(cell.state_size()))
+    print('state size: {}'.format(cell.state_size))
 
     x = tf.transpose(x,[1,0,2])
     x = tf.unpack(x)
