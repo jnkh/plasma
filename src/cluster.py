@@ -61,7 +61,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 100, featurelen=1):
 
     recurrent_layer = tfl.layers.recurrent.lstm
     state_size = 2*num_hidden
-    state_shapes = [(batch_size,state_size) for _ in range(num_layers)]
+    state_shapes = [(batch_size*state_size) for _ in range(num_layers)]
 
     #use this when tensorflow doesn't throw an error anymore? Maybe in tensorflow 0.9?
     #initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([1,state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
