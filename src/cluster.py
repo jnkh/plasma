@@ -61,10 +61,12 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
 
     recurrent_layer = tfl.layers.recurrent.lstm
     state_size = 2*num_hidden
+    state_shapes = [(batch_size,state_size) for _ in range(num_layers)]
 
-
-    initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([1,state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
-    initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
+    #use this when tensorflow doesn't throw an error anymore? Maybe in tensorflow 0.9?
+    #initial_states_defaults = [tf.Variable(tf.tile(tf.zeros([1,state_size]),[batch_size,1]),name='trainable initial state {}'.format(i)) for i in range(num_layers)] 
+    #initial_states = [tf.placeholder_with_default(initial_states_defaults[i],(batch_size,state_size)) for i in range(num_layers)] 
+    initial_states = [tf.placeholder(tf.float32,state_shapes[i]) for i in range(num_layers)] 
     final_states = [None for i in range(num_layers)]
 
     batch_input_shape = (batch_size,timesteps,featurelen)
@@ -89,7 +91,7 @@ def get_loss_accuracy_ops(batch_size = 32,timesteps = 64, featurelen=1):
     output_tensor = tf.reshape(x,[batch_size,timesteps,num_output])
     loss = tf.reduce_mean(tfl.losses.L2(output_tensor - true_output_tensor))
 
-    return loss,initial_states,final_states,input_tensor,true_output_tensor
+    return loss,initial_states,final_states,input_tensor,true_output_tensor,state_shapes
     # x = Dense(hidden_units,activation='relu')(input_tensor)
     # x = Dropout(0.1)(x)
     # output_tensor = Dense(10,activation='softmax')(x) 
@@ -121,7 +123,7 @@ def main(_):
       worker_device='/job:worker/task:{}/gpu:{}'.format(task_index,MY_GPU),
 		  cluster=cluster)):
 
-      loss,initial_states,final_states,input_tensor,true_output_tensor = get_loss_accuracy_ops()
+      loss,initial_states,final_states,input_tensor,true_output_tensor,state_shapes = get_loss_accuracy_ops()
 
       global_step = tf.Variable(0,trainable=False)
       optimizer = tf.train.AdagradOptimizer(0.01)
@@ -155,6 +157,7 @@ def main(_):
 
       step = 0
       start = time.time()
+      curr_final_states = [np.zeros(state_shapes[i]) for i in range(len(final_states))]
       while not sv.should_stop() and step < 1000:
         batch_xs, batch_ys = next_batch(batch_size)
         if step == 0:
