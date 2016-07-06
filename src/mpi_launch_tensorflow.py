@@ -48,7 +48,6 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   task_index = comm.Get_rank()
   task_num = comm.Get_size()
   num_hosts = len(get_host_list(1))
-  num_ps_per_host = int(math.ceil(1.0*num_ps/num_hosts))
 
   num_workers_per_host = NUM_GPUS
   if num_workers is None or num_workers == 0 or num_workers > num_workers_per_host*num_hosts:
@@ -72,6 +71,7 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
     else:
       print('Setting to {}'.format(max_ps))
       num_ps = max_ps
+  num_ps_per_host = int(math.ceil(1.0*num_ps/num_hosts))
 
 
   task_index = task_index % tasks_per_node 
