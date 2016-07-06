@@ -163,8 +163,8 @@ def main(_):
         if step == 0:
           train_feed = {input_tensor: batch_xs, true_output_tensor: batch_ys}
         else:
-          train_feed = { k:v for (k,v) in [(input_tensor, batch_xs),(true_output_tensor, batch_ys)] 
-          + zip(initial_states,curr_final_states)}
+          l = [(input_tensor, batch_xs),(true_output_tensor, batch_ys)] + zip(initial_states,curr_final_states)
+          train_feed = { k:v for (k,v) in l}
 
 
         outs = sess.run([train_op, global_step, loss] +  final_states, feed_dict=train_feed)
