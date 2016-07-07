@@ -154,7 +154,7 @@ def train(model,batch_size=32):
   verbose = False
   step = 0
   warmup_steps = 50
-  total_steps = 300
+  total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= total_steps:
