@@ -2,7 +2,6 @@ from __future__ import print_function
 from mpi4py import MPI
 
 from hostlist import expand_hostlist
-import tensorflow as tf
 import socket,os,math
 
 def get_host_to_id_mapping():
@@ -43,6 +42,7 @@ def get_ps_host(base_port,num_ps,num_workers,task_id):
   return get_ps_host_list(base_port,num_ps)[task_id - num_workers]
 
 def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):      
+  import tensorflow as tf
   NUM_GPUS = 4
   comm = MPI.COMM_WORLD
   task_index = comm.Get_rank()
@@ -115,3 +115,42 @@ def get_mpi_cluster_server_jobname(num_ps = 1,num_workers = None):
   
   return cluster,server,job_name,global_task_index,num_workers
 
+def get_mpi_task_index(num_workers = None):      
+  NUM_GPUS = 4
+  comm = MPI.COMM_WORLD
+  task_index = comm.Get_rank()
+  task_num = comm.Get_size()
+  num_hosts = len(get_host_list(1))
+
+  num_workers_per_host = NUM_GPUS
+  if num_workers is None or num_workers == 0 or num_workers > num_workers_per_host*num_hosts:
+    if num_workers > num_workers_per_host*num_hosts:
+      print('Num workers too large (more than one per GPU). Setting to default of {} for {} hosts'.format(num_workers_per_host*num_hosts,num_hosts))
+    if num_workers == 0:
+      print('Num workers set to 0, should be positive. Setting to default of {} for {} hosts'.format(num_workers_per_host*num_hosts,num_hosts))
+    num_workers = num_workers_per_host*num_hosts 
+  
+  
+  tasks_per_node = task_num / num_hosts
+  task_index = task_index % tasks_per_node 
+  
+  if task_index < NUM_GPUS:
+      job_name = 'worker'
+      num_per_host = num_workers_per_host
+      global_task_index = get_my_host_id()*num_per_host+task_index
+  else:
+      exit(0) 
+
+  num_total = num_workers + num_ps 
+  assert(task_num >= num_total)
+  
+  if task_index == 0:
+      print('{} superfluous workers'.format(num_workers_per_host*num_hosts - num_workers))
+      print('{} total workers'.format(num_workers))
+  
+  
+  print('{}, task_id: {}, host_id: {}'.format(socket.gethostname(),task_index,get_my_host_id()))
+  if job_name == 'worker' and global_task_index >= num_workers:
+      exit(0)
+  
+  return global_task_index,num_workers
