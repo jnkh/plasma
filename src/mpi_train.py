@@ -215,7 +215,7 @@ def test(model,batch_size=1):
 
 
 def main():
-  save_path = '/tmp_mpi/model_weights.h5'
+  save_path = 'tmp_mpi/model_weights.h5'
 
   print('[{}] Build model'.format(task_index))
   model = get_model(batch_size=batch_size,lr=lr)
