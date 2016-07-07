@@ -120,9 +120,20 @@ def main():
   step = 0
   print('[{}] Begin Training'.format(task_index))
   while step < 1000:
+    if task_index == 0:
+      start_time = time.time()
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
+    if task_index == 0:
+      batch_time = time.time()
+      print('produce batch: {:.3f}'.format(batch_time - start_time))
     deltas,loss = get_deltas(model,batch_xs,batch_ys)
+    if task_index == 0:
+      deltas_time = time.time()
+      print('get deltas: {:.3f}'.format(deltas_time - batch_time))
     set_new_weights(model,deltas)
+    if task_index == 0:
+      sync_time = time.time()
+      print('sync deltas: {:.3f}'.format(sync_time - deltas_time))
     sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
     sys.stdout.flush()
     step += 1
