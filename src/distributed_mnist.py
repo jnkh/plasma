@@ -16,7 +16,6 @@ for i in range(mpi_task_num):
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-
 NUM_GPUS = 4
 IMAGE_PIXELS = 28
 hidden_units = 20
