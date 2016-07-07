@@ -62,7 +62,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True,lr 
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
-    output_tensor = TimeDistributed(Dense(num_output,activation='tanh'))(recurrent_layer)
+    output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
     model.compile(optimizer=SGD(lr=lr),loss='mse')
@@ -83,7 +83,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
 
 def batch_iterator(batch_size=32,timesteps = 100,featurelen = 1):
   multiplier = 100
-  lag = 0
+  lag = 200
   while True:
     xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
     xx = np.cumsum(xx,axis=1)
