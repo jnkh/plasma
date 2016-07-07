@@ -124,12 +124,13 @@ def main():
   model = get_model(batch_size=batch_size)
   step = 0
   print('[{}] Begin Training'.format(task_index))
-  while not step < 1000:
+  while step < 1000:
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
     loss,deltas = get_deltas(model,batch_xs,batch_ys)
     set_new_weights(model,deltas)
     sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
     sys.stdout.flush()
+    step += 1
 
 
 if __name__ == "__main__":
