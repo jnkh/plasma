@@ -31,7 +31,7 @@ from mpi4py import MPI
 mpi_comm = comm = MPI.COMM_WORLD
 mpi_task_index = mpi_comm.Get_rank()
 mpi_task_num = mpi_comm.Get_size()
-task_index,num_workers = get_mpi_task_index(num_workers = None)
+task_index,num_workers = mpi_task_index,mpi_task_num#get_mpi_task_index(num_workers = None)
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 
@@ -119,7 +119,7 @@ def set_new_weights(model,deltas):
   model.set_weights(new_weights)
 
 
-def main(_):
+def main():
   print('[{}] Build model'.format(task_index))
   model = get_model(batch_size=batch_size)
   step = 0
