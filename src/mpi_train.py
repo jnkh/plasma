@@ -153,7 +153,6 @@ def set_new_weights(model,deltas,single_worker=False):
 def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
-  print('[{}] Begin Training'.format(task_index))
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= train_steps:
      break
@@ -188,7 +187,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   return model
 
 
-def test(model,batch_size=1):
+def test(model,batch_size=1,epoch=None):
   ys_pred_list = []
   xs_list = []
   ys_true_list = []
@@ -205,11 +204,15 @@ def test(model,batch_size=1):
   ys_true = np.squeeze(np.concatenate(ys_true_list,axis=1))
   print('Testing loss: {}'.format(np.mean((ys_pred - ys_true)**2)))
 
+  plt.close('all')
+  plt.figure()
   plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
   plt.show()
-  plt.savefig('out_{}.png'.format(time.time()),bbox_inches='tight')
+  if epoch is None
+    epoch = time.time()
+  plt.savefig('out_{}.png'.format(epoch),bbox_inches='tight')
 
 
 
@@ -230,7 +233,7 @@ def main():
       model.save_weights(save_path_curr,overwrite=True)
       test_model = get_model(batch_size = 1)
       test_model.load_weights(save_path_curr)
-      test(test_model)
+      test(test_model,epoch=e)
       print('done.')
 
 
