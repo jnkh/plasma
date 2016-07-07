@@ -179,7 +179,8 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
       sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
       sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
       sys.stdout.flush()
-    write_str = '\rWorker {}, step: {}, loss: {:.3f}'.format(task_index,step,loss)
+    print(loss)
+    write_str = '\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss)
     if warmup_phase:
       write_str += ' [Warmup]'
     sys.stdout.write(write_str)
