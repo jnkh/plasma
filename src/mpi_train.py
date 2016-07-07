@@ -78,7 +78,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
     return x[:,lag:,:],x[:,:-lag,:]
 
 
-def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
+def batch_iterator(batch_size=32,timesteps = 100,featurelen = 1):
   multiplier = 100
   lag = 0
   while True:
