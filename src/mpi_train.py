@@ -36,6 +36,7 @@ NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 
 #import keras
+print('Importing Keras')
 for i in range(mpi_task_num):
   mpi_comm.Barrier()
   if i == mpi_task_index:
@@ -119,8 +120,10 @@ def set_new_weights(model,deltas):
 
 
 def main(_):
+  print('[{}] Build model'.format(task_index))
   model = get_model(batch_size=batch_size)
   step = 0
+  print('[{}] Begin Training'.format(task_index))
   while not step < 1000:
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
     loss,deltas = get_deltas(model,batch_xs,batch_ys)
