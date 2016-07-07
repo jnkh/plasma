@@ -35,7 +35,7 @@ import theano
 print('Importing Keras')
 for i in range(mpi_task_num):
   mpi_comm.Barrier()
-  if i == task_index
+  if i == task_index:
     from keras import backend as K
     from keras.layers import Input,Dense, Dropout
     from keras.layers.recurrent import LSTM
