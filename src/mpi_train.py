@@ -141,7 +141,7 @@ def main():
   total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
   while step < total_steps:
-    warmup_phase = step < warmup_steps:
+    warmup_phase = step < warmup_steps
     if task_index == 0 and verbose:
       start_time = time.time()
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
