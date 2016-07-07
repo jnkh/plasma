@@ -50,7 +50,7 @@ IMAGE_PIXELS = 28
 hidden_units = 20
 batch_size = 512
 sync_mode = True
-lr = 0.0001
+lr = 0.001
 data_dir = '/tigress/jk7/tmp/data'
 
 
