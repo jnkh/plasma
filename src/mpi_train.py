@@ -210,7 +210,7 @@ def test(model,batch_size=1,epoch=None):
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
   plt.show()
-  if epoch is None
+  if epoch is None:
     epoch = time.time()
   plt.savefig('out_{}.png'.format(epoch),bbox_inches='tight')
 
