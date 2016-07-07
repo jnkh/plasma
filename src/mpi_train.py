@@ -46,11 +46,10 @@ for i in range(num_workers):
     from keras.optimizers import SGD
 
 
-IMAGE_PIXELS = 28
 hidden_units = 20
 batch_size = 512
 sync_mode = True
-lr = 0.001
+lr = 0.005
 data_dir = '/tigress/jk7/tmp/data'
 
 
@@ -155,7 +154,7 @@ def train(model,batch_size=32):
   verbose = False
   step = 0
   warmup_steps = 50
-  total_steps = 300
+  total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= total_steps:
