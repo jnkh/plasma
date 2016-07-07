@@ -108,7 +108,7 @@ def get_new_weights(model,deltas):
   return [w-d for w,d in zip(model.get_weights(),deltas)]
 
 
-def set_new_weights(model,deltas)
+def set_new_weights(model,deltas):
   global_deltas = sync_deltas(deltas)
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
