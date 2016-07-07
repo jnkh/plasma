@@ -41,6 +41,7 @@ for i in range(num_workers):
     from keras.layers.recurrent import LSTM
     from keras.layers.wrappers import TimeDistributed
     from keras.models import Model
+    from keras.optimizers import SGD
 
 
 IMAGE_PIXELS = 28
@@ -50,7 +51,7 @@ sync_mode = True
 data_dir = '/tigress/jk7/tmp/data'
 
 
-def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
+def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True,lr = 0.001):
 
     num_layers = 2
     num_hidden = 10
