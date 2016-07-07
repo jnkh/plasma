@@ -179,7 +179,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
       sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
       sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
       sys.stdout.flush()
-    write_str = '\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss)
+    write_str = '\rWorker {}, step: {}, loss: {:.3f}'.format(task_index,step,loss)
     if warmup_phase:
       write_str += ' [Warmup]'
     sys.stdout.write(write_str)
@@ -227,7 +227,7 @@ def main():
     if task_index == 0:
       print('Evaluating model...')
       save_path_curr = save_path.format(e)
-      model.save_weights(save_path_curr)
+      model.save_weights(save_path_curr,overwrite=True)
       test_model = get_model(batch_size = 1)
       test_model.load_weights(save_path_curr)
       test(test_model)
