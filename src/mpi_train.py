@@ -18,6 +18,8 @@ This work was supported by the DOE CSGF program.
 from __future__ import print_function
 import math,os,sys,time,datetime,os.path
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -147,10 +149,9 @@ def set_new_weights(model,deltas,single_worker=False):
   model.set_weights(new_weights)
 
 
-def main():
+
+def train(model,batch_size=32):
   verbose = False
-  print('[{}] Build model'.format(task_index))
-  model = get_model(batch_size=batch_size,lr=lr)
   step = 0
   warmup_steps = 50
   total_steps = 1000
@@ -186,6 +187,50 @@ def main():
     sys.stdout.write(write_str)
     sys.stdout.flush()
     step += 1
+  return model
+
+
+def test(model,batch_size=1):
+  ys_pred_list = []
+  xs_list = []
+  ys_true_list = []
+  num_concat = 200
+  for i,(batch_xs,batch_ys) in batch_iterator(batch_size=batch_size):
+    if i >= num_concat:
+      break
+
+    ys_pred_list.append(model.predict(batch_xs,batch_size=batch_size))
+    xs_list.append(batch_xs)
+    ys_true_list.append(batch_ys)
+  ys_pred = np.squeeze(np.concatenate(ys_pred_list,axis=1))
+  xs = np.squeeze(np.concatenate(xs_list,axis=1))
+  ys_true = np.squeeze(np.concatenate(ys_true_list,axis=1))
+
+  matplotlib.plot(xs,'b')
+  matplotlib.plot(ys_pred,'r')
+  matplotlib.plot(ys_true,'g')
+  matplotlib.show()
+  matplotlib.savefig('out.png',bbox_inches='tight')
+
+
+
+def main():
+  save_path = '/tmp_mpi/model_weights.h5'
+
+  print('[{}] Build model'.format(task_index))
+  model = get_model(batch_size=batch_size,lr=lr)
+  model = train(model,batch_size)
+
+  if task_index == 0:
+    model.save_weights(save_path)
+  if task_index == 0:
+    test_model = get_model(batch_size = 1)
+    test_model.load_weights(save_path)
+    test(test_model)
+
+
+
+
 
 
 if __name__ == "__main__":
