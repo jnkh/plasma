@@ -123,8 +123,9 @@ def main():
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
     print('[{}] Built Batch'.format(task_index))
     loss,deltas = get_deltas(model,batch_xs,batch_ys)
-    print('[{}] Got deltas'.format(task_index))
+    print('[{}] Got deltas: {}'.format(task_index,deltas))
     set_new_weights(model,deltas)
+    print('[{}] Set new weights: {}'.format(task_index,model.get_weights()))
     sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
     sys.stdout.flush()
     step += 1
