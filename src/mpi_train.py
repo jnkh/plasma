@@ -214,7 +214,7 @@ def test(model,batch_size=1):
 
 
 def main():
-  save_path = 'tmp_mpi/model_weights_epoch{}.h5'
+  save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
   warmup_steps = 100
   train_steps = 100
   epochs = 10
@@ -226,9 +226,10 @@ def main():
 
     if task_index == 0:
       print('Evaluating model...')
-      model.save_weights(save_path.format(e))
+      save_path_curr = save_path.format(e)
+      model.save_weights(save_path_curr)
       test_model = get_model(batch_size = 1)
-      test_model.load_weights(save_path)
+      test_model.load_weights(save_path_curr)
       test(test_model)
       print('done.')
 
