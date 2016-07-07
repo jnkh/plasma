@@ -77,11 +77,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
   else:
     return x[:,lag:,:],x[:,:-lag,:]
 
-def sync_deltas(deltas):
-  global_deltas = []
-  for delta in deltas:
-    global_deltas.append(mpi_reduce_array(delta))
-  return global_deltas 
+
 
 def mpi_reduce_array(arr):
   arr_global = np.empty_like(arr)
@@ -114,9 +110,20 @@ def apply_deltas(model,deltas):
 def get_new_weights(model,deltas):
   return [w-d for w,d in zip(model.get_weights(),deltas)]
 
+def sync_deltas(deltas,single_worker=False):
+  global_deltas = []
+  #default is to reduce the deltas from all workers
+  if not single_worker:
+    for delta in deltas:
+      global_deltas.append(mpi_reduce_array(delta))
+  #otherwise keep only the local deltas
+  else:
+    global_deltas = deltas
+  return global_deltas 
 
-def set_new_weights(model,deltas):
-  global_deltas = sync_deltas(deltas)
+def set_new_weights(model,deltas,single_worker=False):
+  # if single_worker is True, only the rank 0 deltas are used. Otherwise all of them are.
+  global_deltas = sync_deltas(deltas,single_worker)
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
   else:
@@ -130,8 +137,11 @@ def main():
   print('[{}] Build model'.format(task_index))
   model = get_model(batch_size=batch_size)
   step = 0
+  warmup_steps = 50
+  total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
-  while step < 1000:
+  while step < total_steps:
+    warmup_phase = step < warmup_steps:
     if task_index == 0 and verbose:
       start_time = time.time()
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
@@ -140,7 +150,7 @@ def main():
     deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
     if task_index == 0 and verbose:
       deltas_time = time.time()
-    set_new_weights(model,deltas)
+    set_new_weights(model,deltas,warmup_phase)
     if task_index == 0 and verbose:
       sync_time = time.time()
     if task_index == 0 and verbose:
@@ -148,7 +158,10 @@ def main():
       sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
       sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
       sys.stdout.flush()
-    sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
+    write_str = '\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss)
+    if warmup_phase:
+      write_str += ' [Warmup]'
+    sys.stdout.write(write_str)
     sys.stdout.flush()
     step += 1
 
