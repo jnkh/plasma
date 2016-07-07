@@ -154,7 +154,7 @@ def main():
   warmup_steps = 50
   total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
-  for batch_xs,batch_ys in batch_iterator(batch_size=batch_size)
+  for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= total_steps:
      break
     warmup_phase = step < warmup_steps
