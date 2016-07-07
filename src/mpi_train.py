@@ -28,13 +28,8 @@ num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 base_compile_dir = '/scratch/jk7/tmp/{}'.format(task_index)
-# for i in range(num_workers):
-#   comm.Barrier()
-#   if i == task_index:
-print('[{}] importing theano'.format(task_index))
 os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
 import theano
-
 #import keras
 for i in range(num_workers):
   comm.Barrier()
@@ -126,7 +121,9 @@ def main():
   print('[{}] Begin Training'.format(task_index))
   while step < 1000:
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
+    print('[{}] Built Batch'.format(task_index))
     loss,deltas = get_deltas(model,batch_xs,batch_ys)
+    print('[{}] Got deltas'.format(task_index))
     set_new_weights(model,deltas)
     sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
     sys.stdout.flush()
