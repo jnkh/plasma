@@ -43,8 +43,9 @@ for i in range(mpi_task_num):
     os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
     import theano
     from keras import backend as K
-    from keras.layers import Dense, Dropout
+    from keras.layers import Input,Dense, Dropout
     from keras.layers.recurrent import LSTM
+    from keras.layers.wrappers import TimeDistributed
     from keras.models import Model
 
 
