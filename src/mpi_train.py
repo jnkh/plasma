@@ -27,15 +27,18 @@ task_index = comm.Get_rank()
 num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
-print('importing theano')
-os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
-import theano
-
-#import keras
-print('Importing Keras')
 for i in range(num_workers):
   comm.Barrier()
   if i == task_index:
+    print('[{}] importing theano'.format(task_index))
+    os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
+    import theano
+
+#import keras
+for i in range(num_workers):
+  comm.Barrier()
+  if i == task_index:
+    print('[{}] importing Keras'.format(task_index))
     from keras import backend as K
     from keras.layers import Input,Dense, Dropout
     from keras.layers.recurrent import LSTM
