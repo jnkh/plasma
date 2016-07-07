@@ -85,7 +85,7 @@ def sync_deltas(deltas):
 
 def mpi_reduce_array(arr):
   arr_global = np.empty_like(arr)
-  comm.Allreduce([arr,MPI.DOUBLE],[arr_global,MPI.DOUBLE],op=MPI.SUM)
+  comm.Allreduce(arr,arr_global,op=MPI.SUM)
   arr_global /= num_workers
   return arr_global
 
