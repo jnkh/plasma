@@ -78,6 +78,20 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
     return x[:,lag:,:],x[:,:-lag,:]
 
 
+def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
+  multiplier = 100
+  lag = 0
+  while True:
+    xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
+    xx = np.cumsum(xx,axis=1)
+    xx = xx/np.max(np.abs(xx))
+    for chunk_idx in xrange(multiplier):
+      start = chunk_idx*timesteps
+      stop = (1+chunk_idx)*timesteps
+      x_batch = xx[:,start+lag:stop+lag,:]
+      y_batch = xx[:,start:stop,:]
+      yield x_batch,y_batch
+
 
 def mpi_reduce_array(arr):
   arr_global = np.empty_like(arr)
@@ -140,17 +154,26 @@ def main():
   warmup_steps = 50
   total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
-  while step < total_steps:
+  for batch_xs,batch_ys in batch_iterator(batch_size=batch_size)
+    if step >= total_steps:
+     break
     warmup_phase = step < warmup_steps
+
     if task_index == 0 and verbose:
       start_time = time.time()
+
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
+
     if task_index == 0 and verbose:
       batch_time = time.time()
+
     deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
+
     if task_index == 0 and verbose:
       deltas_time = time.time()
+
     set_new_weights(model,deltas,warmup_phase)
+
     if task_index == 0 and verbose:
       sync_time = time.time()
     if task_index == 0 and verbose:
