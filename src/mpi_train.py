@@ -34,7 +34,7 @@ import theano
 #import keras
 print('Importing Keras')
 for i in range(num_workers):
-  mpi_comm.Barrier()
+  comm.Barrier()
   if i == task_index:
     from keras import backend as K
     from keras.layers import Input,Dense, Dropout
