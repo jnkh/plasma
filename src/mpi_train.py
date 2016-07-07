@@ -26,7 +26,7 @@ matplotlib.use('Agg')
 import numpy as np
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
-from mpi_launch_tensorflow import get_mpi_task_index 
+#from mpi_launch_tensorflow import get_mpi_task_index 
 from mpi4py import MPI
 mpi_comm = comm = MPI.COMM_WORLD
 mpi_task_index = mpi_comm.Get_rank()
