@@ -47,6 +47,7 @@ IMAGE_PIXELS = 28
 hidden_units = 20
 batch_size = 512
 sync_mode = True
+lr = 0.0001
 data_dir = '/tigress/jk7/tmp/data'
 
 
@@ -149,7 +150,7 @@ def set_new_weights(model,deltas,single_worker=False):
 def main():
   verbose = False
   print('[{}] Build model'.format(task_index))
-  model = get_model(batch_size=batch_size)
+  model = get_model(batch_size=batch_size,lr=lr)
   step = 0
   warmup_steps = 50
   total_steps = 1000
