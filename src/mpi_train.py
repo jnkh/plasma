@@ -17,31 +17,25 @@ This work was supported by the DOE CSGF program.
 #system
 from __future__ import print_function
 import math,os,sys,time,datetime,os.path
-import dill
-from functools import partial
-
-#matplotlib
-import matplotlib
-matplotlib.use('Agg')
 import numpy as np
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
 from mpi4py import MPI
-mpi_comm = comm = MPI.COMM_WORLD
-mpi_task_index = mpi_comm.Get_rank()
-mpi_task_num = mpi_comm.Get_size()
-task_index,num_workers = mpi_task_index,mpi_task_num#get_mpi_task_index(num_workers = None)
+comm = MPI.COMM_WORLD
+task_index = mpi_comm.Get_rank()
+num_workers = mpi_comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
+print('importing theano')
+os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
+import theano
 
 #import keras
 print('Importing Keras')
 for i in range(mpi_task_num):
   mpi_comm.Barrier()
-  if i == mpi_task_index:
-    os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
-    import theano
+  if i == task_index
     from keras import backend as K
     from keras.layers import Input,Dense, Dropout
     from keras.layers.recurrent import LSTM
@@ -63,8 +57,8 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
     num_output = 1
     dropout = 0.1
 
-    input_tensor = Input(batch_input_shape=(batch_size,timesteps,featurelen))
-    recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True,)(input_tensor)
+    input_tensor = Input()
+    recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True,batch_input_shape=(batch_size,timesteps,featurelen))(input_tensor)
     output_tensor = TimeDistributed(Dense(num_output,activation='tanh'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
