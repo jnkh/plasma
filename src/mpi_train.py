@@ -89,17 +89,17 @@ def mpi_reduce_array(arr):
   arr_global /= num_workers
   return arr_global
 
-def get_deltas(model,X_batch,Y_batch):
-  if task_index == 0: time0 = time.time()
+def get_deltas(model,X_batch,Y_batch,verbose=False):
+  if task_index == 0 and verbose: time0 = time.time()
   weights_before_update = model.get_weights()
-  if task_index == 0: time1 = time.time()
+  if task_index == 0 and verbose: time1 = time.time()
   loss = model.train_on_batch(X_batch,Y_batch)
-  if task_index == 0: time2 = time.time()
+  if task_index == 0 and verbose: time2 = time.time()
   weights_after_update = model.get_weights()
-  if task_index == 0: time3 = time.time()
+  if task_index == 0 and verbose: time3 = time.time()
   deltas = [w1 - w0 for w1,w0 in zip(weights_after_update,weights_before_update)]
-  if task_index == 0: time4 = time.time()
-  if task_index == 0:
+  if task_index == 0 and verbose: time4 = time.time()
+  if task_index == 0 and verbose:
     sys.stdout.write('\ntime 0: {}'.format(time1 - time0))
     sys.stdout.write('\ntime 1: {}'.format(time2 - time1))
     sys.stdout.write('\ntime 2: {}'.format(time3 - time2))
@@ -126,23 +126,24 @@ def set_new_weights(model,deltas):
 
 
 def main():
+  verbose = False
   print('[{}] Build model'.format(task_index))
   model = get_model(batch_size=batch_size)
   step = 0
   print('[{}] Begin Training'.format(task_index))
   while step < 1000:
-    if task_index == 0:
+    if task_index == 0 and verbose:
       start_time = time.time()
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
-    if task_index == 0:
+    if task_index == 0 and verbose:
       batch_time = time.time()
-    deltas,loss = get_deltas(model,batch_xs,batch_ys)
-    if task_index == 0:
+    deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
+    if task_index == 0 and verbose:
       deltas_time = time.time()
     set_new_weights(model,deltas)
-    if task_index == 0:
+    if task_index == 0 and verbose:
       sync_time = time.time()
-    if task_index == 0:
+    if task_index == 0 and verbose:
       sys.stdout.write('\nget deltas: {:.3f}'.format(deltas_time - batch_time))
       sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
       sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
