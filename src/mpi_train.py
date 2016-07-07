@@ -119,7 +119,6 @@ def set_new_weights(model,deltas):
 
 
 def main(_):
-
   model = get_model(batch_size=batch_size)
   step = 0
   while not step < 1000:
@@ -131,5 +130,5 @@ def main(_):
 
 
 if __name__ == "__main__":
-  tf.app.run()
+  main() 
 
