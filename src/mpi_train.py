@@ -126,9 +126,8 @@ def main(_):
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
     loss,deltas = get_deltas(model,batch_xs,batch_ys)
     set_new_weights(model,deltas)
-
-  	sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
-  	sys.stdout.flush()
+    sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
