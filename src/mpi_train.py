@@ -150,14 +150,12 @@ def set_new_weights(model,deltas,single_worker=False):
 
 
 
-def train(model,batch_size=32):
+def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
-  warmup_steps = 50
-  total_steps = 1000
   print('[{}] Begin Training'.format(task_index))
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
-    if step >= total_steps:
+    if step >= train_steps:
      break
     warmup_phase = step < warmup_steps
 
@@ -205,28 +203,34 @@ def test(model,batch_size=1):
   ys_pred = np.squeeze(np.concatenate(ys_pred_list,axis=1))
   xs = np.squeeze(np.concatenate(xs_list,axis=1))
   ys_true = np.squeeze(np.concatenate(ys_true_list,axis=1))
+  print('Testing loss: {}'.format(np.mean((ys_pred - ys_true)**2)))
 
   plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
   plt.show()
-  plt.savefig('out.png',bbox_inches='tight')
+  plt.savefig('out_{}.png'.format(time.time()),bbox_inches='tight')
 
 
 
 def main():
-  save_path = 'tmp_mpi/model_weights.h5'
-  if not os.path.isfile(save_path):
-    print('[{}] Build model'.format(task_index))
+  save_path = 'tmp_mpi/model_weights_epoch{}.h5'
+  warmup_steps = 100
+  train_steps = 100
+  epochs = 10
+  print('[{}] Build model'.format(task_index))
+  for e in range(epochs):
+    warmup_steps_curr = warmup_steps if e == 0 else 0
     model = get_model(batch_size=batch_size,lr=lr)
-    model = train(model,batch_size)
-    if task_index == 0:
-      model.save_weights(save_path)
+    model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
 
-  if task_index == 0:
-    test_model = get_model(batch_size = 1)
-    test_model.load_weights(save_path)
-    test(test_model)
+    if task_index == 0:
+      print('Evaluating model...')
+      model.save_weights(save_path.format(e))
+      test_model = get_model(batch_size = 1)
+      test_model.load_weights(save_path)
+      test(test_model)
+      print('done.')
 
 
 
