@@ -195,7 +195,7 @@ def test(model,batch_size=1):
   xs_list = []
   ys_true_list = []
   num_concat = 200
-  for i,(batch_xs,batch_ys) in batch_iterator(batch_size=batch_size):
+  for i,(batch_xs,batch_ys) in enumerate(batch_iterator(batch_size=batch_size)):
     if i >= num_concat:
       break
 
@@ -216,13 +216,13 @@ def test(model,batch_size=1):
 
 def main():
   save_path = 'tmp_mpi/model_weights.h5'
+  if not os.path.isfile(save_path):
+    print('[{}] Build model'.format(task_index))
+    model = get_model(batch_size=batch_size,lr=lr)
+    model = train(model,batch_size)
+    if task_index == 0:
+      model.save_weights(save_path)
 
-  print('[{}] Build model'.format(task_index))
-  model = get_model(batch_size=batch_size,lr=lr)
-  model = train(model,batch_size)
-
-  if task_index == 0:
-    model.save_weights(save_path)
   if task_index == 0:
     test_model = get_model(batch_size = 1)
     test_model.load_weights(save_path)
