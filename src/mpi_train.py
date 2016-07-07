@@ -23,8 +23,8 @@ import numpy as np
 #from mpi_launch_tensorflow import get_mpi_task_index 
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
-task_index = mpi_comm.Get_rank()
-num_workers = mpi_comm.Get_size()
+task_index = comm.Get_rank()
+num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 print('importing theano')
