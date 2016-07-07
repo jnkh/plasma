@@ -27,12 +27,13 @@ task_index = comm.Get_rank()
 num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
-for i in range(num_workers):
-  comm.Barrier()
-  if i == task_index:
-    print('[{}] importing theano'.format(task_index))
-    os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32'.format(MY_GPU)#,mode=NanGuardMode'
-    import theano
+base_compile_dir = '/scratch/jk7/tmp/{}'.format(task_index)
+# for i in range(num_workers):
+#   comm.Barrier()
+#   if i == task_index:
+print('[{}] importing theano'.format(task_index))
+os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
+import theano
 
 #import keras
 for i in range(num_workers):
