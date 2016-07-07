@@ -20,7 +20,7 @@ import math,os,sys,time,datetime,os.path
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-import pyplot as plt
+import matplotlib.pyplot as plt
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
