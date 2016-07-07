@@ -57,8 +57,8 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
     num_output = 1
     dropout = 0.1
 
-    input_tensor = Input()
-    recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True,batch_input_shape=(batch_size,timesteps,featurelen))(input_tensor)
+    input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
+    recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
     output_tensor = TimeDistributed(Dense(num_output,activation='tanh'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
