@@ -33,7 +33,7 @@ import theano
 
 #import keras
 print('Importing Keras')
-for i in range(mpi_task_num):
+for i in range(num_workers):
   mpi_comm.Barrier()
   if i == task_index:
     from keras import backend as K
