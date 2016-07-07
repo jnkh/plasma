@@ -20,6 +20,7 @@ import math,os,sys,time,datetime,os.path
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
+import pyplot as plt
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -206,11 +207,11 @@ def test(model,batch_size=1):
   xs = np.squeeze(np.concatenate(xs_list,axis=1))
   ys_true = np.squeeze(np.concatenate(ys_true_list,axis=1))
 
-  matplotlib.plot(xs,'b')
-  matplotlib.plot(ys_pred,'r')
-  matplotlib.plot(ys_true,'g')
-  matplotlib.show()
-  matplotlib.savefig('out.png',bbox_inches='tight')
+  plt.plot(xs,'b')
+  plt.plot(ys_pred,'r')
+  plt.plot(ys_true,'g')
+  plt.show()
+  plt.savefig('out.png',bbox_inches='tight')
 
 
 
