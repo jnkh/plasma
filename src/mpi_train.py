@@ -90,10 +90,21 @@ def mpi_reduce_array(arr):
   return arr_global
 
 def get_deltas(model,X_batch,Y_batch):
+  if task_index == 0: time0 = time.time()
   weights_before_update = model.get_weights()
+  if task_index == 0: time1 = time.time()
   loss = model.train_on_batch(X_batch,Y_batch)
+  if task_index == 0: time2 = time.time()
   weights_after_update = model.get_weights()
+  if task_index == 0: time3 = time.time()
   deltas = [w1 - w0 for w1,w0 in zip(weights_after_update,weights_before_update)]
+  if task_index == 0: time4 = time.time()
+  if task_index == 0:
+    sys.stdout.write('\ntime 0: {}'.format(time1 - time0))
+    sys.stdout.write('\ntime 1: {}'.format(time2 - time1))
+    sys.stdout.write('\ntime 2: {}'.format(time3 - time2))
+    sys.stdout.write('\ntime 3: {}'.format(time4 - time3))
+    sys.stdout.flush()
   return deltas,loss
 
 
@@ -125,15 +136,17 @@ def main():
     batch_xs, batch_ys = next_batch(batch_size=batch_size)
     if task_index == 0:
       batch_time = time.time()
-      print('produce batch: {:.3f}'.format(batch_time - start_time))
     deltas,loss = get_deltas(model,batch_xs,batch_ys)
     if task_index == 0:
       deltas_time = time.time()
-      print('get deltas: {:.3f}'.format(deltas_time - batch_time))
     set_new_weights(model,deltas)
     if task_index == 0:
       sync_time = time.time()
-      print('sync deltas: {:.3f}'.format(sync_time - deltas_time))
+    if task_index == 0:
+      sys.stdout.write('\nget deltas: {:.3f}'.format(deltas_time - batch_time))
+      sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
+      sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
+      sys.stdout.flush()
     sys.stdout.write('\rWorker {}, step: {}, loss: {}'.format(task_index,step,loss))
     sys.stdout.flush()
     step += 1
