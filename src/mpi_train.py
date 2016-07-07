@@ -163,8 +163,6 @@ def main():
     if task_index == 0 and verbose:
       start_time = time.time()
 
-    batch_xs, batch_ys = next_batch(batch_size=batch_size)
-
     if task_index == 0 and verbose:
       batch_time = time.time()
 
