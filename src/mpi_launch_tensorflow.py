@@ -141,7 +141,7 @@ def get_mpi_task_index(num_workers = None):
   else:
       exit(0) 
 
-  num_total = num_workers + num_ps 
+  num_total = num_workers 
   assert(task_num >= num_total)
   
   if task_index == 0:
