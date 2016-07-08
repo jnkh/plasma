@@ -76,33 +76,35 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
   lag = 70
   density = 0.005
+  mode = 2
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
   while True:
-    xx = np.random.binomial(1,density,batch_shape)
-    yy = 1.0*xx
-    for i in xrange(batch_size):
-      yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
-    yy = np.roll(yy,lag)
-    for chunk_idx in xrange(multiplier):
-      start = chunk_idx*timesteps
-      stop = (1+chunk_idx)*timesteps
-      x_batch = xx[:,start:stop,:]
-      y_batch = yy[:,start:stop,:]
-      yield x_batch,y_batch
+    if mode == 1:
+      xx = np.random.binomial(1,density,batch_shape)
+      yy = 1.0*xx
+      for i in xrange(batch_size):
+        yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
+      yy = np.roll(yy,lag)
+      for chunk_idx in xrange(multiplier):
+        start = chunk_idx*timesteps
+        stop = (1+chunk_idx)*timesteps
+        x_batch = xx[:,start:stop,:]
+        y_batch = yy[:,start:stop,:]
+        yield x_batch,y_batch
 
 
-
-    # xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
-    # for i in xrange(batch_size):
-    #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
-    # xx = np.cumsum(xx,axis=1)
-    # xx = xx/np.max(np.abs(xx))
-    # for chunk_idx in xrange(multiplier):
-    #   start = chunk_idx*timesteps
-    #   stop = (1+chunk_idx)*timesteps
-    #   x_batch = xx[:,start+lag:stop+lag,:]
-    #   y_batch = -1*xx[:,start:stop,:]
-    #   yield x_batch,y_batch
+    if mode == 2:
+      xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
+      for i in xrange(batch_size):
+        xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
+      xx = np.cumsum(xx,axis=1)
+      xx = xx/np.max(np.abs(xx))
+      for chunk_idx in xrange(multiplier):
+        start = chunk_idx*timesteps
+        stop = (1+chunk_idx)*timesteps
+        x_batch = xx[:,start+lag:stop+lag,:]
+        y_batch = xx[:,start:stop,:]
+        yield x_batch,y_batch
 
 
 def turn_array_into_switch(arr):
