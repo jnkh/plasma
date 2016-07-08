@@ -202,9 +202,9 @@ def test(model,batch_size=1,epoch=None):
 
   plt.close('all')
   plt.figure()
-  plt.plot(xs,'b')
+  plt.plot(-xs,'b')
   plt.plot(ys_pred,'r')
-  plt.plot(-ys_true,'g')
+  plt.plot(ys_true,'g')
   plt.show()
   if epoch is None:
     epoch = time.time()
