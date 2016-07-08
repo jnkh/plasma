@@ -81,7 +81,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
     xx = np.random.binomial(1,density,batch_shape)
     for i in xrange(batch_size):
       yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
-    yy = np.roll(xx,lag)
+    yy = np.roll(yy,lag)
     for chunk_idx in xrange(multiplier):
       start = chunk_idx*timesteps
       stop = (1+chunk_idx)*timesteps
@@ -232,6 +232,7 @@ def test(model,batch_size=1,epoch=None):
   plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
+  plt.ylim([-0.1,1.1])
   plt.show()
   if epoch is None:
     epoch = time.time()
