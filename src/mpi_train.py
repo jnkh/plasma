@@ -70,15 +70,6 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
     return model
 
 
-def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
-  lag = 0
-  x = np.random.randn(batch_size,timesteps+lag,featurelen) 
-  x = np.cumsum(x,axis=1)
-  x = x/np.max(np.abs(x))
-  if lag == 0:
-    return x,x
-  else:
-    return x[:,lag:,:],x[:,:-lag,:]
 
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
@@ -185,7 +176,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
     set_new_weights(model,deltas,num_replicas)
 
 
-    write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,mpi_average_scalars(loss))
+    write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss))
     write_str += ' [num_replicas = {}]'.format(num_replicas)
     print_unique(write_str)
     step += 1
