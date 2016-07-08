@@ -75,8 +75,8 @@ class MPIModel():
   def set_lr(self,lr):
     self.lr = lr
 
-  def save_weights(self,path):
-    self.model.save_weights(path)
+  def save_weights(self,path,overwrite=False):
+    self.model.save_weights(path,overwrite=overwrite)
 
   def load_weights(self,path):
     self.model.load_weights(path)
