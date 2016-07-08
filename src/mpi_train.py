@@ -49,7 +49,8 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = 0.0001
+LR = LR0 =  0.0005
+LR_DECAY = 0.8
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -264,6 +265,7 @@ def main():
   print_all('Building model\n')
   model = get_model(batch_size=batch_size,timesteps=10)
   for e in range(epochs):
+    LR = LR0*LR_DECAY**e
     print_unique('Epoch {}\n'.format(e))
     warmup_steps_curr = warmup_steps if e == 0 else 0
 
