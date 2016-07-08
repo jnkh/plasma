@@ -160,7 +160,7 @@ class MPIModel():
       self.set_new_weights(deltas,num_replicas)
 
 
-      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
+      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
       write_str += ' [num_replicas = {}]'.format(num_replicas)
       print_unique(write_str)
       step += 1
