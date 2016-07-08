@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-lr = 0.000001
+LR = 0.000001
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -179,7 +179,7 @@ def sync_deltas(deltas,num_replicas=None):
 def set_new_weights(model,deltas,num_replicas=None):
   #
   global_deltas = sync_deltas(deltas,num_replicas)
-  global_deltas = multiply_params(global_deltas,lr)
+  global_deltas = multiply_params(global_deltas,LR)
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
   else:
@@ -204,7 +204,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
     set_new_weights(model,deltas,num_replicas)
 
 
-    write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss))
+    write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
     write_str += ' [num_replicas = {}]'.format(num_replicas)
     print_unique(write_str)
     step += 1
