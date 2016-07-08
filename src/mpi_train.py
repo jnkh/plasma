@@ -231,7 +231,7 @@ def main():
   print('[{}] Build model'.format(task_index))
   for e in range(epochs):
     warmup_steps_curr = warmup_steps if e == 0 else 0
-    model = get_model(batch_size=batch_size,lr=lr)
+    model = get_model(batch_size=batch_size)
     model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
 
     if task_index == 0:
