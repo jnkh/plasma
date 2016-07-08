@@ -78,7 +78,7 @@ def moving_average(a, n=1) :
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
-  lag = 70
+  lag = 1
   density = 0.005
   mode = 2
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
