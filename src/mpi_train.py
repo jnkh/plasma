@@ -200,7 +200,7 @@ def set_new_weights(model,deltas,num_replicas=None):
 def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
-  multiplier = 50
+  multiplier = 10
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
     if step >= train_steps:
       break
