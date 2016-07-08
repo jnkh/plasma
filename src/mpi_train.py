@@ -83,7 +83,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 100
-  lag = 30
+  lag = 70
   while True:
     xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
     xx = np.cumsum(xx,axis=1)
@@ -186,8 +186,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
 
 
     write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,mpi_average_scalars(loss))
-    if warmup_phase:
-      write_str += ' [Warmup]'
+    write_str += ' [num_replicas = {}]'.format(num_replicas)
     print_unique(write_str)
     step += 1
   return model
@@ -214,7 +213,7 @@ def test(model,batch_size=1,epoch=None):
   plt.figure()
   plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
-  plt.plot(ys_true,'g')
+  plt.plot(-ys_true,'g')
   plt.show()
   if epoch is None:
     epoch = time.time()
@@ -239,9 +238,9 @@ def main():
   warmup_steps = 100
   train_steps = 100
   epochs = 10
-  print_all('Building model')
+  print_all('Building model\n')
   for e in range(epochs):
-    print_unique('Epoch {}'.format(e))
+    print_unique('Epoch {}\n'.format(e))
     warmup_steps_curr = warmup_steps if e == 0 else 0
     model = get_model(batch_size=batch_size,timesteps=10)
     model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
