@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 400
 batch_size = 512
 sync_mode = True
-lr = 0.0001
+lr = 0.00001
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -223,12 +223,24 @@ def test(model,batch_size=1,epoch=None):
 
 
 
+def print_unique(print_str):
+  if task_index == 0:
+    sys.stdout.write(print_str)
+    sys.stdout.flush()
+
+def print_all(print_str):
+  sys.stdout.write('[{}] '.format(task_index) + print_str)
+  sys.stdout.flush()
+
+
+
+
 def main():
   save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
   warmup_steps = 100
   train_steps = 100
   epochs = 10
-  print('[{}] Build model'.format(task_index))
+  print_all('Building model')
   for e in range(epochs):
     warmup_steps_curr = warmup_steps if e == 0 else 0
     model = get_model(batch_size=batch_size)
