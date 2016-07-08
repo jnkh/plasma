@@ -188,8 +188,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
     write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,mpi_average_scalars(loss))
     if warmup_phase:
       write_str += ' [Warmup]'
-    sys.stdout.write(write_str)
-    sys.stdout.flush()
+    print_unique(write_str)
     step += 1
   return model
 
@@ -251,7 +250,7 @@ def main():
       print('Evaluating model...')
       save_path_curr = save_path.format(e)
       model.save_weights(save_path_curr,overwrite=True)
-      test_model = get_model(batch_size = 1)
+      test_model = get_model(batch_size = 1,timesteps=10)
       test_model.load_weights(save_path_curr)
       test(test_model,epoch=e)
       print('done.')
