@@ -46,7 +46,7 @@ for i in range(num_workers):
     from keras.optimizers import SGD
 
 
-hidden_units = 400
+hidden_units = 100
 batch_size = 512
 sync_mode = True
 lr = 0.00001
