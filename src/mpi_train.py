@@ -128,7 +128,7 @@ class MPIModel():
       global_deltas.append(mpi_average_gradients(delta,num_replicas))
     return global_deltas 
 
-  def set_new_weights(self.model,deltas,num_replicas=None):
+  def set_new_weights(self,deltas,num_replicas=None):
     #
     global_deltas = sync_deltas(deltas,num_replicas)
     global_deltas = multiply_params(global_deltas,LR)
@@ -141,7 +141,7 @@ class MPIModel():
 
 
 
-  def train_epoch(self.model,batch_size=32,train_steps=100,warmup_steps=100):
+  def train_epoch(self,batch_size=32,train_steps=100,warmup_steps=100):
     verbose = False
     step = 0
     multiplier = 10
