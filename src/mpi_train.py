@@ -62,10 +62,10 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
-    output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
+    output_tensor = TimeDistributed(Dense(num_output,activation='sigmoid'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='binary_crossentropy')
 
     return model
 
@@ -75,18 +75,31 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
   lag = 70
+  density = 0.05
+  batch_shape = (batch_size,multiplier*timesteps,featurelen)
   while True:
-    xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
-    for i in xrange(batch_size):
-      xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
-    xx = np.cumsum(xx,axis=1)
-    xx = xx/np.max(np.abs(xx))
+    xx = np.random.binomial(1,density,batch_shape)
+    yy = np.roll(xx,lag)
     for chunk_idx in xrange(multiplier):
       start = chunk_idx*timesteps
       stop = (1+chunk_idx)*timesteps
-      x_batch = xx[:,start+lag:stop+lag,:]
-      y_batch = -1*xx[:,start:stop,:]
+      x_batch = xx[:,start:stop,:]
+      y_batch = yy[:,start:stop,:]
       yield x_batch,y_batch
+
+
+
+    # xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
+    # for i in xrange(batch_size):
+    #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
+    # xx = np.cumsum(xx,axis=1)
+    # xx = xx/np.max(np.abs(xx))
+    # for chunk_idx in xrange(multiplier):
+    #   start = chunk_idx*timesteps
+    #   stop = (1+chunk_idx)*timesteps
+    #   x_batch = xx[:,start+lag:stop+lag,:]
+    #   y_batch = -1*xx[:,start:stop,:]
+    #   yield x_batch,y_batch
 
 
 
