@@ -62,7 +62,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
-    output_tensor = TimeDistributed(Dense(num_output,activation='tanh'))(recurrent_layer)
+    output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
     model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
@@ -236,7 +236,7 @@ def test(model,batch_size=1,epoch=None):
   plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
-  plt.ylim([-0.1,1.1])
+  #plt.ylim([-0.1,1.1])
   plt.show()
   if epoch is None:
     epoch = time.time()
