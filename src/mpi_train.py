@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from functools import partial
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -46,13 +47,7 @@ for i in range(num_workers):
     from keras.optimizers import SGD
 
 
-hidden_units = 100
-batch_size = 512
-sync_mode = True
-LR = LR0 =  0.005
-LR_DECAY = 1.0
-DUMMY_LR = 0.1
-MULTIPLIER = 20
+
 data_dir = '/tigress/jk7/tmp/data'
 
 
@@ -61,16 +56,33 @@ data_dir = '/tigress/jk7/tmp/data'
 
 
 class MPIModel():
-  def __init__(self,model,comm,batch_iterator,lr=0.01):
+  def __init__(self,model,comm,batch_iterator,num_replicas=None,warmup_steps=1000,lr=0.01):
+    self.epoch = 0
     self.model = model
     self.lr = lr
     self.DUMMY_LR = 0.1
     self.comm = comm
     self.batch_iterator
+    self.warmup_steps=warmup_steps
+    self.num_workers = comm.Get_size()
+    self.task_index = comm.Get_rank()
+    if num_replicas is None or num_replicas < 1 or num_replicas > num_workers:
+      self.num_replicas = num_workers
+    else:
+      self.num_replicas = num_replicas
 
+
+  def set_lr(self,lr):
+    self.lr = lr
+
+  def save_weights(self,path):
+    self.model.save_weights(path)
+
+  def load_weights(self,path):
+    self.model.load_weights(path)
 
   def compile(self,loss='mse'):
-    model.compile(optimizer=SGD(lr=self.DUMMY_LR),loss=loss)
+    self.model.compile(optimizer=SGD(lr=self.DUMMY_LR),loss=loss)
 
 
   def get_deltas(self,X_batch,Y_batch,verbose=False):
@@ -93,7 +105,7 @@ class MPIModel():
   def mpi_average_gradients(self,arr,num_replicas=None):
     if num_replicas == None:
       num_replicas = self.num_workers 
-    if task_index >= num_replicas:
+    if self.task_index >= num_replicas:
       arr *= 0.0
     arr_global = np.empty_like(arr)
     self.comm.Allreduce(arr,arr_global,op=MPI.SUM)
@@ -105,7 +117,7 @@ class MPIModel():
   def mpi_average_scalars(self,val,num_replicas=None):
     if num_replicas == None:
       num_replicas = self.num_workers 
-    if task_index >= num_replicas:
+    if self.task_index >= num_replicas:
       val *= 0.0
     val_global = 0.0 
     val_global = self.comm.allreduce(val,op=MPI.SUM)
@@ -133,39 +145,42 @@ class MPIModel():
 
 
 
-  def train_epoch(self,batch_size=32,train_steps=100,warmup_steps=100):
+  def train_epoch(self):
     verbose = False
     step = 0
-    multiplier = 10
-    for batch_xs,batch_ys in self.batch_iterator():
-      if step >= train_steps:
-        break
-      if step % multiplier == 0:
+    for batch_xs,batch_ys,reset_states_now,epoch_end in self.batch_iterator():
+      if reset_states_now:
         self.model.reset_states()
 
-      warmup_phase = step < warmup_steps
-      num_replicas = 1 if warmup_phase else num_workers
+      warmup_phase = (step < warmup_steps and self.epoch == 0)
+      num_replicas = 1 if warmup_phase else self.num_replicas
 
-      deltas,loss = get_deltas(self.model,batch_xs,batch_ys,verbose)
+      deltas,loss = self.get_deltas(batch_xs,batch_ys,verbose)
 
-      set_new_weights(self.model,deltas,num_replicas)
+      self.set_new_weights(deltas,num_replicas)
 
 
-      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
+      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
       write_str += ' [num_replicas = {}]'.format(num_replicas)
       print_unique(write_str)
       step += 1
-    returnself.model 
+      if epoch_end:
+        self.epoch += 1
+        break
+
+
+  def train_epochs(self,warmup_steps=100,num_epochs=1):
+    for i in range(num_epochs):
+      self.train_epoch(warmup_steps)
 
 
 
 
 
-def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
-    num_layers = 2
-    num_output = 1
-    dropout = 0.1
+
+
+def get_model(batch_size = 32,num_layers = 2,hidden_units=100,num_output=1,dropout=0.1,timesteps = 100, featurelen=1,is_training=True):
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
@@ -182,11 +197,12 @@ def moving_average(a, n=1) :
     ret[:,n:,:] = ret[:,n:,:] - ret[:,:-n,:]
     return ret[:,n - 1:,:] / n
 
-def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,featurelen = 1):
+def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,epoch_length=1000,featurelen = 1):
   lag = 20
   density = 0.005
   mode = 2
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
+  global_step = 0
   while True:
     if mode == 1:
       xx = np.random.binomial(1,density,batch_shape)
@@ -196,11 +212,14 @@ def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,featurelen = 1):
         yy[i,:,1] = 1.0 - turn_array_into_switch(xx[i,:,0])
       yy = np.roll(yy,lag,axis=1)
       for chunk_idx in xrange(multiplier):
+        epoch_end = global_step == epoch_length - 1
+        reset_states_now = chunk_idx == 0
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start:stop,:]
         y_batch = yy[:,start:stop,:]
-        yield x_batch,y_batch
+        global_step += 1
+        yield x_batch,y_batch,reset_states_now,epoch_end
 
 
     if mode == 2:
@@ -210,10 +229,13 @@ def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,featurelen = 1):
       # for i in xrange(batch_size):
       #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
       for chunk_idx in xrange(multiplier):
+        epoch_end = global_step == epoch_length - 1
+        reset_states_now = chunk_idx == 0
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start+lag:stop+lag,:]
         y_batch = yy[:,start:stop,:]
+        global_step += 1
         yield x_batch,y_batch
 
 
@@ -306,10 +328,10 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
   multiplier = 50
-  for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
-    if step >= train_steps:
+  for batch_xs,batch_ys,reset_states_now,epoch_end in batch_iterator(batch_size=batch_size,multiplier=multiplier):
+    if epoch_end:
       break
-    if step % multiplier == 0:
+    if reset_states_now:
       model.reset_states()
 
     warmup_phase = step < warmup_steps
@@ -333,7 +355,7 @@ def test(model,batch_size=1,epoch=None):
   ys_true_list = []
   num_concat = 200
   multiplier = num_concat 
-  for i,(batch_xs,batch_ys) in enumerate(batch_iterator(batch_size=batch_size,multiplier=multiplier)):
+  for i,(batch_xs,batch_ys,_,_) in enumerate(batch_iterator(batch_size=batch_size,multiplier=multiplier)):
     if i >= num_concat:
       break
 
@@ -375,26 +397,36 @@ def main():
   warmup_steps = 5000
   train_steps = 5000
   epochs = 20
+  lr = 0.01
+  lr_decay = 1.0
+  batch_size = 512
+  
+
+  hidden_units = 100
+  multiplier = 20
+  timesteps = 10
+
   print_all('Building model\n')
-  model = get_model(batch_size=batch_size,timesteps=10)
+  model = get_model(batch_size=batch_size,timesteps=timesteps)
+  batch_it = partial(batch_iterator,batch_size=batch_size,timesteps = timesteps,multiplier=multiplier,epoch_length=train_steps)
+  mpi_model = MPIModel(model,comm,batch_iterator,lr=lr,warmup_steps=warmup_steps)
   for e in range(epochs):
-    LR = LR0*LR_DECAY**e
-    print_unique('Epoch {}\n'.format(e))
-    warmup_steps_curr = warmup_steps if e == 0 else 0
+    mpi_model.set_lr(lr*lr_decay**e)
+    print_unique('\nEpoch {}\n'.format(e))
 
 
     if task_index == 0:
       print('Evaluating model...')
       save_path_curr = save_path.format(e)
-      model.save_weights(save_path_curr,overwrite=True)
-      test_model = get_model(batch_size = 1,timesteps=10)
+      mpi_model.save_weights(save_path_curr,overwrite=True)
+      test_model = get_model(batch_size = 1,timesteps=timesteps)
       test_model.load_weights(save_path_curr)
       test(test_model,epoch=e)
       print('done.')
 
 
 
-    model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
+    mpi_model.train_epoch()
 
 
 
