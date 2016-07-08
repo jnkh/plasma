@@ -302,8 +302,8 @@ def print_all(print_str):
 
 def main():
   save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
-  warmup_steps = 5000
-  train_steps = 5000
+  warmup_steps = 1000
+  train_steps = 1000
   epochs = 20
   lr = 0.01
   lr_decay = 1.0
