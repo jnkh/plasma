@@ -49,7 +49,8 @@ for i in range(num_workers):
 hidden_units = 400
 batch_size = 512
 sync_mode = True
-lr = 0.005
+lr = 0.0001
+DUMMY_LR = 0.001
 data_dir = '/tigress/jk7/tmp/data'
 
 
@@ -65,7 +66,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True,lr 
     output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=lr),loss='mse')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
 
     return model
 
@@ -92,15 +93,10 @@ def batch_iterator(batch_size=32,timesteps = 100,featurelen = 1):
       start = chunk_idx*timesteps
       stop = (1+chunk_idx)*timesteps
       x_batch = xx[:,start+lag:stop+lag,:]
-      y_batch = xx[:,start:stop,:]
+      y_batch = -1*xx[:,start:stop,:]
       yield x_batch,y_batch
 
 
-def mpi_reduce_array(arr):
-  arr_global = np.empty_like(arr)
-  comm.Allreduce(arr,arr_global,op=MPI.SUM)
-  arr_global /= num_workers
-  return arr_global
 
 def get_deltas(model,X_batch,Y_batch,verbose=False):
   weights_before_update = model.get_weights()
@@ -109,31 +105,39 @@ def get_deltas(model,X_batch,Y_batch,verbose=False):
 
   weights_after_update = model.get_weights()
 
-  deltas = [w1 - w0 for w1,w0 in zip(weights_after_update,weights_before_update)]
+  deltas = [(w1 - w0)/DUMMY_LR for w1,w0 in zip(weights_after_update,weights_before_update)]
 
   return deltas,loss
 
 
-def apply_deltas(model,deltas):
-  model.set_weights()
-
 def get_new_weights(model,deltas):
   return [w+d for w,d in zip(model.get_weights(),deltas)]
 
-def sync_deltas(deltas,single_worker=False):
+
+
+def mpi_average_gradients(arr,num_replicas=None):
+  if num_replicas == None:
+    num_replicas = num_workers 
+  if task_index >= num_replicas:
+    arr *= 0
+  arr_global = np.empty_like(arr)
+  comm.Allreduce(arr,arr_global,op=MPI.SUM)
+  arr_global /= num_replicas
+  return arr_global
+
+
+
+def sync_deltas(deltas,num_replicas=None):
   global_deltas = []
   #default is to reduce the deltas from all workers
-  if not single_worker:
-    for delta in deltas:
-      global_deltas.append(mpi_reduce_array(delta))
-  #otherwise keep only the local deltas
-  else:
-    global_deltas = deltas
+  for delta in deltas:
+    global_deltas.append(mpi_average_gradients(delta,num_replicas))
   return global_deltas 
 
-def set_new_weights(model,deltas,single_worker=False):
+def set_new_weights(model,deltas,num_replicas=None):
   # if single_worker is True, only the rank 0 deltas are used. Otherwise all of them are.
-  global_deltas = sync_deltas(deltas,single_worker)
+  global_deltas = sync_deltas(deltas,num_replicas)
+  global_deltas *= lr
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
   else:
@@ -151,10 +155,11 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
      break
 
     warmup_phase = step < warmup_steps
+    num_replicas = 1 if warmup_phase else num_workers
 
     deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
 
-    set_new_weights(model,deltas,warmup_phase)
+    set_new_weights(model,deltas,num_replicas)
 
 
     write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,loss)
