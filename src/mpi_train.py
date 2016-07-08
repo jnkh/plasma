@@ -85,7 +85,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
       yy = 1.0*xx
       for i in xrange(batch_size):
         yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
-      yy = np.roll(yy,lag)
+      yy = np.roll(yy,lag,axis=1)
       for chunk_idx in xrange(multiplier):
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
