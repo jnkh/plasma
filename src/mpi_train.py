@@ -261,11 +261,6 @@ def main():
   epochs = 10
   print_all('Building model\n')
   for e in range(epochs):
-    print_unique('Epoch {}\n'.format(e))
-    warmup_steps_curr = warmup_steps if e == 0 else 0
-    model = get_model(batch_size=batch_size,timesteps=10)
-    model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
-
     if task_index == 0:
       print('Evaluating model...')
       save_path_curr = save_path.format(e)
@@ -276,6 +271,11 @@ def main():
       print('done.')
 
 
+
+    print_unique('Epoch {}\n'.format(e))
+    warmup_steps_curr = warmup_steps if e == 0 else 0
+    model = get_model(batch_size=batch_size,timesteps=10)
+    model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
 
 
 
