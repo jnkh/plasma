@@ -108,7 +108,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
 def turn_array_into_switch(arr):
   out_arr = np.zeros_like(arr)
   current = 0.0
-  for i in arr:
+  for i in range(len(arr)):
     if arr[i] > 0.5:
       current = 1.0 - current
     out_arr[i] = current
