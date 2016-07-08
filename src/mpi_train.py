@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = LR0 =  0.001
+LR = LR0 =  0.01
 LR_DECAY = 1.0
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
