@@ -62,7 +62,7 @@ class MPIModel():
     self.lr = lr
     self.DUMMY_LR = 0.1
     self.comm = comm
-    self.batch_iterator
+    self.batch_iterator = batch_iterator
     self.warmup_steps=warmup_steps
     self.num_workers = comm.Get_size()
     self.task_index = comm.Get_rank()
