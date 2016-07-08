@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = 0.0
+LR = 0.01
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -122,6 +122,7 @@ def get_deltas(model,X_batch,Y_batch,verbose=False):
   loss = model.train_on_batch(X_batch,Y_batch)
 
   weights_after_update = model.get_weights()
+  model.set_weights(weights_before_update)
 
   deltas = subtract_params(weights_after_update,weights_before_update)
   deltas = multiply_params(deltas,1.0/DUMMY_LR)
