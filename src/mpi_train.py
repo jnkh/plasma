@@ -120,10 +120,10 @@ def get_new_weights(model,deltas):
 def multiply_params(params,eps):
   return [el*eps for el in params]
 
-def subtract_params(params1,params2)
+def subtract_params(params1,params2):
   return [p1 - p2 for p1,p2 in zip(params1,params2)]
 
-def add_params(params1,params2)
+def add_params(params1,params2):
   return [p1 + p2 for p1,p2 in zip(params1,params2)]
 
 
