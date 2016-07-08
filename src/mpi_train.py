@@ -260,8 +260,8 @@ def main():
   train_steps = 1000
   epochs = 10
   print_all('Building model\n')
+  model = get_model(batch_size=batch_size,timesteps=10)
   for e in range(epochs):
-    model = get_model(batch_size=batch_size,timesteps=10)
     print_unique('Epoch {}\n'.format(e))
     warmup_steps_curr = warmup_steps if e == 0 else 0
 
