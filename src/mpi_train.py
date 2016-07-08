@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = LR0 =  0.001
+LR = LR0 =  0.02
 LR_DECAY = 1.0
 DUMMY_LR = 0.1
 MULTIPLIER = 20
@@ -200,7 +200,7 @@ def set_new_weights(model,deltas,num_replicas=None):
 def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
-  multiplier = 20
+  multiplier = 50
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
     if step >= train_steps:
       break
