@@ -65,7 +65,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
     output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mae')
 
     return model
 
