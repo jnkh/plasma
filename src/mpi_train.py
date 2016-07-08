@@ -160,7 +160,7 @@ def sync_deltas(deltas,num_replicas=None):
 def set_new_weights(model,deltas,num_replicas=None):
   #
   global_deltas = sync_deltas(deltas,num_replicas)
-  multiply_params(global_deltas,lr)
+  global_deltas = multiply_params(global_deltas,lr)
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
   else:
