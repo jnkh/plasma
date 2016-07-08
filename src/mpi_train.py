@@ -61,10 +61,12 @@ data_dir = '/tigress/jk7/tmp/data'
 
 
 class MPIModel():
-  def __init__(self,model,lr=0.01):
+  def __init__(self,model,comm,batch_iterator,lr=0.01):
     self.model = model
     self.lr = lr
     self.DUMMY_LR = 0.1
+    self.comm = comm
+    self.batch_iterator
 
 
   def compile(self,loss='mse'):
@@ -79,8 +81,8 @@ class MPIModel():
     weights_after_update = self.model.get_weights()
     self.model.set_weights(weights_before_update)
 
-    deltas = self.subtract_params(weights_after_update,weights_before_update)
-    deltas = self.multiply_params(deltas,1.0/self.DUMMY_LR)
+    deltas = subtract_params(weights_after_update,weights_before_update)
+    deltas = multiply_params(deltas,1.0/self.DUMMY_LR)
 
     return deltas,loss
 
@@ -88,55 +90,45 @@ class MPIModel():
   def get_new_weights(self,deltas):
     return add_params(self.model.get_weights(),deltas)
 
-  def multiply_params(self,params,eps):
-    return [el*eps for el in params]
-
-  def subtract_params(self,params1,params2):
-    return [p1 - p2 for p1,p2 in zip(params1,params2)]
-
-  def add_params(params1,params2):
-    return [p1 + p2 for p1,p2 in zip(params1,params2)]
-
-
-  def mpi_average_gradients(arr,num_replicas=None):
+  def mpi_average_gradients(self,arr,num_replicas=None):
     if num_replicas == None:
-      num_replicas = num_workers 
+      num_replicas = self.num_workers 
     if task_index >= num_replicas:
       arr *= 0.0
     arr_global = np.empty_like(arr)
-    comm.Allreduce(arr,arr_global,op=MPI.SUM)
+    self.comm.Allreduce(arr,arr_global,op=MPI.SUM)
     arr_global /= num_replicas
     return arr_global
 
 
 
-  def mpi_average_scalars(val,num_replicas=None):
+  def mpi_average_scalars(self,val,num_replicas=None):
     if num_replicas == None:
-      num_replicas = num_workers 
+      num_replicas = self.num_workers 
     if task_index >= num_replicas:
       val *= 0.0
     val_global = 0.0 
-    val_global = comm.allreduce(val,op=MPI.SUM)
+    val_global = self.comm.allreduce(val,op=MPI.SUM)
     val_global /= num_replicas
     return val_global 
 
 
-  def sync_deltas(deltas,num_replicas=None):
+  def sync_deltas(self,deltas,num_replicas=None):
     global_deltas = []
     #default is to reduce the deltas from all workers
     for delta in deltas:
-      global_deltas.append(mpi_average_gradients(delta,num_replicas))
+      global_deltas.append(self.mpi_average_gradients(delta,num_replicas))
     return global_deltas 
 
   def set_new_weights(self,deltas,num_replicas=None):
     #
-    global_deltas = sync_deltas(deltas,num_replicas)
-    global_deltas = multiply_params(global_deltas,LR)
+    global_deltas = self.sync_deltas(deltas,num_replicas)
+    global_deltas = multiply_params(global_deltas,self.lr)
     if comm.rank == 0:
-      new_weights = get_new_weights(self.model,global_deltas)
+      new_weights = self.get_new_weights(self.model,global_deltas)
     else:
       new_weights = None
-    new_weights = comm.bcast(new_weights,root=0)
+    new_weights = self.comm.bcast(new_weights,root=0)
     self.model.set_weights(new_weights)
 
 
@@ -145,7 +137,7 @@ class MPIModel():
     verbose = False
     step = 0
     multiplier = 10
-    for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
+    for batch_xs,batch_ys in self.batch_iterator():
       if step >= train_steps:
         break
       if step % multiplier == 0:
@@ -313,7 +305,7 @@ def set_new_weights(model,deltas,num_replicas=None):
 def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   verbose = False
   step = 0
-  multiplier = 10
+  multiplier = 50
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
     if step >= train_steps:
       break
@@ -380,9 +372,9 @@ def print_all(print_str):
 
 def main():
   save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
-  warmup_steps = 1000
-  train_steps = 1000
-  epochs = 10
+  warmup_steps = 5000
+  train_steps = 5000
+  epochs = 20
   print_all('Building model\n')
   model = get_model(batch_size=batch_size,timesteps=10)
   for e in range(epochs):
