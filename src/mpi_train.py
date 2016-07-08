@@ -95,10 +95,10 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
 
     if mode == 2:
       xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
-      for i in xrange(batch_size):
-        xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
       xx = np.cumsum(xx,axis=1)
       xx = xx/np.max(np.abs(xx))
+      for i in xrange(batch_size):
+        xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
       for chunk_idx in xrange(multiplier):
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
