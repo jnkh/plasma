@@ -56,6 +56,119 @@ MULTIPLIER = 20
 data_dir = '/tigress/jk7/tmp/data'
 
 
+
+
+
+
+class MPIModel():
+  def __init__(self,model,lr=0.01):
+    self.model = model
+    self.lr = lr
+    self.DUMMY_LR = 0.1
+
+
+  def compile(self,loss='mse'):
+    model.compile(optimizer=SGD(lr=self.DUMMY_LR),loss=loss)
+
+
+  def get_deltas(self,X_batch,Y_batch,verbose=False):
+    weights_before_update = self.model.get_weights()
+
+    loss = self.model.train_on_batch(X_batch,Y_batch)
+
+    weights_after_update = self.model.get_weights()
+    self.model.set_weights(weights_before_update)
+
+    deltas = self.subtract_params(weights_after_update,weights_before_update)
+    deltas = self.multiply_params(deltas,1.0/self.DUMMY_LR)
+
+    return deltas,loss
+
+
+  def get_new_weights(self,deltas):
+    return add_params(self.model.get_weights(),deltas)
+
+  def multiply_params(self,params,eps):
+    return [el*eps for el in params]
+
+  def subtract_params(self,params1,params2):
+    return [p1 - p2 for p1,p2 in zip(params1,params2)]
+
+  def add_params(params1,params2):
+    return [p1 + p2 for p1,p2 in zip(params1,params2)]
+
+
+  def mpi_average_gradients(arr,num_replicas=None):
+    if num_replicas == None:
+      num_replicas = num_workers 
+    if task_index >= num_replicas:
+      arr *= 0.0
+    arr_global = np.empty_like(arr)
+    comm.Allreduce(arr,arr_global,op=MPI.SUM)
+    arr_global /= num_replicas
+    return arr_global
+
+
+
+  def mpi_average_scalars(val,num_replicas=None):
+    if num_replicas == None:
+      num_replicas = num_workers 
+    if task_index >= num_replicas:
+      val *= 0.0
+    val_global = 0.0 
+    val_global = comm.allreduce(val,op=MPI.SUM)
+    val_global /= num_replicas
+    return val_global 
+
+
+  def sync_deltas(deltas,num_replicas=None):
+    global_deltas = []
+    #default is to reduce the deltas from all workers
+    for delta in deltas:
+      global_deltas.append(mpi_average_gradients(delta,num_replicas))
+    return global_deltas 
+
+  def set_new_weights(self.model,deltas,num_replicas=None):
+    #
+    global_deltas = sync_deltas(deltas,num_replicas)
+    global_deltas = multiply_params(global_deltas,LR)
+    if comm.rank == 0:
+      new_weights = get_new_weights(self.model,global_deltas)
+    else:
+      new_weights = None
+    new_weights = comm.bcast(new_weights,root=0)
+    self.model.set_weights(new_weights)
+
+
+
+  def train_epoch(self.model,batch_size=32,train_steps=100,warmup_steps=100):
+    verbose = False
+    step = 0
+    multiplier = 10
+    for batch_xs,batch_ys in batch_iterator(batch_size=batch_size,multiplier=multiplier):
+      if step >= train_steps:
+        break
+      if step % multiplier == 0:
+        self.model.reset_states()
+
+      warmup_phase = step < warmup_steps
+      num_replicas = 1 if warmup_phase else num_workers
+
+      deltas,loss = get_deltas(self.model,batch_xs,batch_ys,verbose)
+
+      set_new_weights(self.model,deltas,num_replicas)
+
+
+      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
+      write_str += ' [num_replicas = {}]'.format(num_replicas)
+      print_unique(write_str)
+      step += 1
+    returnself.model 
+
+
+
+
+
 def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     num_layers = 2
@@ -78,7 +191,7 @@ def moving_average(a, n=1) :
     return ret[:,n - 1:,:] / n
 
 def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,featurelen = 1):
-  lag = 1
+  lag = 20
   density = 0.005
   mode = 2
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
