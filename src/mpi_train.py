@@ -115,6 +115,18 @@ def get_new_weights(model,deltas):
 
 
 
+
+
+def multiply_params(params,eps):
+  return [el*eps for el in params]
+
+def subtract_params(params1,params2)
+  return [p1 - p2 for p1,p2 in zip(params1,params2)]
+
+def add_params(params1,params2)
+  return [p1 + p2 for p1,p2 in zip(params1,params2)]
+
+
 def mpi_average_gradients(arr,num_replicas=None):
   if num_replicas == None:
     num_replicas = num_workers 
@@ -137,7 +149,7 @@ def sync_deltas(deltas,num_replicas=None):
 def set_new_weights(model,deltas,num_replicas=None):
   # if single_worker is True, only the rank 0 deltas are used. Otherwise all of them are.
   global_deltas = sync_deltas(deltas,num_replicas)
-  global_deltas *= lr
+  multiply_params(global_deltas,lr)
   if comm.rank == 0:
     new_weights = get_new_weights(model,global_deltas)
   else:
