@@ -105,7 +105,7 @@ def get_deltas(model,X_batch,Y_batch,verbose=False):
   weights_after_update = model.get_weights()
 
   deltas = subtract_params(weights_after_update,weights_before_update)
-  deltas = multiply_params(params,1.0/DUMMY_LR)
+  deltas = multiply_params(deltas,1.0/DUMMY_LR)
 
   return deltas,loss
 
