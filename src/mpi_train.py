@@ -49,8 +49,8 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = LR0 =  0.0005
-LR_DECAY = 0.8
+LR = LR0 =  0.001
+LR_DECAY = 0.5
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -66,7 +66,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
     output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mape')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
 
     return model
 
