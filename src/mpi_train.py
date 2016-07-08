@@ -145,7 +145,7 @@ def mpi_average_scalars(val,num_replicas=None):
   if task_index >= num_replicas:
     val *= 0.0
   val_global = 0.0 
-  comm.Allreduce(val,val_global,op=MPI.SUM)
+  comm.allreduce(val,val_global,op=MPI.SUM)
   val_global /= num_replicas
   return val_global 
 
