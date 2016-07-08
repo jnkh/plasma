@@ -83,7 +83,6 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
     if mode == 1:
       xx = np.random.binomial(1,density,batch_shape)
       yy = np.zeros((batch_size,multiplier*timesteps,2))
-      yy = 1.0*xx
       for i in xrange(batch_size):
         yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
         yy[i,:,1] = 1.0 - turn_array_into_switch(xx[i,:,0])
