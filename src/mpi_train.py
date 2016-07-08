@@ -108,7 +108,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start+lag:stop+lag,:]
-        y_batch = xx[:,start:stop,:]
+        y_batch = yy[:,start:stop,:]
         yield x_batch,y_batch
 
 
