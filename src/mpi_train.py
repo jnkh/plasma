@@ -315,11 +315,12 @@ def main():
   hidden_units = 100
   multiplier = 20
   timesteps = 10
+  num_replicas = 5
 
   print_all('Building model\n')
   model = get_model(batch_size=batch_size,timesteps=timesteps)
   batch_it = partial(batch_iterator,batch_size=batch_size,timesteps = timesteps,multiplier=multiplier,epoch_length=train_steps)
-  mpi_model = MPIModel(model,comm,batch_it,lr=lr,warmup_steps=warmup_steps)
+  mpi_model = MPIModel(model,comm,batch_it,lr=lr,warmup_steps=warmup_steps,num_replicas=num_replicas)
   mpi_model.compile(loss=loss)
 
   for e in range(epochs):
@@ -345,102 +346,5 @@ def main():
 
 if __name__ == "__main__":
   main() 
-
-
-
-
-########
-
-
-# def moving_average(a, n=1) :
-#     ret = np.cumsum(a, dtype=float)
-#     ret[:,n:,:] = ret[:,n:,:] - ret[:,:-n,:]
-#     return ret[:,n - 1:,:] / n
-
-
-# def mpi_average_gradients(arr,num_replicas=None):
-#   if num_replicas == None:
-#     num_replicas = num_workers 
-#   if task_index >= num_replicas:
-#     arr *= 0.0
-#   arr_global = np.empty_like(arr)
-#   comm.Allreduce(arr,arr_global,op=MPI.SUM)
-#   arr_global /= num_replicas
-#   return arr_global
-
-
-
-# def mpi_average_scalars(val,num_replicas=None):
-#   if num_replicas == None:
-#     num_replicas = num_workers 
-#   if task_index >= num_replicas:
-#     val *= 0.0
-#   val_global = 0.0 
-#   val_global = comm.allreduce(val,op=MPI.SUM)
-#   val_global /= num_replicas
-#   return val_global 
-
-
-# def sync_deltas(deltas,num_replicas=None):
-#   global_deltas = []
-#   #default is to reduce the deltas from all workers
-#   for delta in deltas:
-#     global_deltas.append(mpi_average_gradients(delta,num_replicas))
-#   return global_deltas 
-
-# def set_new_weights(model,deltas,num_replicas=None):
-#   #
-#   global_deltas = sync_deltas(deltas,num_replicas)
-#   global_deltas = multiply_params(global_deltas,LR)
-#   if comm.rank == 0:
-#     new_weights = get_new_weights(model,global_deltas)
-#   else:
-#     new_weights = None
-#   new_weights = comm.bcast(new_weights,root=0)
-#   model.set_weights(new_weights)
-
-
-
-# def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
-#   verbose = False
-#   step = 0
-#   multiplier = 50
-#   for batch_xs,batch_ys,reset_states_now,epoch_end in batch_iterator(batch_size=batch_size,multiplier=multiplier):
-#     if epoch_end:
-#       break
-#     if reset_states_now:
-#       model.reset_states()
-
-#     warmup_phase = step < warmup_steps
-#     num_replicas = 1 if warmup_phase else num_workers
-
-#     deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
-
-#     set_new_weights(model,deltas,num_replicas)
-
-
-#     write_str = '\r[{}] step: {}, loss: {:.7f}'.format(task_index,step,mpi_average_scalars(1.0*loss,num_replicas))
-#     write_str += ' [num_replicas = {}]'.format(num_replicas)
-#     print_unique(write_str)
-#     step += 1
-#   return model
-
-
-# def get_deltas(model,X_batch,Y_batch,verbose=False):
-#   weights_before_update = model.get_weights()
-
-#   loss = model.train_on_batch(X_batch,Y_batch)
-
-#   weights_after_update = model.get_weights()
-#   model.set_weights(weights_before_update)
-
-#   deltas = subtract_params(weights_after_update,weights_before_update)
-#   deltas = multiply_params(deltas,1.0/DUMMY_LR)
-
-#   return deltas,loss
-
-
-# def get_new_weights(model,deltas):
-#   return add_params(model.get_weights(),deltas)
 
 
