@@ -75,11 +75,13 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
   lag = 70
-  density = 0.05
+  density = 0.01
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
   while True:
     xx = np.random.binomial(1,density,batch_shape)
     yy = np.roll(xx,lag)
+    for i in xrange(batch_size):
+      xx[i,:,:] = turn_array_into_switch(xx[i,:,:])
     for chunk_idx in xrange(multiplier):
       start = chunk_idx*timesteps
       stop = (1+chunk_idx)*timesteps
@@ -100,6 +102,16 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
     #   x_batch = xx[:,start+lag:stop+lag,:]
     #   y_batch = -1*xx[:,start:stop,:]
     #   yield x_batch,y_batch
+
+
+def turn_array_into_switch(arr)
+  out_arr = zeros_like(arr)
+  current = 0.0
+  for i in arr:
+    if arr[i] > 0.5:
+      current = 1.0 - current
+    out_arr[i] = current
+  return out_arr
 
 
 
@@ -217,7 +229,7 @@ def test(model,batch_size=1,epoch=None):
 
   plt.close('all')
   plt.figure()
-  plt.plot(-xs,'b')
+  plt.plot(xs,'b')
   plt.plot(ys_pred,'r')
   plt.plot(ys_true,'g')
   plt.show()
