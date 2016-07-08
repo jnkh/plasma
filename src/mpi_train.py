@@ -46,7 +46,7 @@ for i in range(num_workers):
     from keras.optimizers import SGD
 
 
-hidden_units = 20
+hidden_units = 400
 batch_size = 512
 sync_mode = True
 lr = 0.005
@@ -103,21 +103,14 @@ def mpi_reduce_array(arr):
   return arr_global
 
 def get_deltas(model,X_batch,Y_batch,verbose=False):
-  if task_index == 0 and verbose: time0 = time.time()
   weights_before_update = model.get_weights()
-  if task_index == 0 and verbose: time1 = time.time()
+
   loss = model.train_on_batch(X_batch,Y_batch)
-  if task_index == 0 and verbose: time2 = time.time()
+
   weights_after_update = model.get_weights()
-  if task_index == 0 and verbose: time3 = time.time()
+
   deltas = [w1 - w0 for w1,w0 in zip(weights_after_update,weights_before_update)]
-  if task_index == 0 and verbose: time4 = time.time()
-  if task_index == 0 and verbose:
-    sys.stdout.write('\ntime 0: {}'.format(time1 - time0))
-    sys.stdout.write('\ntime 1: {}'.format(time2 - time1))
-    sys.stdout.write('\ntime 2: {}'.format(time3 - time2))
-    sys.stdout.write('\ntime 3: {}'.format(time4 - time3))
-    sys.stdout.flush()
+
   return deltas,loss
 
 
