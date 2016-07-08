@@ -77,7 +77,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
   lag = 70
   density = 0.005
-  mode = 2
+  mode = 1
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
   while True:
     if mode == 1:
