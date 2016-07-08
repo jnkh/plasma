@@ -58,15 +58,15 @@ data_dir = '/tigress/jk7/tmp/data'
 def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     num_layers = 2
-    num_output = 1
+    num_output = 2
     dropout = 0.1
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
-    output_tensor = TimeDistributed(Dense(num_output,activation='linear'))(recurrent_layer)
+    output_tensor = TimeDistributed(Dense(num_output,activation='softmax'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='binary_crossentropy')
 
     return model
 
@@ -82,9 +82,11 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   while True:
     if mode == 1:
       xx = np.random.binomial(1,density,batch_shape)
+      yy = np.zeros((batch_size,multiplier*timesteps,2))
       yy = 1.0*xx
       for i in xrange(batch_size):
         yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
+        yy[i,:,1] = 1.0 - turn_array_into_switch(xx[i,:,0])
       yy = np.roll(yy,lag,axis=1)
       for chunk_idx in xrange(multiplier):
         start = chunk_idx*timesteps
