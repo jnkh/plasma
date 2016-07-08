@@ -81,7 +81,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
     return x[:,lag:,:],x[:,:-lag,:]
 
 
-def batch_iterator(batch_size=32,timesteps = 100,featurelen = 1):
+def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 100
   lag = 200
   while True:
@@ -242,8 +242,9 @@ def main():
   epochs = 10
   print_all('Building model')
   for e in range(epochs):
+    print_unique('Epoch {}'.format(e))
     warmup_steps_curr = warmup_steps if e == 0 else 0
-    model = get_model(batch_size=batch_size)
+    model = get_model(batch_size=batch_size,timesteps=10)
     model = train_epoch(model,batch_size,train_steps = train_steps,warmup_steps=warmup_steps_curr)
 
     if task_index == 0:
