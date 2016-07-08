@@ -52,6 +52,7 @@ sync_mode = True
 LR = LR0 =  0.01
 LR_DECAY = 1.0
 DUMMY_LR = 0.1
+MULTIPLIER = 20
 data_dir = '/tigress/jk7/tmp/data'
 
 
@@ -77,20 +78,20 @@ def moving_average(a, n=1) :
     return ret[:,n - 1:,:] / n
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
-  multiplier = 1000
+  MULTIPLIER = 20
   lag = 1
   density = 0.005
   mode = 2
-  batch_shape = (batch_size,multiplier*timesteps,featurelen)
+  batch_shape = (batch_size,MULTIPLIER*timesteps,featurelen)
   while True:
     if mode == 1:
       xx = np.random.binomial(1,density,batch_shape)
-      yy = np.zeros((batch_size,multiplier*timesteps,2))
+      yy = np.zeros((batch_size,MULTIPLIER*timesteps,2))
       for i in xrange(batch_size):
         yy[i,:,0] = turn_array_into_switch(xx[i,:,0])
         yy[i,:,1] = 1.0 - turn_array_into_switch(xx[i,:,0])
       yy = np.roll(yy,lag,axis=1)
-      for chunk_idx in xrange(multiplier):
+      for chunk_idx in xrange(MULTIPLIER):
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start:stop,:]
@@ -99,12 +100,12 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
 
 
     if mode == 2:
-      xx = 1.0/np.sqrt(multiplier*timesteps)*np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
+      xx = 1.0/np.sqrt(MULTIPLIER*timesteps)*np.random.randn(batch_size,MULTIPLIER*timesteps+lag,featurelen) 
       yy = np.cumsum(xx,axis=1)
       # xx = xx/np.max(np.abs(xx))
       # for i in xrange(batch_size):
-      #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
-      for chunk_idx in xrange(multiplier):
+      #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,MULTIPLIER*timesteps+lag),axis=0)
+      for chunk_idx in xrange(MULTIPLIER):
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start+lag:stop+lag,:]
@@ -202,7 +203,9 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   step = 0
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= train_steps:
-     break
+      break
+    if step % MULTIPLIER == 0:
+      model.reset_states()
 
     warmup_phase = step < warmup_steps
     num_replicas = 1 if warmup_phase else num_workers
