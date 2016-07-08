@@ -73,7 +73,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
-  multiplier = 100
+  multiplier = 1000
   lag = 70
   while True:
     xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
