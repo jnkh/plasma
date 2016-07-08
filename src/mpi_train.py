@@ -50,14 +50,13 @@ hidden_units = 400
 batch_size = 512
 sync_mode = True
 lr = 0.0001
-DUMMY_LR = 0.001
+DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
 
-def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True,lr = 0.001):
+def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     num_layers = 2
-    num_hidden = 10
     num_output = 1
     dropout = 0.1
 
@@ -105,13 +104,14 @@ def get_deltas(model,X_batch,Y_batch,verbose=False):
 
   weights_after_update = model.get_weights()
 
-  deltas = [(w1 - w0)/DUMMY_LR for w1,w0 in zip(weights_after_update,weights_before_update)]
+  deltas = subtract_params(weights_after_update,weights_before_update)
+  deltas = multiply_params(params,1.0/DUMMY_LR)
 
   return deltas,loss
 
 
 def get_new_weights(model,deltas):
-  return [w+d for w,d in zip(model.get_weights(),deltas)]
+  return add_params(model.get_weights(),deltas)
 
 
 
@@ -131,12 +131,23 @@ def mpi_average_gradients(arr,num_replicas=None):
   if num_replicas == None:
     num_replicas = num_workers 
   if task_index >= num_replicas:
-    arr *= 0
+    arr *= 0.0
   arr_global = np.empty_like(arr)
   comm.Allreduce(arr,arr_global,op=MPI.SUM)
   arr_global /= num_replicas
   return arr_global
 
+
+
+def mpi_average_scalars(val,num_replicas=None)
+  if num_replicas == None:
+    num_replicas = num_workers 
+  if task_index >= num_replicas:
+    val *= 0.0
+  val_global = 0.0 
+  comm.Allreduce(val,val_global,op=MPI.SUM)
+  val_global /= num_replicas
+  return val_global 
 
 
 def sync_deltas(deltas,num_replicas=None):
@@ -147,7 +158,7 @@ def sync_deltas(deltas,num_replicas=None):
   return global_deltas 
 
 def set_new_weights(model,deltas,num_replicas=None):
-  # if single_worker is True, only the rank 0 deltas are used. Otherwise all of them are.
+  #
   global_deltas = sync_deltas(deltas,num_replicas)
   multiply_params(global_deltas,lr)
   if comm.rank == 0:
@@ -174,7 +185,7 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
     set_new_weights(model,deltas,num_replicas)
 
 
-    write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,loss)
+    write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,mpi_average_scalars(loss))
     if warmup_phase:
       write_str += ' [Warmup]'
     sys.stdout.write(write_str)
