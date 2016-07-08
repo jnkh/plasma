@@ -83,7 +83,7 @@ def next_batch(batch_size=32,timesteps = 100,featurelen = 1):
 
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 100
-  lag = 200
+  lag = 30
   while True:
     xx = np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
     xx = np.cumsum(xx,axis=1)
