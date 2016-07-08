@@ -125,7 +125,7 @@ def apply_deltas(model,deltas):
   model.set_weights()
 
 def get_new_weights(model,deltas):
-  return [w-d for w,d in zip(model.get_weights(),deltas)]
+  return [w+d for w,d in zip(model.get_weights(),deltas)]
 
 def sync_deltas(deltas,single_worker=False):
   global_deltas = []
@@ -156,28 +156,14 @@ def train_epoch(model,batch_size=32,train_steps=100,warmup_steps=100):
   for batch_xs,batch_ys in batch_iterator(batch_size=batch_size):
     if step >= train_steps:
      break
+
     warmup_phase = step < warmup_steps
-
-    if task_index == 0 and verbose:
-      start_time = time.time()
-
-    if task_index == 0 and verbose:
-      batch_time = time.time()
 
     deltas,loss = get_deltas(model,batch_xs,batch_ys,verbose)
 
-    if task_index == 0 and verbose:
-      deltas_time = time.time()
-
     set_new_weights(model,deltas,warmup_phase)
 
-    if task_index == 0 and verbose:
-      sync_time = time.time()
-    if task_index == 0 and verbose:
-      sys.stdout.write('\nget deltas: {:.3f}'.format(deltas_time - batch_time))
-      sys.stdout.write('\nproduce batch: {:.3f}'.format(batch_time - start_time))
-      sys.stdout.write('\nsync deltas: {:.3f}\n'.format(sync_time - deltas_time))
-      sys.stdout.flush()
+
     write_str = '\r[{}] step: {}, loss: {}'.format(task_index,step,loss)
     if warmup_phase:
       write_str += ' [Warmup]'
