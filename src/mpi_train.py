@@ -139,7 +139,7 @@ def mpi_average_gradients(arr,num_replicas=None):
 
 
 
-def mpi_average_scalars(val,num_replicas=None)
+def mpi_average_scalars(val,num_replicas=None):
   if num_replicas == None:
     num_replicas = num_workers 
   if task_index >= num_replicas:
