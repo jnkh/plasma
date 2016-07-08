@@ -236,7 +236,7 @@ def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,epoch_length=100
         x_batch = xx[:,start+lag:stop+lag,:]
         y_batch = yy[:,start:stop,:]
         global_step += 1
-        yield x_batch,y_batch
+        yield x_batch,y_batch,reset_states_now,epoch_end
 
 
 def turn_array_into_switch(arr):
