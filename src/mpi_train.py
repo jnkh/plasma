@@ -152,7 +152,7 @@ class MPIModel():
       if reset_states_now:
         self.model.reset_states()
 
-      warmup_phase = (step < warmup_steps and self.epoch == 0)
+      warmup_phase = (step < self.warmup_steps and self.epoch == 0)
       num_replicas = 1 if warmup_phase else self.num_replicas
 
       deltas,loss = self.get_deltas(batch_xs,batch_ys,verbose)
