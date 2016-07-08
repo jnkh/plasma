@@ -49,7 +49,7 @@ for i in range(num_workers):
 hidden_units = 100
 batch_size = 512
 sync_mode = True
-LR = 0.000001
+LR = 0.0
 DUMMY_LR = 0.1
 data_dir = '/tigress/jk7/tmp/data'
 
@@ -75,7 +75,7 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
   multiplier = 1000
   lag = 70
-  density = 0.01
+  density = 0.001
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
   while True:
     xx = np.random.binomial(1,density,batch_shape)
