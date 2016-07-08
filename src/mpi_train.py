@@ -62,10 +62,10 @@ def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
     recurrent_layer = LSTM(hidden_units,return_sequences=True,stateful = True)(input_tensor)
-    output_tensor = TimeDistributed(Dense(num_output,activation='sigmoid'))(recurrent_layer)
+    output_tensor = TimeDistributed(Dense(num_output,activation='tanh'))(recurrent_layer)
 
     model = Model(input =input_tensor,output=output_tensor)
-    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='binary_crossentropy')
+    model.compile(optimizer=SGD(lr=DUMMY_LR),loss='mse')
 
     return model
 
