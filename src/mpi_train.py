@@ -137,7 +137,7 @@ class MPIModel():
     global_deltas = self.sync_deltas(deltas,num_replicas)
     global_deltas = multiply_params(global_deltas,self.lr)
     if comm.rank == 0:
-      new_weights = self.get_new_weights(self.model,global_deltas)
+      new_weights = self.get_new_weights(global_deltas)
     else:
       new_weights = None
     new_weights = self.comm.bcast(new_weights,root=0)
