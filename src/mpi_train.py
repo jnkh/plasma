@@ -400,6 +400,8 @@ def main():
   lr = 0.01
   lr_decay = 1.0
   batch_size = 512
+
+  loss = 'mse'
   
 
   hidden_units = 100
@@ -410,6 +412,8 @@ def main():
   model = get_model(batch_size=batch_size,timesteps=timesteps)
   batch_it = partial(batch_iterator,batch_size=batch_size,timesteps = timesteps,multiplier=multiplier,epoch_length=train_steps)
   mpi_model = MPIModel(model,comm,batch_iterator,lr=lr,warmup_steps=warmup_steps)
+  mpi_model.compile(loss=loss)
+
   for e in range(epochs):
     mpi_model.set_lr(lr*lr_decay**e)
     print_unique('\nEpoch {}\n'.format(e))
