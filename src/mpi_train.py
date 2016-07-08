@@ -58,7 +58,7 @@ data_dir = '/tigress/jk7/tmp/data'
 def get_model(batch_size = 32,timesteps = 100, featurelen=1,is_training=True):
 
     num_layers = 2
-    num_output = 2
+    num_output = 1
     dropout = 0.1
 
     input_tensor = Input(batch_shape=(batch_size,timesteps,featurelen))
