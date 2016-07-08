@@ -104,7 +104,7 @@ def batch_iterator(batch_size=32,timesteps = 10,featurelen = 1):
     #   yield x_batch,y_batch
 
 
-def turn_array_into_switch(arr)
+def turn_array_into_switch(arr):
   out_arr = zeros_like(arr)
   current = 0.0
   for i in arr:
