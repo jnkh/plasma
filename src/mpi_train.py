@@ -256,8 +256,8 @@ def print_all(print_str):
 
 def main():
   save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
-  warmup_steps = 100
-  train_steps = 100
+  warmup_steps = 1000
+  train_steps = 1000
   epochs = 10
   print_all('Building model\n')
   for e in range(epochs):
