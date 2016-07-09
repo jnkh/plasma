@@ -219,17 +219,17 @@ def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,epoch_length=100
 
     if mode == 2:
       xx = 1.0/np.sqrt(multiplier*timesteps)*np.random.randn(batch_size,multiplier*timesteps+lag,featurelen) 
-      yy = np.cumsum(xx,axis=1)
-      # xx = xx/np.max(np.abs(xx))
-      # for i in xrange(batch_size):
-      #   xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
+      xx = np.cumsum(xx,axis=1)
+      #xx = xx/np.max(np.abs(xx))
+      for i in xrange(batch_size):
+        xx[i,:,:] = np.roll(xx[i,:,:],np.random.randint(0,multiplier*timesteps+lag),axis=0)
       for chunk_idx in xrange(multiplier):
         epoch_end = global_step == epoch_length - 1
         reset_states_now = chunk_idx == 0
         start = chunk_idx*timesteps
         stop = (1+chunk_idx)*timesteps
         x_batch = xx[:,start+lag:stop+lag,:]
-        y_batch = yy[:,start:stop,:]
+        y_batch = xx[:,start:stop,:]
         global_step += 1
         yield x_batch,y_batch,reset_states_now,epoch_end
 
