@@ -313,7 +313,7 @@ def main():
   
 
   hidden_units = 100
-  multiplier = 20
+  multiplier = 50
   timesteps = 10
   num_replicas = 5
 
