@@ -193,7 +193,7 @@ def get_model(batch_size = 32,num_layers = 2,hidden_units=100,num_output=1,dropo
 
 
 def batch_iterator(batch_size=32,timesteps = 10,multiplier=1000,epoch_length=1000,featurelen = 1):
-  lag = 20
+  lag = 50
   density = 0.005
   mode = 2
   batch_shape = (batch_size,multiplier*timesteps,featurelen)
