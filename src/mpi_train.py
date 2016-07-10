@@ -56,13 +56,14 @@ data_dir = '/tigress/jk7/tmp/data'
 
 
 class MPIModel():
-  def __init__(self,model,comm,batch_iterator,num_replicas=None,warmup_steps=1000,lr=0.01):
+  def __init__(self,model,comm,batch_iterator,batch_size,num_replicas=None,warmup_steps=1000,lr=0.01):
     self.epoch = 0
     self.model = model
     self.lr = lr
     self.DUMMY_LR = 0.1
     self.max_lr = 0.5
     self.comm = comm
+    self.batch_size = batch_size
     self.batch_iterator = batch_iterator
     self.warmup_steps=warmup_steps
     self.num_workers = comm.Get_size()
@@ -350,7 +351,7 @@ def main():
   print_all('Building model\n')
   model = get_model(batch_size=batch_size,timesteps=timesteps)
   batch_it = partial(batch_iterator,batch_size=batch_size,timesteps = timesteps,multiplier=multiplier,epoch_length=train_steps)
-  mpi_model = MPIModel(model,comm,batch_it,lr=lr,warmup_steps=warmup_steps,num_replicas=num_replicas)
+  mpi_model = MPIModel(model,comm,batch_it,lr=lr,warmup_steps=warmup_steps,num_replicas=num_replicas,batch_size=batch_size)
   mpi_model.compile(loss=loss)
 
   for e in range(epochs):
