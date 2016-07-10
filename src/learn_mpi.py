@@ -23,7 +23,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from functools import partial
 
-from mpi_model import MPIModel
+from mpi_model import MPIModel,print_unique,print_all
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -51,7 +51,8 @@ for i in range(num_workers):
 #my classes
 from conf import conf
 from pprint import pprint
-pprint(conf)
+if task_index == 0:
+    pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 import model_builder
 
@@ -141,12 +142,10 @@ def train(conf,shot_list_train,loader):
     mpi_model.compile(loss=conf['data']['target'].loss)
 
 
-
-
     while e < num_epochs-1:
-        mpi_model.set_lr(lr*lr_decay**e)
-        print_unique('\nEpoch {}/{}'.format(e+1,num_epochs))
         e += 1
+        mpi_model.set_lr(lr*lr_decay**e)
+        print_unique('\nEpoch {}/{}'.format(e,num_epochs))
 
         mpi_model.train_epoch()
 
@@ -166,13 +165,13 @@ def train(conf,shot_list_train,loader):
                 print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
 
 
-        # plot_losses(conf,[training_losses],builder,name='training')
-        if conf['training']['validation_frac'] > 0.0:
-            plot_losses(conf,[training_losses,validation_losses,validation_roc],builder,name='training_validation_roc')
-        print('...done')
+            # plot_losses(conf,[training_losses],builder,name='training')
+            if conf['training']['validation_frac'] > 0.0:
+                plot_losses(conf,[training_losses,validation_losses,validation_roc],builder,name='training_validation_roc')
+            print('...done')
 
 
-
+train(conf,shot_list_train,loader)
 
 
 if False:
