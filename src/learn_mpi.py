@@ -55,6 +55,7 @@ if task_index == 0:
     pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 import model_builder
+from guarantee_preprocessed import load_shotlists
 
 if conf['data']['normalizer'] == 'minmax':
     from data_processing import MinMaxNormalizer as Normalizer
@@ -80,44 +81,15 @@ stateful = conf['model']['stateful']
 
 np.random.seed(1)
 
-if task_index == 0:
-    #####################################################
-    ####################PREPROCESSING####################
-    #####################################################
 
-    print("preprocessing all shots",end='')
-    pp = Preprocessor(conf)
-    pp.clean_shot_lists()
-    shot_list = pp.preprocess_all()
-    sorted(shot_list)
-    shot_list_train,shot_list_test = shot_list.split_train_test(conf)
-    num_shots = len(shot_list_train) + len(shot_list_test)
-    print("...done")
+print("normalization",end='')
+nn = Normalizer(conf)
+nn.train()
+loader = Loader(conf,nn)
+print("...done")
 
 
-    #####################################################
-    ####################Normalization####################
-    #####################################################
-
-
-    print("normalization",end='')
-    nn = Normalizer(conf)
-    nn.train()
-    loader = Loader(conf,nn)
-    print("...done")
-
-
-    print('Training on {} shots, testing on {} shots'.format(len(shot_list_train),len(shot_list_test)))
-else:
-    shot_list_train = None
-    shot_list_test = None
-    loader = None
-
-
-shot_list_train = comm.bcast(shot_list_train)
-shot_list_test = comm.bcast(shot_list_test)
-loader = comm.bcast(loader)
-
+shot_list_train,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
 
 def train(conf,shot_list_train,loader):
     if conf['training']['validation_frac'] > 0.0:
