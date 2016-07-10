@@ -650,6 +650,33 @@ class Loader(object):
         self.verbose = True
 
 
+
+    def training_batch_generator(self,shot_list):
+        batch_size = self.conf['training']['batch_size']
+        num_at_once = conf['training']['num_shots_at_once']
+        epoch = 0
+        while True:
+            shot_list.shuffle() 
+            shot_sublists = shot_list.sublists(num_at_once)
+            for (i,shot_sublist) in enumerate(shot_sublists):
+                X_list,y_list = loader.load_as_X_y_list(shot_sublist)
+                for j,(X,y) in enumerate(zip(X_list,y_list)):
+                    num_examples = X.shape[0]
+                    assert(batch_size % num_examples == 0)
+                    num_chunks = num_examples/batch_size
+                    for k in range(num_chunks):
+                        epoch_end = (i == len(shot_sublists) - 1 and j == len(X_list) -1 and k == num_chunks - 1)
+                        reset_states_now = (k == 0)
+                        start = k*batch_size
+                        end = (k + 1)*batch_size
+                        yield X[start:end],y[start:end],reset_states_now,epoch_end
+            epoch += 1
+
+
+
+
+
+
     def load_as_X_y_list(self,shot_list,verbose=False,prediction_mode=False):
         signals,results,total_length = self.get_signals_results_from_shotlist(shot_list) 
         sig_patches, res_patches = self.make_patches(signals,results)
