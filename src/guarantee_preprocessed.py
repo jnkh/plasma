@@ -18,10 +18,7 @@ from __future__ import print_function
 import math,os,sys,time,datetime,os.path
 import dill
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from functools import partial
+
 
 
 
@@ -29,7 +26,6 @@ from conf import conf
 from pprint import pprint
 pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
-import model_builder
 
 if conf['data']['normalizer'] == 'minmax':
     from data_processing import MinMaxNormalizer as Normalizer
@@ -47,12 +43,6 @@ shot_list_dir = conf['paths']['shot_list_dir']
 shot_files = conf['paths']['shot_files']
 shot_files_test = conf['paths']['shot_files_test']
 train_frac = conf['training']['train_frac']
-stateful = conf['model']['stateful']
-# if stateful: 
-#     batch_size = conf['model']['length']
-# else:
-#     batch_size = conf['training']['batch_size_large']
-
 
 
 
