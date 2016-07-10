@@ -163,7 +163,7 @@ class MPIModel():
       t1 = time.time()
       self.set_new_weights(deltas,num_replicas)
       t2 = time.time()
-      write_str_0 = self.calculate_speed(t0,t1,t2)
+      write_str_0 = self.calculate_speed(t0,t1,t2,num_replicas)
 
 
       write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
