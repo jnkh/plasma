@@ -55,7 +55,7 @@ if task_index == 0:
     pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 import model_builder
-from guarantee_preprocessed import load_shotlists
+import guarantee_preprocessed
 
 if conf['data']['normalizer'] == 'minmax':
     from data_processing import MinMaxNormalizer as Normalizer
