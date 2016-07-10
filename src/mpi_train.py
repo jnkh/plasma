@@ -351,7 +351,7 @@ def main():
   print_all('Building model\n')
   model = get_model(batch_size=batch_size,timesteps=timesteps)
   batch_it = partial(batch_iterator,batch_size=batch_size,timesteps = timesteps,multiplier=multiplier,epoch_length=train_steps)
-  mpi_model = MPIModel(model,comm,batch_it,lr=lr,warmup_steps=warmup_steps,num_replicas=num_replicas,batch_size=batch_size)
+  mpi_model = MPIModel(model,comm,batch_it,batch_size,lr=lr,warmup_steps=warmup_steps,num_replicas=num_replicas)
   mpi_model.compile(loss=loss)
 
   for e in range(epochs):
