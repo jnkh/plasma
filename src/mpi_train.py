@@ -167,7 +167,7 @@ class MPIModel():
       write_str_0 = self.calculate_speed(t0,t1,t2,num_replicas)
 
 
-      write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
+      write_str = '\r[{}] step: {}, loss: {:.2E} | '.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
       print_unique(write_str + write_str_0)
       step += 1
       if epoch_end:
@@ -200,8 +200,8 @@ class MPIModel():
     frac_calculate = t_calculate/t_tot
     frac_sync = t_sync/t_tot
 
-    print_str = '{:.2f} Examples/sec [eff. batch size = {}, replicas = {}, worker batch size = {}'.format(examples_per_sec,self.batch_size,num_replicas,effective_batch_size)
-    print_str += ' | {} sec/batch [{:.1%} calculation, {:.1%} synchronization]'.format(1/examples_per_sec,frac_calculate,frac_sync)
+    print_str = '{:.2E} Examples/sec [Tot. batch = {}, replicas = {}, worker batch = {}'.format(examples_per_sec,self.batch_size,num_replicas,effective_batch_size)
+    print_str += ' | {:.2E} sec/batch [{:.1%} calc., {:.1%} synch.]'.format(1/examples_per_sec,frac_calculate,frac_sync)
     if verbose:
       print_unique(print_str)
     return print_str
