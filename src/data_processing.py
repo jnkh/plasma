@@ -653,7 +653,7 @@ class Loader(object):
 
     def training_batch_generator(self,shot_list):
         batch_size = self.conf['training']['batch_size']
-        num_at_once = conf['training']['num_shots_at_once']
+        num_at_once = self.conf['training']['num_shots_at_once']
         epoch = 0
         while True:
             shot_list.shuffle() 
