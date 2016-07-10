@@ -61,6 +61,7 @@ class MPIModel():
     self.model = model
     self.lr = lr
     self.DUMMY_LR = 0.1
+    self.max_lr = 0.5
     self.comm = comm
     self.batch_iterator = batch_iterator
     self.warmup_steps=warmup_steps
@@ -133,9 +134,11 @@ class MPIModel():
     return global_deltas 
 
   def set_new_weights(self,deltas,num_replicas=None):
-    #
     global_deltas = self.sync_deltas(deltas,num_replicas)
-    global_deltas = multiply_params(global_deltas,self.lr)
+    effective_lr = self.get_effective_lr(num_replicas)
+
+
+    global_deltas = multiply_params(global_deltas,effective_lr)
     if comm.rank == 0:
       new_weights = self.get_new_weights(global_deltas)
     else:
@@ -155,25 +158,52 @@ class MPIModel():
       warmup_phase = (step < self.warmup_steps and self.epoch == 0)
       num_replicas = 1 if warmup_phase else self.num_replicas
 
+      t0 = time.time()
       deltas,loss = self.get_deltas(batch_xs,batch_ys,verbose)
-
+      t1 = time.time()
       self.set_new_weights(deltas,num_replicas)
+      t2 = time.time()
+      write_str_0 = self.calculate_speed(t0,t1,t2)
 
 
       write_str = '\r[{}] step: {}, loss: {:.7f}'.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
-      write_str += ' [num_replicas = {}]'.format(num_replicas)
-      print_unique(write_str)
+      print_unique(write_str + write_str_0)
       step += 1
       if epoch_end:
         self.epoch += 1
         break
 
 
+  def get_effective_lr(self,num_replicas):
+    effective_lr = self.lr * num_replicas
+    if effective_lr > self.max_lr:
+      print_unique('Warning: effective learning rate set to {}, larger than maximum {}. Clipping.'.format(effective_lr,self.max_lr))
+      effective_lr = self.max_lr
+    return effective_lr
+
+  def get_effective_batch_size(self,num_replicas):
+    return self.batch_size*num_replicas
+
   def train_epochs(self,warmup_steps=100,num_epochs=1):
     for i in range(num_epochs):
       self.train_epoch(warmup_steps)
 
 
+  def calculate_speed(self,t0,t_after_deltas,t_after_update,num_replicas,verbose=False):
+    effective_batch_size = self.get_effective_batch_size(num_replicas)
+    t_calculate = t_after_deltas - t0
+    t_sync = t_after_update - t_after_deltas
+    t_tot = t_after_update - t0
+
+    examples_per_sec = effective_batch_size/t_tot
+    frac_calculate = t_calculate/t_tot
+    frac_sync = t_sync/t_tot
+
+    print_str = '{:.2f} Examples/sec [eff. batch size = {}, replicas = {}, worker batch size = {}'.format(examples_per_sec,self.batch_size,num_replicas,effective_batch_size)
+    print_str += ' | {} sec/batch [{:.1%} calculation, {:.1%} synchronization]'.format(1/examples_per_sec,frac_calculate,frac_sync)
+    if verbose:
+      print_unique(print_str)
+    return print_str
 
 
 
@@ -302,8 +332,8 @@ def print_all(print_str):
 
 def main():
   save_path = 'tmp_mpi/model_weights_epoch{}.h5'#{}.h5'
-  warmup_steps = 1000
-  train_steps = 1000
+  warmup_steps = 500
+  train_steps = 500
   epochs = 20
   lr = 0.01
   lr_decay = 1.0
