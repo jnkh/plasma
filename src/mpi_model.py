@@ -35,7 +35,7 @@ class MPIModel():
     self.warmup_steps=warmup_steps
     self.num_workers = comm.Get_size()
     self.task_index = comm.Get_rank()
-    if num_replicas is None or num_replicas < 1 or num_replicas > num_workers:
+    if num_replicas is None or num_replicas < 1 or num_replicas > self.num_workers:
       self.num_replicas = num_workers
     else:
       self.num_replicas = num_replicas
