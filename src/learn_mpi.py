@@ -110,7 +110,7 @@ def train(conf,shot_list_train,loader):
     print('{} epochs left to go'.format(num_epochs - 1 - e))
     batch_generator = loader.training_batch_generator(shot_list_train)
 
-    mpi_model = MPIModel(model,comm,batch_it,batch_size,lr=lr)
+    mpi_model = MPIModel(train_model,comm,batch_it,batch_size,lr=lr)
     mpi_model.compile(loss=conf['data']['target'].loss)
 
 
@@ -146,21 +146,7 @@ def train(conf,shot_list_train,loader):
 train(conf,shot_list_train,loader)
 
 
-if False:
-    #####################################################
-    ######################TRAINING#######################
-    #####################################################
-    import multiprocessing as old_mp
-    from model_runner import train
-    p = old_mp.Process(target = train,args=(conf,shot_list_train,loader))
-    p.start()
-    p.join()
-
-
-    #####################################################
-    ####################PREDICTING#######################
-    #####################################################
-
+if task_index == 0:
 
     from model_runner import make_predictions,make_predictions_gpu
 
