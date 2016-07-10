@@ -121,16 +121,6 @@ def turn_array_into_switch(arr):
 
 
 
-def multiply_params(params,eps):
-  return [el*eps for el in params]
-
-def subtract_params(params1,params2):
-  return [p1 - p2 for p1,p2 in zip(params1,params2)]
-
-def add_params(params1,params2):
-  return [p1 + p2 for p1,p2 in zip(params1,params2)]
-
-
 def test(model,batch_size=1,epoch=None):
   ys_pred_list = []
   xs_list = []
@@ -161,15 +151,6 @@ def test(model,batch_size=1,epoch=None):
   plt.savefig('out_{}.png'.format(epoch),bbox_inches='tight')
 
 
-
-def print_unique(print_str):
-  if task_index == 0:
-    sys.stdout.write(print_str)
-    sys.stdout.flush()
-
-def print_all(print_str):
-  sys.stdout.write('[{}] '.format(task_index) + print_str)
-  sys.stdout.flush()
 
 
 

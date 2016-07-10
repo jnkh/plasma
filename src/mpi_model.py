@@ -18,7 +18,23 @@ This work was supported by the DOE CSGF program.
 from __future__ import print_function
 import math,os,sys,time,datetime,os.path
 import numpy as np
-from keras.optimizers import SGD
+
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+task_index = comm.Get_rank()
+num_workers = comm.Get_size()
+NUM_GPUS = 4
+MY_GPU = task_index % NUM_GPUS
+base_compile_dir = '/scratch/jk7/tmp/{}'.format(task_index)
+os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
+import theano
+#import keras
+for i in range(num_workers):
+  comm.Barrier()
+  if i == task_index:
+    print('[{}] importing Keras'.format(task_index))
+    from keras import backend as K
+    from keras.optimizers import SGD
 
 
 
@@ -176,4 +192,23 @@ class MPIModel():
     return print_str
 
 
+
+def print_unique(print_str):
+  if task_index == 0:
+    sys.stdout.write(print_str)
+    sys.stdout.flush()
+
+def print_all(print_str):
+  sys.stdout.write('[{}] '.format(task_index) + print_str)
+  sys.stdout.flush()
+
+
+def multiply_params(params,eps):
+  return [el*eps for el in params]
+
+def subtract_params(params1,params2):
+  return [p1 - p2 for p1,p2 in zip(params1,params2)]
+
+def add_params(params1,params2):
+  return [p1 + p2 for p1,p2 in zip(params1,params2)]
 
