@@ -110,7 +110,7 @@ def train(conf,shot_list_train,loader):
     print('{} epochs left to go'.format(num_epochs - 1 - e))
     batch_generator = partial(loader.training_batch_generator,shot_list=shot_list_train,loader=loader)
 
-    mpi_model = MPIModel(train_model,comm,batch_generator,batch_size,lr=lr)
+    mpi_model = MPIModel(train_model,comm,batch_generator,batch_size,lr=lr,warmup_steps = 50)
     mpi_model.compile(loss=conf['data']['target'].loss)
 
 
