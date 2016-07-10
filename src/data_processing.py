@@ -662,7 +662,7 @@ class Loader(object):
                 X_list,y_list = loader.load_as_X_y_list(shot_sublist)
                 for j,(X,y) in enumerate(zip(X_list,y_list)):
                     num_examples = X.shape[0]
-                    assert(batch_size % num_examples == 0)
+                    assert(num_examples % batch_size == 0)
                     num_chunks = num_examples/batch_size
                     for k in range(num_chunks):
                         epoch_end = (i == len(shot_sublists) - 1 and j == len(X_list) -1 and k == num_chunks - 1)
