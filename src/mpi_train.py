@@ -337,7 +337,7 @@ def main():
   train_steps = 500
   epochs = 20
   lr = 0.01
-  lr_decay = 0.5
+  lr_decay = 0.8
   batch_size = 512
 
   loss = 'mse'
