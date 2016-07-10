@@ -200,8 +200,8 @@ class MPIModel():
     frac_calculate = t_calculate/t_tot
     frac_sync = t_sync/t_tot
 
-    print_str = '{:.2E} Examples/sec [Tot. batch = {}, replicas = {}, worker batch = {}'.format(examples_per_sec,self.batch_size,num_replicas,effective_batch_size)
-    print_str += ' | {:.2E} sec/batch [{:.1%} calc., {:.1%} synch.]'.format(1/examples_per_sec,frac_calculate,frac_sync)
+    print_str = '{:.2E} Examples/sec | {:.2E} sec/batch [{:.1%} calc., {:.1%} synch.]'.format(examples_per_sec,t_tot,frac_calculate,frac_sync)
+    print_str += '[batch = {} = {}*{}]'.format(effective_batch_size,self.batch_size,num_replicas)
     if verbose:
       print_unique(print_str)
     return print_str
