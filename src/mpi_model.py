@@ -153,7 +153,7 @@ class MPIModel():
       num_replicas = 1 if warmup_phase else self.num_replicas
 
 
-      num_so_far = self.mpi_average_scalars(num_so_far,num_replicas)
+      num_so_far = self.mpi_sum_scalars(num_so_far,num_replicas)
       epoch_end = num_so_far >= num_total
 
       t0 = time.time()

@@ -513,6 +513,9 @@ class ShotList(object):
     def __len__(self):
         return len(self.shots) 
 
+    def __str__(self):
+        return str([str(s) for s in self.shots])
+
     def __iter__(self):
         return self.shots.__iter__()
 
@@ -660,6 +663,7 @@ class Loader(object):
             shot_sublists = shot_list.sublists(num_at_once,equal_size=True)
             num_total = len(shot_sublists)
             for (i,shot_sublist) in enumerate(shot_sublists):
+                print('Shot sublist: {}'.format(str(shot_sublist)))
                 num_so_far = i
                 X_list,y_list = loader.load_as_X_y_list(shot_sublist)
                 for j,(X,y) in enumerate(zip(X_list,y_list)):
