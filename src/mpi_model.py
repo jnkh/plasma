@@ -16,7 +16,7 @@ This work was supported by the DOE CSGF program.
 
 #system
 from __future__ import print_function
-import math,os,sys,time,datetime,os.path
+import math,os,sys,time,datetime,os.path, random
 import numpy as np
 
 from mpi4py import MPI
