@@ -102,14 +102,20 @@ class MPIModel():
 
 
   def mpi_average_scalars(self,val,num_replicas=None):
+    val_global = self.mpi_sum_scalars(val,num_replicas)
+    val_global /= num_replicas
+    return val_global
+
+
+  def mpi_sum_scalars(self,val,num_replicas=None):
     if num_replicas == None:
       num_replicas = self.num_workers 
     if self.task_index >= num_replicas:
       val *= 0.0
     val_global = 0.0 
     val_global = self.comm.allreduce(val,op=MPI.SUM)
-    val_global /= num_replicas
-    return val_global 
+    return val_global
+
 
 
   def sync_deltas(self,deltas,num_replicas=None):
@@ -137,12 +143,19 @@ class MPIModel():
   def train_epoch(self):
     verbose = False
     step = 0
-    for batch_xs,batch_ys,reset_states_now,epoch_end in self.batch_iterator():
+    random.seed(self.task_index)
+    for batch_xs,batch_ys,reset_states_now,num_so_far,num_total in self.batch_iterator():
+
       if reset_states_now:
         self.model.reset_states()
 
       warmup_phase = (step < self.warmup_steps and self.epoch == 0)
       num_replicas = 1 if warmup_phase else self.num_replicas
+
+
+      num_so_far = self.mpi_average_scalars(num_so_far,num_replicas)
+      print_all('num so far {} num total {}'.format(num_so_far,num_total))
+      epoch_end = num_so_far >= num_total
 
       t0 = time.time()
       deltas,loss = self.get_deltas(batch_xs,batch_ys,verbose)
@@ -152,7 +165,7 @@ class MPIModel():
       write_str_0 = self.calculate_speed(t0,t1,t2,num_replicas)
 
 
-      write_str = '\r[{}] step: {}, loss: {:.5f} | '.format(self.task_index,step,self.mpi_average_scalars(1.0*loss,num_replicas))
+      write_str = '\r[{}] step: {} [{}/{}], loss: {:.5f} | '.format(self.task_index,step,num_so_far,num_total,self.mpi_average_scalars(1.0*loss,num_replicas))
       print_unique(write_str + write_str_0)
       step += 1
       if epoch_end:

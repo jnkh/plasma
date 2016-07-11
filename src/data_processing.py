@@ -657,8 +657,10 @@ class Loader(object):
         epoch = 0
         while True:
             shot_list.shuffle() 
-            shot_sublists = shot_list.sublists(num_at_once)
+            shot_sublists = shot_list.sublists(num_at_once,equal_size=True)
+            num_total = len(shot_sublists)
             for (i,shot_sublist) in enumerate(shot_sublists):
+                num_so_far = i
                 X_list,y_list = loader.load_as_X_y_list(shot_sublist)
                 for j,(X,y) in enumerate(zip(X_list,y_list)):
                     num_examples = X.shape[0]
@@ -669,7 +671,7 @@ class Loader(object):
                         reset_states_now = (k == 0)
                         start = k*batch_size
                         end = (k + 1)*batch_size
-                        yield X[start:end],y[start:end],reset_states_now,epoch_end
+                        yield X[start:end],y[start:end],reset_states_now,num_so_far,num_total
             epoch += 1
 
 
