@@ -42,7 +42,7 @@ for i in range(num_workers):
 
 class MPIModel():
   def __init__(self,model,comm,batch_iterator,batch_size,num_replicas=None,warmup_steps=1000,lr=0.01):
-    random.seed(self.task_index)
+    # random.seed(task_index)
     self.epoch = 0
     self.model = model
     self.lr = lr
