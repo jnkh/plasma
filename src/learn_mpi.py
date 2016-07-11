@@ -23,7 +23,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from functools import partial
 
-from mpi_model import MPIModel,print_unique,print_all
+from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -108,10 +108,11 @@ def train(conf,shot_list_train,shot_list_validate,loader):
     lr_decay = conf['model']['lr_decay']
     batch_size = conf['training']['batch_size']
     lr = conf['model']['lr']
+    optimizer = MPISGD(lr=lr)
     print('{} epochs left to go'.format(num_epochs - 1 - e))
     batch_generator = partial(loader.training_batch_generator,shot_list=shot_list_train,loader=loader)
 
-    mpi_model = MPIModel(train_model,comm,batch_generator,batch_size,lr=lr,warmup_steps = 50)
+    mpi_model = MPIModel(train_model,optimizer,comm,batch_generator,batch_size,lr=lr,warmup_steps = 50)
     mpi_model.compile(loss=conf['data']['target'].loss)
 
 

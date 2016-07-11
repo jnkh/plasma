@@ -40,11 +40,78 @@ for i in range(num_workers):
 
 
 
+###TODO add optimizers other than SGD
+
+
+
+
+
+class MPIOptimizer():
+  def __init__(self,lr):
+    self.lr = lr
+    self.iterations = 0
+
+  def get_deltas(self,raw_deltas):
+    raise NotImplementedError
+
+  def set_lr(self,lr):
+    self.lr = lr
+
+
+
+class MPISGD(Optimizer):
+  def __init__(self,lr):
+    super(Adam,self).__init__(lr)
+
+  def get_deltas(self,raw_deltas):
+    deltas = []
+    for g in raw_deltas:
+      deltas.append(self.lr*g)
+    return deltas
+    
+
+
+class MPIAdam(Optimizer):
+  def __init__(self,lr):
+    super(Adam,self).__init__(lr)
+    self.beta_1 = 0.9
+    self.beta_2 = 0.999
+    self.eps = 1e-8
+
+  def get_deltas(self,raw_deltas):
+
+    if self.iterations == 0:
+      self.m_list = [np.zeros_like(g) for g in raw_deltas]
+      self.v_list = [np.zeros_like(g) for g in raw_deltas]
+
+    t = self.iterations
+    lr_t = self.lr * np.sqrt(1-self.beta_2**t)/(1-self.beta_1**t)
+    deltas = []
+    for (i,g) in enumerate(raw_deltas):
+      m_t = (self.beta_1 * m_list[i]) + (1 - self.beta_1) * g
+      v_t = (self.beta_2 * v_list[i]) + (1 - self.beta_2) * (g**2)
+      delta_t = lr_t * m_t / (np.sqrt(v_t) + self.epsilon)
+      deltas.append(delta_t)
+      m_list[i] = m_t
+      v_list[i] = v_t
+    return deltas
+
+
+
+
+
+
+
+
+
+
+
 class MPIModel():
-  def __init__(self,model,comm,batch_iterator,batch_size,num_replicas=None,warmup_steps=1000,lr=0.01):
+  def __init__(self,model,optimizer,comm,batch_iterator,batch_size,num_replicas=None,warmup_steps=1000,lr=0.01):
     # random.seed(task_index)
     self.epoch = 0
     self.model = model
+    self.optimizer = optimizer
     self.lr = lr
     self.DUMMY_LR = 0.1
     self.max_lr = 0.5
@@ -130,8 +197,9 @@ class MPIModel():
     global_deltas = self.sync_deltas(deltas,num_replicas)
     effective_lr = self.get_effective_lr(num_replicas)
 
+    self.optimizer.set_lr(effective_lr)
+    global_deltas = self.optimizer.get_deltas(global_deltas)
 
-    global_deltas = multiply_params(global_deltas,effective_lr)
     if comm.rank == 0:
       new_weights = self.get_new_weights(global_deltas)
     else:
