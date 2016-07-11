@@ -106,6 +106,19 @@ class MPIAdam(MPIOptimizer):
 
 
 
+def Averager(object):
+  def __init__():
+    self.steps = 0
+    self.val = 0
+
+  def add_val(val):
+    self.val = (self.steps * self.val + 1.0 * val)/(self.steps + 1.0)
+    self.steps += 1
+
+  def get_val():
+    return self.val
+
+
 
 
 
@@ -216,6 +229,7 @@ class MPIModel():
   def train_epoch(self):
     verbose = False
     step = 0
+    loss_averager = Averager()
     for batch_xs,batch_ys,reset_states_now,num_so_far,num_total in self.batch_iterator():
 
       if reset_states_now:
@@ -223,7 +237,6 @@ class MPIModel():
 
       warmup_phase = (step < self.warmup_steps and self.epoch == 0)
       num_replicas = 1 if warmup_phase else self.num_replicas
-
 
       num_so_far = self.mpi_sum_scalars(num_so_far,num_replicas)
       epoch_end = num_so_far >= num_total
@@ -235,8 +248,10 @@ class MPIModel():
       t2 = time.time()
       write_str_0 = self.calculate_speed(t0,t1,t2,num_replicas)
 
-
-      write_str = '\r[{}] step: {} [{:.2f}/{}], loss: {:.5f} | '.format(self.task_index,step,1.0*num_so_far,num_total,self.mpi_average_scalars(1.0*loss,num_replicas))
+      curr_loss = self.mpi_average_scalars(1.0*loss,num_replicas)
+      loss_averager.add_val(curr_loss)
+      ave_loss = loss_averager.get_val()
+      write_str = '\r[{}] step: {} [{:.2f}/{}], loss: {:.5f} [{:.5f}] | '.format(self.task_index,step,1.0*num_so_far,num_total,ave_loss,curr_loss)
       print_unique(write_str + write_str_0)
       step += 1
       if epoch_end:
