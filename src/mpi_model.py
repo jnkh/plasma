@@ -90,7 +90,7 @@ class MPIAdam(MPIOptimizer):
     for (i,g) in enumerate(raw_deltas):
       m_t = (self.beta_1 * self.m_list[i]) + (1 - self.beta_1) * g
       v_t = (self.beta_2 * self.v_list[i]) + (1 - self.beta_2) * (g**2)
-      delta_t = lr_t * m_t / (np.sqrt(v_t) + self.epsilon)
+      delta_t = lr_t * m_t / (np.sqrt(v_t) + self.eps)
       deltas.append(delta_t)
       self.m_list[i] = m_t
       self.v_list[i] = v_t
