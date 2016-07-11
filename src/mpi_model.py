@@ -61,7 +61,7 @@ class MPIOptimizer():
 
 class MPISGD(MPIOptimizer):
   def __init__(self,lr):
-    super(Adam,self).__init__(lr)
+    super(MPISGD,self).__init__(lr)
 
   def get_deltas(self,raw_deltas):
     deltas = []
@@ -73,7 +73,7 @@ class MPISGD(MPIOptimizer):
 
 class MPIAdam(MPIOptimizer):
   def __init__(self,lr):
-    super(Adam,self).__init__(lr)
+    super(MPIAdam,self).__init__(lr)
     self.beta_1 = 0.9
     self.beta_2 = 0.999
     self.eps = 1e-8
