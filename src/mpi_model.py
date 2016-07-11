@@ -109,7 +109,7 @@ class MPIAdam(MPIOptimizer):
 def Averager(object):
   def __init__(self):
     self.steps = 0
-    self.val = 0
+    self.val = 0.0
 
   def add_val(self,val):
     self.val = (self.steps * self.val + 1.0 * val)/(self.steps + 1.0)
