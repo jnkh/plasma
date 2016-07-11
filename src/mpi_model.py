@@ -106,7 +106,7 @@ class MPIAdam(MPIOptimizer):
 
 
 
-def Averager(object):
+class Averager(object):
   def __init__(self):
     self.steps = 0
     self.val = 0.0
