@@ -67,6 +67,8 @@ class MPISGD(MPIOptimizer):
     deltas = []
     for g in raw_deltas:
       deltas.append(self.lr*g)
+
+    self.iterations += 1
     return deltas
     
 
@@ -84,7 +86,7 @@ class MPIAdam(MPIOptimizer):
       self.m_list = [np.zeros_like(g) for g in raw_deltas]
       self.v_list = [np.zeros_like(g) for g in raw_deltas]
 
-    t = self.iterations
+    t = self.iterations + 1
     lr_t = self.lr * np.sqrt(1-self.beta_2**t)/(1-self.beta_1**t)
     deltas = []
     for (i,g) in enumerate(raw_deltas):
@@ -94,6 +96,8 @@ class MPIAdam(MPIOptimizer):
       deltas.append(delta_t)
       self.m_list[i] = m_t
       self.v_list[i] = v_t
+
+    self.iterations += 1
     return deltas
 
 
