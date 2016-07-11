@@ -67,7 +67,7 @@ conf = {
         'regularization' : 0.0,#5e-6,#0.00001,
         # 'loss' : target.loss, #binary crossentropy performs slightly better?
         'lr' : 5e-5,#1e-4 is too high, 5e-7 is too low. 5e-5 seems best at 256 batch size, full dataset and ~10 epochs, and lr decay of 0.90. 1e-4 also works well if we decay a lot (i.e ~0.7 or more)
-        'lr_decay' : 0.9,
+        'lr_decay' : 0.6,
         'stateful' : True,
         'return_sequences' : True,
         'dropout_prob' : 0.3,
