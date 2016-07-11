@@ -55,6 +55,7 @@ if task_index == 0:
     pprint(conf)
 from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
 import model_builder
+from model_runner import make_predictions_gpu,make_predictions_and_evaluate_gpu
 import guarantee_preprocessed
 
 if conf['data']['normalizer'] == 'minmax':
