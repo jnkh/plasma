@@ -59,7 +59,7 @@ class MPIOptimizer():
 
 
 
-class MPISGD(Optimizer):
+class MPISGD(MPIOptimizer):
   def __init__(self,lr):
     super(Adam,self).__init__(lr)
 
@@ -71,7 +71,7 @@ class MPISGD(Optimizer):
     
 
 
-class MPIAdam(Optimizer):
+class MPIAdam(MPIOptimizer):
   def __init__(self,lr):
     super(Adam,self).__init__(lr)
     self.beta_1 = 0.9
