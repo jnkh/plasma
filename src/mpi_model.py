@@ -46,7 +46,7 @@ for i in range(num_workers):
 
 
 
-class MPIOptimizer():
+class MPIOptimizer(object):
   def __init__(self,lr):
     self.lr = lr
     self.iterations = 0
