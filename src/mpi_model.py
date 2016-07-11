@@ -154,7 +154,6 @@ class MPIModel():
 
 
       num_so_far = self.mpi_average_scalars(num_so_far,num_replicas)
-      print_all('num so far {} num total {}'.format(num_so_far,num_total))
       epoch_end = num_so_far >= num_total
 
       t0 = time.time()
