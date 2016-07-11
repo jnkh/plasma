@@ -1,12 +1,21 @@
 '''
 #########################################################
-This file trains a deep learning model to predict
-disruptions on time series data from plasma discharges.
+Assuming all shot files have been downloaded, this script
+guarantees all preprocessing and produces ready-to-use shot
+lists and loader objects.
+
+The user should then use
+
+nn = Normalizer(conf)
+nn.train()
+loader = Loader(conf,nn)
+shot_list_train,shot_list_validate,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
+
+to load these into an application
+
 
 Dependencies:
 conf.py: configuration of model,training,paths, and data
-model_builder.py: logic to construct the ML architecture
-data_processing.py: classes to handle data processing
 
 Author: Julian Kates-Harbeck, jkatesharbeck@g.harvard.edu
 

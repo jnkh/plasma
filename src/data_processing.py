@@ -659,11 +659,11 @@ class Loader(object):
         num_at_once = self.conf['training']['num_shots_at_once']
         epoch = 0
         while True:
+            num_so_far = 0
             shot_list.shuffle() 
             shot_sublists = shot_list.sublists(num_at_once,equal_size=True)
-            num_total = len(shot_sublists)
+            num_total = len(shot_list)
             for (i,shot_sublist) in enumerate(shot_sublists):
-                num_so_far = i
                 X_list,y_list = loader.load_as_X_y_list(shot_sublist)
                 for j,(X,y) in enumerate(zip(X_list,y_list)):
                     num_examples = X.shape[0]
@@ -675,6 +675,7 @@ class Loader(object):
                         start = k*batch_size
                         end = (k + 1)*batch_size
                         yield X[start:end],y[start:end],reset_states_now,num_so_far,num_total
+                        num_so_far += 1.0*len(shot_sublist)/(len(X_list)*num_chunks)
             epoch += 1
 
 
