@@ -8,7 +8,7 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 2
+file_num = -2
 save_figure = True
 pred_ttd = False
 
@@ -24,14 +24,14 @@ T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose, pred_ttd=pre
 
 analyzer.load_ith_file()
 
-#compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
+#analyzer.compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
 P_thresh_opt = analyzer.compute_tradeoffs_and_print_from_training()
 
 analyzer.compute_tradeoffs_and_plot('train',save_figure=save_figure,plot_string='_train')
 analyzer.compute_tradeoffs_and_plot('test',save_figure=save_figure,plot_string='_test')
 
-analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
+analyzer.summarize_shot_prediction_stats_by_mode(P_thresh_opt,'test')
 
 #analyzer.example_plots(P_thresh_opt,'test','any')
 analyzer.example_plots(P_thresh_opt,'test','FP')
