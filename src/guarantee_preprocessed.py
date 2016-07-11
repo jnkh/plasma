@@ -27,20 +27,21 @@ def get_shot_list_path(conf):
     return conf['paths']['base_path'] + 'data/normalization/shot_lists.npz'
 
 
-def save_shotlists(conf,shot_list_train,shot_list_test):
+def save_shotlists(conf,shot_list_train,shot_list_validate,shot_list_test):
     path = get_shot_list_path(conf)
-    np.savez(path,shot_list_train=shot_list_train,shot_list_test=shot_list_test)
+    np.savez(path,shot_list_train=shot_list_train,shot_list_validate=shot_list_validate,shot_list_test=shot_list_test)
 
 def load_shotlists(conf):
     path = get_shot_list_path(conf)
     data = np.load(path)
     shot_list_train = data['shot_list_train'][()]
+    shot_list_validate = data['shot_list_validate'][()]
     shot_list_test = data['shot_list_test'][()]
-    return shot_list_train,shot_list_test
+    return shot_list_train,shot_list_validate,shot_list_test
 
 
 def main():
-    
+
     from conf import conf
     from pprint import pprint
     pprint(conf)
@@ -76,9 +77,17 @@ def main():
     sorted(shot_list)
     shot_list_train,shot_list_test = shot_list.split_train_test(conf)
     num_shots = len(shot_list_train) + len(shot_list_test)
+    validation_frac = conf['training']['validation_frac']
+    if validation_frac <= 0.0:
+        print('Setting validation to a minimum of 0.05')
+        validation_frac = 0.05
+    shot_list_train,shot_list_validate = shot_list_train.split_direct(1.0-validation_frac,shuffle=True)
+    print('validate: {} shots, {} disruptive'.format(len(shot_list_validate),shot_list_validate.num_disruptive()))
+    print('training: {} shots, {} disruptive'.format(len(shot_list_train),shot_list_train.num_disruptive()))
+    print('testing: {} shots, {} disruptive'.format(len(shot_list_test),shot_list_test.num_disruptive()))
     print("...done")
 
-    save_shotlists(conf,shot_list_train,shot_files_test)
+    save_shotlists(conf,shot_list_train,shot_list_validate,shot_list_test)
     #####################################################
     ####################Normalization####################
     #####################################################

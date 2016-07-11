@@ -91,13 +91,9 @@ loader = Loader(conf,nn)
 print("...done")
 
 
-shot_list_train,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
+shot_list_train,shot_list_validate,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
 
-def train(conf,shot_list_train,loader):
-    if conf['training']['validation_frac'] > 0.0:
-        shot_list_train,shot_list_validate = shot_list_train.split_direct(1.0-conf['training']['validation_frac'],shuffle=True)
-        print('validate: {} shots, {} disruptive'.format(len(shot_list_validate),shot_list_validate.num_disruptive()))
-    print('training: {} shots, {} disruptive'.format(len(shot_list_train),shot_list_train.num_disruptive()))
+def train(conf,shot_list_train,shot_list_validate,loader):
 
     builder = model_builder.ModelBuilder(conf)
     train_model,test_model = builder.build_train_test_models()
@@ -145,7 +141,7 @@ def train(conf,shot_list_train,loader):
             print('...done')
 
 
-train(conf,shot_list_train,loader)
+train(conf,shot_list_train,shot_list_validate,loader)
 
 
 if task_index == 0:
