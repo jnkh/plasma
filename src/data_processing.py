@@ -514,7 +514,7 @@ class ShotList(object):
         return len(self.shots) 
 
     def __str__(self):
-        return str([str(s) for s in self.shots])
+        return str([s.number for s in self.shots])
 
     def __iter__(self):
         return self.shots.__iter__()

@@ -15,7 +15,7 @@ This work was supported by the DOE CSGF program.
 '''
 #system
 from __future__ import print_function
-import math,os,sys,time,datetime,os.path
+import math,os,sys,time,datetime,os.path,random
 import dill
 import numpy as np
 import matplotlib
@@ -79,7 +79,8 @@ stateful = conf['model']['stateful']
 # else:
 #     batch_size = conf['training']['batch_size_large']
 
-np.random.seed(1)
+np.random.seed(task_index)
+random.seed(task_index)
 
 
 print("normalization",end='')
