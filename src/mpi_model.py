@@ -164,7 +164,7 @@ class MPIModel():
       write_str_0 = self.calculate_speed(t0,t1,t2,num_replicas)
 
 
-      write_str = '\r[{}] step: {} [{}/{}], loss: {:.5f} | '.format(self.task_index,step,num_so_far,num_total,self.mpi_average_scalars(1.0*loss,num_replicas))
+      write_str = '\r[{}] step: {} [{:.2f}/{}], loss: {:.5f} | '.format(self.task_index,step,1.0*num_so_far,num_total,self.mpi_average_scalars(1.0*loss,num_replicas))
       print_unique(write_str + write_str_0)
       step += 1
       if epoch_end:
