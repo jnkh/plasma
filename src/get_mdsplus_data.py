@@ -35,7 +35,7 @@ if machine == 'nstx':
 	'efit02/wpdot/']
 
 elif machine == 'jet':
-	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
+	shot_numbers_files = ['short_list.txt']#['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
 	signal_paths = ['jpf/da/c2-ipla',
