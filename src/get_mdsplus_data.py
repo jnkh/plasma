@@ -104,31 +104,31 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 				print('-',end='')
 			else:
 			    try:
-				if machine == 'nstx':
-					tree,tag = get_tree_and_tag(signal_path)
-					c.openTree(tree,shot_num)
-					data = c.get(tag).data()
-					time = c.get('dim_of('+tag+')').data()
-				elif machine == 'jet':
-					data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
-					time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
-				data_two_column = vstack((time,data)).transpose()
-				try: #can lead to race condition
-					mkdirdepth(save_path_full)
-				except OSError, e:
-				    if e.errno == errno.EEXIST:
-				        # File exists, and it's a directory, another process beat us to creating this dir, that's OK.
-				        pass
-				    else:
-				        # Our target dir exists as a file, or different error, reraise the error!
-				        raise
-				savetxt(save_path_full,data_two_column,fmt = '%f %f')
-				print('.',end='')
+					if machine == 'nstx':
+						tree,tag = get_tree_and_tag(signal_path)
+						c.openTree(tree,shot_num)
+						data = c.get(tag).data()
+						time = c.get('dim_of('+tag+')').data()
+					elif machine == 'jet':
+						data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
+						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
+					data_two_column = vstack((time,data)).transpose()
+					try: #can lead to race condition
+						mkdirdepth(save_path_full)
+					except OSError, e:
+					    if e.errno == errno.EEXIST:
+					        # File exists, and it's a directory, another process beat us to creating this dir, that's OK.
+					        pass
+					    else:
+					        # Our target dir exists as a file, or different error, reraise the error!
+					        raise
+					savetxt(save_path_full,data_two_column,fmt = '%f %f')
+					print('saved {}, shot {}'.format(signal_path,shot_num))
+					print('.',end='')
 			    except:
-				print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
-				print('Warning: Incomplete!!!')
-				raise
-
+					print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
+					print('Warning: Incomplete!!!')
+					raise
 			sys.stdout.flush()
 		print('saved shot {}'.format(shot_num))
 
