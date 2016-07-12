@@ -17,7 +17,7 @@ import errno
 
 
 
-prepath = '/tigress/jk7/data/'
+prepath = '/p/datad/jkatesha/data/'#'/tigress/jk7/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
 machine = 'jet'#'nstx'#'jet'#'nstx'
@@ -43,15 +43,17 @@ elif machine == 'jet':
 	'jpf/db/b5r-ptot>out']
 	
 	#density signals
-	signal_paths += ['jpf/df/g1r-lid:00{}'.format(i) for i in range(1,9)]
+	signal_paths += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(1,9)]
+
+
+	#ece temperature profiles
+	#signal_paths += ['jpf/KK3/P{:03d}'.format(285 + 5*i) for i in range(1,14)]
 
 	#radiation signals
 	#vertical signals, don't use signal 16 and 23
-	signal_paths += ['jpf/db/b5vr-pbol<raw:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
-	signal_paths += ['jpf/db/b5hr-pbol<raw:{:03d}'.format(i) for i in range(1,24)]
+	#signal_paths += ['jpf/db/b5vr-pbol<raw:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
+	#signal_paths += ['jpf/db/b5hr-pbol<raw:{:03d}'.format(i) for i in range(1,24)]
 
-	#ece temperature profiles
-	signal_paths += ['jpf/KK3/P{:03d}'.format(285 + 5*i) for i in range(1,14)]
 
 
 	signal_paths += ['jpf/gs/bl-li<s',
@@ -97,6 +99,7 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 			if os.path.isfile(save_path_full):
 				print('-',end='')
 			else:
+			    try:
 				if machine == 'nstx':
 					tree,tag = get_tree_and_tag(signal_path)
 					c.openTree(tree,shot_num)
@@ -117,6 +120,10 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 				        raise
 				savetxt(save_path_full,data_two_column,fmt = '%f %f')
 				print('.',end='')
+			    except:
+				print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
+				print('Warning: Incomplete!!!')
+				raise
 
 			sys.stdout.flush()
 		print('saved shot {}'.format(shot_num))
@@ -131,7 +138,7 @@ shot_numbers,_ = ShotList.get_multiple_shots_and_disruption_times(prepath + shot
 
 
 fn = partial(save_shot,signal_paths=signal_paths,save_prepath=save_prepath,machine=machine)
-num_cores = min(mp.cpu_count(),2) #can only handle 8 connections at once :(
+num_cores = min(mp.cpu_count(),8) #can only handle 8 connections at once :(
 queue = mp.Queue()
 for shot_num in shot_numbers:
 	queue.put(shot_num)
