@@ -177,7 +177,6 @@ if task_index == 0:
     y_prime = y_prime_train + y_prime_test
     disruptive = np.concatenate((disruptive_train,disruptive_test))
 
-    shot_list.make_light()
     shot_list_test.make_light()
     shot_list_train.make_light()
 
