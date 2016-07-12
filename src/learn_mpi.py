@@ -185,7 +185,7 @@ if task_index == 0:
         y_gold=y_gold,y_gold_train=y_gold_train,y_gold_test=y_gold_test,
         y_prime=y_prime,y_prime_train=y_prime_train,y_prime_test=y_prime_test,
         disruptive=disruptive,disruptive_train=disruptive_train,disruptive_test=disruptive_test,
-        shot_list=shot_list,shot_list_train=shot_list_train,shot_list_test=shot_list_test,
+        shot_list_train=shot_list_train,shot_list_test=shot_list_test,
         conf = conf)
 
 
