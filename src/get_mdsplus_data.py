@@ -17,7 +17,7 @@ import errno
 
 
 
-prepath = '/p/datad/jkatesha/data/'
+prepath = '/tigress/jk7/data/'
 shot_numbers_path = 'shot_lists/'
 save_path = 'signal_data1'
 machine = 'jet'
@@ -40,12 +40,30 @@ elif machine == 'jet':
 
 	signal_paths = ['jpf/da/c2-ipla',
 	'jpf/da/c2-loca',
-	'jpf/db/b5r-ptot>out',
-	'jpf/df/g1r-lid:003',
-	'jpf/gs/bl-li<s',
+	'jpf/db/b5r-ptot>out']
+	
+	#density signals
+	signal_paths += ['jpf/df/g1r-lid:00{}'.format(i) for i in range(1,9)]
+
+	#radiation signals
+	#vertical signals, don't use signal 16 and 23
+	signal_paths += ['jpf/db/b5vr-pbol<raw:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
+	signal_paths += ['jpf/db/b5hr-pbol<raw:{:03d}'.format(i) for i in range(1,24)]
+
+	#ece temperature profiles
+	signal_paths += ['jpf/KK3/P{:03d}'.format(285 + 5*i) for i in range(1,14)]
+
+
+	signal_paths += ['jpf/gs/bl-li<s',
 	'jpf/gs/bl-fdwdt<s',
 	'jpf/gs/bl-ptot<s',
 	'jpf/gs/bl-wmhd<s']
+
+
+
+
+
+
 else:
 	print('unkown machine. exiting')
 	exit(1)
