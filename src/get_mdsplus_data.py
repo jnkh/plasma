@@ -49,8 +49,8 @@ elif machine == 'jet':
 
 	#radiation signals
 	#vertical signals, don't use signal 16 and 23
-	signal_paths += ['jpf/db/b5vr-pbol<raw:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
-	signal_paths += ['jpf/db/b5hr-pbol<raw:{:03d}'.format(i) for i in range(1,24)]
+	signal_paths += ['jpf/db/b5vr-pbol:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
+	signal_paths += ['jpf/db/b5hr-pbol:{:03d}'.format(i) for i in range(1,24)]
 
 
 	#ece temperature profiles
