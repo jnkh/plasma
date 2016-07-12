@@ -1,0 +1,6 @@
+*.DS_Store
+# -*- mode: gitignore; -*-
+*~
+*.pyc
+/src/losses/
+/src/tmp/
