@@ -8,7 +8,7 @@ import os
 from performance_analysis_utils import *
 
 mode = 'test'
-file_num = 0
+file_num = -1
 save_figure = True
 
 P_thresh_range = logspace(-2,0,100) 
@@ -23,7 +23,6 @@ analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = f
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose) 
 
 analyzer.load_ith_file()
-analyzer.print_conf()
 
 #compute_tradeoffs_and_print(P_thresh_range,pred,truth,disruptive_curr,length,T_min_warn,T_max_warn)
 
@@ -34,7 +33,7 @@ analyzer.compute_tradeoffs_and_plot(P_thresh_range,'test',save_figure=save_figur
 
 analyzer.summarize_shot_prediction_stats(P_thresh_opt,'test')
 
-analyzer.example_plots(P_thresh_opt,'test','any',normalize=False)
+analyzer.example_plots(P_thresh_opt,'test','any',normalize=True)
 
 alarms,disr_alarms,nondisr_alarms = analyzer.gather_first_alarms(P_thresh_opt,'test')
 analyzer.hist_alarms(disr_alarms,'disruptive alarms, P_thresh = {}'.format(P_thresh_opt),save_figure=save_figure)

@@ -44,12 +44,12 @@ conf = {
         'plotting' : False,
         #train/validate split
         #how many shots to use
-        'use_shots' : 100000,
+        'use_shots' : 10,
         #normalization timescale
         'dt' : 0.001,
         #maximum TTD considered
         'T_max' : 1000.0,
-        'T_warning' : 100.0,
+        'T_warning' : 0.5,
         'current_thresh' : 750000,
         'ttd_remapper' : remap_target,
         'normalizer' : 'var',           #TODO optimize
@@ -80,7 +80,7 @@ conf = {
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200,
-        'num_epochs' : 15,
+        'num_epochs' : 2,
         'evaluate' : False,
         'use_mock_data' : False,
         'data_parallel' : False,
