@@ -101,6 +101,7 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 		for signal_path in signal_paths:
 			save_path_full = format_save_path(save_prepath,signal_path,shot_num)
 			if os.path.isfile(save_path_full):
+				print('saved {}, shot {}'.format(signal_path,shot_num))
 				print('-',end='')
 			else:
 			    try:
