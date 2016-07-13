@@ -8,6 +8,7 @@ from __future__ import print_function
 from MDSplus import *
 from data_processing import ShotList
 from pylab import *
+import numpy as np
 import sys
 import multiprocessing as mp
 from functools import partial
@@ -38,28 +39,44 @@ elif machine == 'jet':
 	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
+	#plasma current, locked mode, output power
 	signal_paths = ['jpf/da/c2-ipla',
 	'jpf/da/c2-loca',
 	'jpf/db/b5r-ptot>out']
-	
-	#density signals
-	signal_paths += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(1,9)]
-
-
-	#ece temperature profiles
-	#signal_paths += ['jpf/KK3/P{:03d}'.format(285 + 5*i) for i in range(1,14)]
-
-	#radiation signals
-	#vertical signals, don't use signal 16 and 23
-	#signal_paths += ['jpf/db/b5vr-pbol<raw:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
-	#signal_paths += ['jpf/db/b5hr-pbol<raw:{:03d}'.format(i) for i in range(1,24)]
 
 
 
+	#internal inductance, time derivative of stored energy, input power, total diamagnetic energy
 	signal_paths += ['jpf/gs/bl-li<s',
 	'jpf/gs/bl-fdwdt<s',
 	'jpf/gs/bl-ptot<s',
 	'jpf/gs/bl-wmhd<s']
+
+
+
+	
+	#density signals
+	#4 vertical channels and 4 horizontal channels
+	signal_paths += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(1,9)]
+
+
+
+	#radiation signals
+	#vertical signals, don't use signal 16 and 23
+	signal_paths += ['jpf/db/b5vr-pbol:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
+	signal_paths += ['jpf/db/b5hr-pbol:{:03d}'.format(i) for i in range(1,24)]
+
+
+	#ece temperature profiles
+	#temperature of channel i vs time
+	signal_paths += ['ppf/kk3/te{:02d}'.format(i) for i in range(1,97)]
+
+	#radial position of channel i vs time
+	#signal_paths += ['ppf/kk3/ra{:02d}'.format(i) for i in range(1,97)]
+
+	#radial position of channel i mapped onto midplane vs time
+	signal_paths += ['ppf/kk3/rc{:02d}'.format(i) for i in range(1,97)]
+
 
 
 
@@ -70,6 +87,15 @@ else:
 	print('unkown machine. exiting')
 	exit(1)
 
+
+
+
+
+
+def create_missing_value_filler():
+	time = np.linspace(0,100,1000)
+	vals = np.zeros_like(time)
+	return time,vals
 
 def mkdirdepth(filename):
 	folder=os.path.dirname(filename)
@@ -89,6 +115,7 @@ def format_save_path(prepath,signal_path,shot_num):
 
 
 def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
+	missing_values = 0
 	while True:
 		try:
 			shot_num = shot_num_queue.get(False)
@@ -100,33 +127,38 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 				print('-',end='')
 			else:
 			    try:
-				if machine == 'nstx':
-					tree,tag = get_tree_and_tag(signal_path)
-					c.openTree(tree,shot_num)
-					data = c.get(tag).data()
-					time = c.get('dim_of('+tag+')').data()
-				elif machine == 'jet':
-					data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
-					time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
-				data_two_column = vstack((time,data)).transpose()
-				try: #can lead to race condition
-					mkdirdepth(save_path_full)
-				except OSError, e:
-				    if e.errno == errno.EEXIST:
-				        # File exists, and it's a directory, another process beat us to creating this dir, that's OK.
-				        pass
-				    else:
-				        # Our target dir exists as a file, or different error, reraise the error!
-				        raise
-				savetxt(save_path_full,data_two_column,fmt = '%f %f')
-				print('.',end='')
+					if machine == 'nstx':
+						tree,tag = get_tree_and_tag(signal_path)
+						c.openTree(tree,shot_num)
+						data = c.get(tag).data()
+						time = c.get('dim_of('+tag+')').data()
+					elif machine == 'jet':
+						try:
+							data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
+							time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
+						except:
+							missing_values += 1
+							print('Signal {}, shot {} missing. Filling with zeros'.format(signal_path,shot_num))
+							time,data = create_missing_value_filler()
+					data_two_column = vstack((time,data)).transpose()
+					try: #can lead to race condition
+						mkdirdepth(save_path_full)
+					except OSError, e:
+					    if e.errno == errno.EEXIST:
+					        # File exists, and it's a directory, another process beat us to creating this dir, that's OK.
+					        pass
+					    else:
+					        # Our target dir exists as a file, or different error, reraise the error!
+					        raise
+					savetxt(save_path_full,data_two_column,fmt = '%f %f')
+					print('.',end='')
 			    except:
-				print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
-				print('Warning: Incomplete!!!')
-				raise
-
+					print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
+					print('Warning: Incomplete!!!')
+					raise
 			sys.stdout.flush()
 		print('saved shot {}'.format(shot_num))
+	print('Finished with {} missing values total'.format(missing_values))
 
 
 
@@ -165,7 +197,6 @@ print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),tim
 
 # pool.close()
 # pool.join()
-
 
 
 
