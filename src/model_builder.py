@@ -96,7 +96,7 @@ class ModelBuilder():
 		for _ in range(model_conf['rnn_layers']):
 			model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
 			 stateful=stateful,W_regularizer=l2(regularization),U_regularizer=l2(regularization),
-			 b_regularizer=l2(regularization),dropout_W=dropout_prob))
+			 b_regularizer=l2(regularization),dropout_W=dropout_prob,dropout_U=dropout_prob))
 			model.add(Dropout(dropout_prob))
 		if return_sequences:
 			model.add(TimeDistributed(Dense(1,activation=output_activation)))
