@@ -48,6 +48,8 @@ for i in range(num_workers):
     from keras.layers.wrappers import TimeDistributed
     from keras.models import Model
     from keras.optimizers import SGD
+    from keras.utils.generic_utils import Progbar 
+
 
 #my classes
 from conf import conf
