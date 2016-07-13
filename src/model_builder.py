@@ -125,7 +125,7 @@ class ModelBuilder():
 			print('no previous checkpoint found')
 			return -1
 		else:
-			max_epoch = min(self.conf['training']['num_epochs'],max(epochs))
+			max_epoch = min(self.conf['training']['num_epochs']-1,max(epochs))
 			print('loading from epoch {}'.format(max_epoch))
 			model.load_weights(self.get_save_path(max_epoch))
 			return max_epoch
