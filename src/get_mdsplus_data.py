@@ -38,11 +38,24 @@ elif machine == 'jet':
 	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
 
+	#plasma current, locked mode, output power
 	signal_paths = ['jpf/da/c2-ipla',
 	'jpf/da/c2-loca',
 	'jpf/db/b5r-ptot>out']
+
+
+
+	#internal inductance, time derivative of stored energy, input power, total diamagnetic energy
+	signal_paths += ['jpf/gs/bl-li<s',
+	'jpf/gs/bl-fdwdt<s',
+	'jpf/gs/bl-ptot<s',
+	'jpf/gs/bl-wmhd<s']
+
+
+
 	
 	#density signals
+	#4 vertical channels and 4 horizontal channels
 	signal_paths += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(1,9)]
 
 
@@ -54,19 +67,15 @@ elif machine == 'jet':
 
 
 	#ece temperature profiles
-	# signal_paths += ['jpf/de/kk3/p{:03d}'.format(285 + 5*i) for i in range(1,14)]
-
+	#temperature of channel i vs time
 	signal_paths += ['ppf/kk3/te{:02d}'.format(i) for i in range(1,97)]
-	signal_paths += ['ppf/kk3/ra{:02d}'.format(i) for i in range(1,97)]
+
+	#radial position of channel i vs time
+	#signal_paths += ['ppf/kk3/ra{:02d}'.format(i) for i in range(1,97)]
+
+	#radial position of channel i mapped onto midplane vs time
 	signal_paths += ['ppf/kk3/rc{:02d}'.format(i) for i in range(1,97)]
 
-
-
-
-	signal_paths += ['jpf/gs/bl-li<s',
-	'jpf/gs/bl-fdwdt<s',
-	'jpf/gs/bl-ptot<s',
-	'jpf/gs/bl-wmhd<s']
 
 
 
@@ -114,6 +123,8 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 						data = c.get(tag).data()
 						time = c.get('dim_of('+tag+')').data()
 					elif machine == 'jet':
+						raw  = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num))
+						print(raw)
 						data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 					data_two_column = vstack((time,data)).transpose()
