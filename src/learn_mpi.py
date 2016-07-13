@@ -118,7 +118,7 @@ def mpi_make_predictions(conf,shot_list,loader):
 
     if task_index == 0:
         pbar =  Progbar(len(shot_list))
-    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
+    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],shuffle=False,equal_size=True)
 
     y_prime_global = []
     y_gold_global = []

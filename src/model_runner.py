@@ -196,7 +196,7 @@ def make_predictions_gpu(conf,shot_list,loader):
     model.reset_states()
 
     pbar =  Progbar(len(shot_list))
-    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
+    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],shuffle=False,equal_size=True)
     for (i,shot_sublist) in enumerate(shot_sublists):
         X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
         #load data and fit on data
