@@ -105,6 +105,7 @@ def format_save_path(prepath,signal_path,shot_num):
 
 
 def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
+	missing_values = 0
 	while True:
 		try:
 			shot_num = shot_num_queue.get(False)
@@ -123,9 +124,13 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 						data = c.get(tag).data()
 						time = c.get('dim_of('+tag+')').data()
 					elif machine == 'jet':
-						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
-						data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
-						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
+						try:
+							data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
+							time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
+						except:
+							missing_values += 1
+							print('Signal {}, shot {} missing. Filling with zeros'.format(signal_path,shot_num))
+							time,data = create_missing_value_filler()
 					data_two_column = vstack((time,data)).transpose()
 					try: #can lead to race condition
 						mkdirdepth(save_path_full)
@@ -137,7 +142,6 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 					        # Our target dir exists as a file, or different error, reraise the error!
 					        raise
 					savetxt(save_path_full,data_two_column,fmt = '%f %f')
-					print('saved {}, shot {}'.format(signal_path,shot_num))
 					print('.',end='')
 			    except:
 					print('Could not save shot {}, signal {}'.format(shot_num,signal_path))
@@ -145,6 +149,7 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 					raise
 			sys.stdout.flush()
 		print('saved shot {}'.format(shot_num))
+	print('Finished with {} missing values total'.format(missing_values))
 
 
 
@@ -184,6 +189,11 @@ print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),tim
 # pool.close()
 # pool.join()
 
+
+def create_missing_value_filler():
+	time = np.linspace(0,100,1.0)
+	vals = np.zeros_like(time)
+	return time,vals
 
 
 
