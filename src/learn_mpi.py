@@ -116,7 +116,8 @@ def mpi_make_predictions(conf,shot_list,loader):
     builder.load_model_weights(model)
     model.reset_states()
 
-    pbar =  Progbar(len(shot_list))
+    if task_index == 0:
+        pbar =  Progbar(len(shot_list))
     shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
 
     y_prime_global = []
@@ -156,7 +157,9 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_gold = []
             disruptive = []
             print_all('\nFinished subepoch with lists len(y_prime_global), gold, disruptive = {},{},{}'.format(len(y_prime_global),len(y_gold_global),len(disruptive_global)))
-        pbar.add(1.0*len(shot_sublist))
+
+        if task_index == 0:
+            pbar.add(1.0*len(shot_sublist))
 
     print_all('\nFinished Predictions Overall')
     y_prime_global = y_prime_global[:len(shot_list)]
