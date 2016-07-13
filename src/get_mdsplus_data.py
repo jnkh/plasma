@@ -123,8 +123,7 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 						data = c.get(tag).data()
 						time = c.get('dim_of('+tag+')').data()
 					elif machine == 'jet':
-						raw  = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num))
-						print(raw)
+						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 						data = c.get('_sig=jet("{}/",{})'.format(signal_path,shot_num)).data()
 						time = c.get('_sig=dim_of(jet("{}/",{}))'.format(signal_path,shot_num)).data()
 					data_two_column = vstack((time,data)).transpose()
