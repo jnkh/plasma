@@ -143,6 +143,7 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_prime += y_p
             y_gold += y
             disruptive += disr
+            print_all('Finished with i = {}'.format(i))
 
         if i % num_workers == num_workers -1 or i == len(shot_sublists) - 1:
             comm.Barrier()
@@ -153,9 +154,10 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_prime = []
             y_gold = []
             disruptive = []
+            print_all('Finished subepoch with lists len(y_prime_global), gold, disruptive = {},{},{}'.format(len(y_prime_global),len(y_gold_global),len(disruptive_global)))
         pbar.add(1.0*len(shot_sublist))
 
-
+    print_all('Finished Predictions Overall')
     y_prime_global = y_prime_global[:len(shot_list)]
     y_gold_global = y_gold_global[:len(shot_list)]
     disruptive_global = disruptive_global[:len(shot_list)]
