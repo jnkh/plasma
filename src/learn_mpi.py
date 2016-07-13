@@ -22,6 +22,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from functools import partial
+import itertools
 
 from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all
 
@@ -93,7 +94,7 @@ print("...done")
 
 shot_list_train,shot_list_validate,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
 
-def train(conf,shot_list_train,shot_list_validate,loader):
+def mpi_train(conf,shot_list_train,shot_list_validate,loader):
     validation_losses = []
     validation_roc = []
     # training_losses = []
@@ -127,10 +128,22 @@ def train(conf,shot_list_train,shot_list_validate,loader):
         if task_index == 0:
             builder.save_model_weights(train_model,e)
 
-            if conf['training']['validation_frac'] > 0.0:
-                roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
-                validation_losses.append(loss)
-                validation_roc.append(roc_area)
+
+        roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
+
+        print_all('=========Summary========')
+        # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+        print_all('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+        print_all('Validation ROC: {:.4f}'.format(validation_roc[-1]))
+
+        print('...done')
+
+
+        if task_index == 0:
+
+            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
+            validation_losses.append(loss)
+            validation_roc.append(roc_area)
 
             print('=========Summary========')
             # print('Training Loss: {:.3e}'.format(training_losses[-1]))
@@ -142,34 +155,103 @@ def train(conf,shot_list_train,shot_list_validate,loader):
             print('...done')
 
 
-train(conf,shot_list_train,shot_list_validate,loader)
+
+
+def mpi_make_predictions(conf,shot_list,loader):
+
+    builder = ModelBuilder(conf) 
+
+    y_prime = []
+    y_gold = []
+    disruptive = []
+
+    _,model = builder.build_train_test_models()
+    builder.load_model_weights(model)
+    model.reset_states()
+
+    pbar =  Progbar(len(shot_list))
+    shot_sublists = shot_list.sublists(conf['model']['pred_batch_size'],equal_size=True)
+
+    y_prime_global = []
+    y_gold_global = []
+    disruptive_global = []
+
+
+
+    for (i,shot_sublist) in enumerate(shot_sublists):
+
+        if i % num_workers == task_index:
+            X,y,shot_lengths,disr = loader.load_as_X_y_pred(shot_sublist)
+            #load data and fit on data
+            y_p = model.predict(X,
+                batch_size=conf['model']['pred_batch_size'])
+            model.reset_states()
+            y_p = loader.batch_output_to_array(y_p)
+            y = loader.batch_output_to_array(y)
+            #cut arrays back
+            y_p = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y_p)]
+            y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
+
+            # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
+            pbar.add(1.0*len(shot_sublist))
+            loader.verbose=False#True during the first iteration
+            y_prime += y_p
+            y_gold += y
+            disruptive += disr
+
+        if i % num_workers == num_workers -1:
+            comm.Barrier()
+            y_prime_global += concatenate_sublists(comm.allgather(y_prime))
+            y_gold_global += concatenate_sublists(comm.allgather(y_gold))
+            disruptive_global += concatenate_sublists(comm.allgather(disruptive))
+
+
+    y_prime_global = y_prime_global[:len(shot_list)]
+    y_gold_global = y_gold_global[:len(shot_list)]
+    disruptive_global = disruptive_global[:len(shot_list)]
+    return y_prime_global,y_gold_global,disruptive_global
+
+
+def mpi_make_predictions_and_evaluate(conf,shot_list,loader):
+    y_prime,y_gold,disruptive = make_predictions_gpu(conf,shot_list,loader)
+    analyzer = PerformanceAnalyzer(conf=conf)
+    roc_area = analyzer.get_roc_area(y_prime,y_gold,disruptive)
+    loss = get_loss_from_list(y_prime,y_gold,conf['data']['target'].loss)
+    return roc_area,loss
+
+
+def concatenate_sublists(superlist):
+    return list(itertools.chain.from_iterable(superlist))
+
+
+mpi_train(conf,shot_list_train,shot_list_validate,loader)
+
+
+
+from model_runner import make_predictions,make_predictions_gpu
+
+#load last model for testing
+print('saving results')
+y_prime = []
+y_prime_test = []
+y_prime_train = []
+
+y_gold = []
+y_gold_test = []
+y_gold_train = []
+
+disruptive= []
+disruptive_train= []
+disruptive_test= []
+
+# y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,loader)
+# y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,loader)
+
+y_prime_train,y_gold_train,disruptive_train = mpi_make_predictions_gpu(conf,shot_list_train,loader)
+y_prime_test,y_gold_test,disruptive_test = mpi_make_predictions_gpu(conf,shot_list_test,loader)
 
 
 if task_index == 0:
-
-    from model_runner import make_predictions,make_predictions_gpu
-
-    #load last model for testing
-    print('saving results')
-    y_prime = []
-    y_prime_test = []
-    y_prime_train = []
-
-    y_gold = []
-    y_gold_test = []
-    y_gold_train = []
-
-    disruptive= []
-    disruptive_train= []
-    disruptive_test= []
-
-    # y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,loader)
-    # y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,loader)
-
-    y_prime_train,y_gold_train,disruptive_train = make_predictions_gpu(conf,shot_list_train,loader)
-    y_prime_test,y_gold_test,disruptive_test = make_predictions_gpu(conf,shot_list_test,loader)
-
-
     disruptive_train = np.array(disruptive_train)
     disruptive_test = np.array(disruptive_test)
 
