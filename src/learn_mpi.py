@@ -23,6 +23,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from functools import partial
 import itertools
+import socket
 
 from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all
 
@@ -34,7 +35,7 @@ task_index = comm.Get_rank()
 num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
-base_compile_dir = '/scratch/jk7/tmp/{}'.format(task_index)
+base_compile_dir = '/scratch/jk7/tmp/{}-{}'.format(socket.gethostname(),task_index)
 os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
 import theano
 #import keras
