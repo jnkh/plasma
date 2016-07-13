@@ -135,15 +135,15 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_p = loader.batch_output_to_array(y_p)
             y = loader.batch_output_to_array(y)
             #cut arrays back
-            y_p = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y_p)]
-            y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
+            y_p = [arr[:shot_lengths[j]] for (j,arr) in enumerate(y_p)]
+            y = [arr[:shot_lengths[j]] for (j,arr) in enumerate(y)]
 
             # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
             loader.verbose=False#True during the first iteration
             y_prime += y_p
             y_gold += y
             disruptive += disr
-            print_all('Finished with i = {}'.format(i))
+            print_all('\nFinished with i = {}'.format(i))
 
         if i % num_workers == num_workers -1 or i == len(shot_sublists) - 1:
             comm.Barrier()
@@ -154,10 +154,10 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_prime = []
             y_gold = []
             disruptive = []
-            print_all('Finished subepoch with lists len(y_prime_global), gold, disruptive = {},{},{}'.format(len(y_prime_global),len(y_gold_global),len(disruptive_global)))
+            print_all('\nFinished subepoch with lists len(y_prime_global), gold, disruptive = {},{},{}'.format(len(y_prime_global),len(y_gold_global),len(disruptive_global)))
         pbar.add(1.0*len(shot_sublist))
 
-    print_all('Finished Predictions Overall')
+    print_all('\nFinished Predictions Overall')
     y_prime_global = y_prime_global[:len(shot_list)]
     y_gold_global = y_gold_global[:len(shot_list)]
     disruptive_global = disruptive_global[:len(shot_list)]
