@@ -131,7 +131,7 @@ class MPIModel():
     self.optimizer = optimizer
     self.lr = lr
     self.DUMMY_LR = 0.1
-    self.max_lr = 0.5
+    self.max_lr = 0.1
     self.comm = comm
     self.batch_size = batch_size
     self.batch_iterator = batch_iterator
