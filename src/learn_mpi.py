@@ -94,67 +94,10 @@ print("...done")
 
 shot_list_train,shot_list_validate,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
 
-def mpi_train(conf,shot_list_train,shot_list_validate,loader):
-    validation_losses = []
-    validation_roc = []
-    # training_losses = []
-
-    builder = model_builder.ModelBuilder(conf)
-    train_model,test_model = builder.build_train_test_models()
-
-    #load the latest epoch we did. Returns -1 if none exist yet
-    e = builder.load_model_weights(train_model)
-
-    num_epochs = conf['training']['num_epochs']
-    lr_decay = conf['model']['lr_decay']
-    batch_size = conf['training']['batch_size']
-    lr = conf['model']['lr']
-    optimizer = MPIAdam(lr=lr)
-    print('{} epochs left to go'.format(num_epochs - 1 - e))
-    batch_generator = partial(loader.training_batch_generator,shot_list=shot_list_train,loader=loader)
-
-    mpi_model = MPIModel(train_model,optimizer,comm,batch_generator,batch_size,lr=lr,warmup_steps = 50)
-    mpi_model.compile(loss=conf['data']['target'].loss)
 
 
-    while e < num_epochs-1:
-        e += 1
-        mpi_model.set_lr(lr*lr_decay**e)
-        print_unique('\nEpoch {}/{}'.format(e,num_epochs))
-
-        mpi_model.train_epoch()
-
-        loader.verbose=False#True during the first iteration
-        if task_index == 0:
-            builder.save_model_weights(train_model,e)
-
-
-        roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
-
-        print_all('=========Summary========')
-        # print('Training Loss: {:.3e}'.format(training_losses[-1]))
-        print_all('Validation Loss: {:.3e}'.format(validation_losses[-1]))
-        print_all('Validation ROC: {:.4f}'.format(validation_roc[-1]))
-
-        print('...done')
-
-
-        if task_index == 0:
-
-            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
-            validation_losses.append(loss)
-            validation_roc.append(roc_area)
-
-            print('=========Summary========')
-            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
-            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
-            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
-
-            # plot_losses(conf,[training_losses],builder,name='training')
-            # plot_losses(conf,[validation_losses,validation_roc],builder,name='training_validation_roc')
-            print('...done')
-
-
+def concatenate_sublists(superlist):
+    return list(itertools.chain.from_iterable(superlist))
 
 
 def mpi_make_predictions(conf,shot_list,loader):
@@ -220,8 +163,69 @@ def mpi_make_predictions_and_evaluate(conf,shot_list,loader):
     return roc_area,loss
 
 
-def concatenate_sublists(superlist):
-    return list(itertools.chain.from_iterable(superlist))
+
+
+def mpi_train(conf,shot_list_train,shot_list_validate,loader):
+    validation_losses = []
+    validation_roc = []
+    # training_losses = []
+
+    builder = model_builder.ModelBuilder(conf)
+    train_model,test_model = builder.build_train_test_models()
+
+    #load the latest epoch we did. Returns -1 if none exist yet
+    e = builder.load_model_weights(train_model)
+
+    num_epochs = conf['training']['num_epochs']
+    lr_decay = conf['model']['lr_decay']
+    batch_size = conf['training']['batch_size']
+    lr = conf['model']['lr']
+    optimizer = MPIAdam(lr=lr)
+    print('{} epochs left to go'.format(num_epochs - 1 - e))
+    batch_generator = partial(loader.training_batch_generator,shot_list=shot_list_train,loader=loader)
+
+    mpi_model = MPIModel(train_model,optimizer,comm,batch_generator,batch_size,lr=lr,warmup_steps = 50)
+    mpi_model.compile(loss=conf['data']['target'].loss)
+
+
+    while e < num_epochs-1:
+        e += 1
+        mpi_model.set_lr(lr*lr_decay**e)
+        print_unique('\nEpoch {}/{}'.format(e,num_epochs))
+
+        mpi_model.train_epoch()
+
+        loader.verbose=False#True during the first iteration
+        if task_index == 0:
+            builder.save_model_weights(train_model,e)
+
+
+        roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
+
+        print_all('=========Summary========')
+        # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+        print_all('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+        print_all('Validation ROC: {:.4f}'.format(validation_roc[-1]))
+
+        print('...done')
+
+
+        if task_index == 0:
+
+            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
+            validation_losses.append(loss)
+            validation_roc.append(roc_area)
+
+            print('=========Summary========')
+            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
+
+            # plot_losses(conf,[training_losses],builder,name='training')
+            # plot_losses(conf,[validation_losses,validation_roc],builder,name='training_validation_roc')
+            print('...done')
+
+
 
 
 mpi_train(conf,shot_list_train,shot_list_validate,loader)
