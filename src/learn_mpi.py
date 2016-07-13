@@ -216,6 +216,9 @@ def mpi_train(conf,shot_list_train,shot_list_validate,loader):
         roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
         print_all('roc_area, loss = {}, {}'.format(roc_area,loss))
 
+        roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
+        print_all('roc_area, loss = {}, {}'.format(roc_area,loss))
+
         if task_index == 0:
 
             roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
@@ -231,6 +234,19 @@ def mpi_train(conf,shot_list_train,shot_list_validate,loader):
             # plot_losses(conf,[validation_losses,validation_roc],builder,name='training_validation_roc')
             print('...done')
 
+        if task_index == 0:
+
+            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
+            validation_losses.append(loss)
+            validation_roc.append(roc_area)
+
+            print('=========Summary========')
+            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
+            print('done')
+
+  
 
 
 
