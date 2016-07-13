@@ -138,7 +138,6 @@ def mpi_make_predictions(conf,shot_list,loader):
             y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
 
             # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
-            pbar.add(1.0*len(shot_sublist))
             loader.verbose=False#True during the first iteration
             y_prime += y_p
             y_gold += y
@@ -149,6 +148,7 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_prime_global += concatenate_sublists(comm.allgather(y_prime))
             y_gold_global += concatenate_sublists(comm.allgather(y_gold))
             disruptive_global += concatenate_sublists(comm.allgather(disruptive))
+        pbar.add(1.0*len(shot_sublist))
 
 
     y_prime_global = y_prime_global[:len(shot_list)]
