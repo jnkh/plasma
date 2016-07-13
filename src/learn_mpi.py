@@ -143,7 +143,7 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_gold += y
             disruptive += disr
 
-        if i % num_workers == num_workers -1:
+        if i % num_workers == num_workers -1 or i == len(shot_sublists) - 1:
             comm.Barrier()
             y_prime_global += concatenate_sublists(comm.allgather(y_prime))
             y_gold_global += concatenate_sublists(comm.allgather(y_gold))
