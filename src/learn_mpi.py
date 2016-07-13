@@ -149,6 +149,7 @@ def mpi_make_predictions(conf,shot_list,loader):
             y_prime_global += concatenate_sublists(comm.allgather(y_prime))
             y_gold_global += concatenate_sublists(comm.allgather(y_gold))
             disruptive_global += concatenate_sublists(comm.allgather(disruptive))
+            comm.Barrier()
             y_prime = []
             y_gold = []
             disruptive = []
