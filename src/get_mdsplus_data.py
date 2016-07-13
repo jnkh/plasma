@@ -8,6 +8,7 @@ from __future__ import print_function
 from MDSplus import *
 from data_processing import ShotList
 from pylab import *
+import numpy as np
 import sys
 import multiprocessing as mp
 from functools import partial
@@ -86,6 +87,15 @@ else:
 	print('unkown machine. exiting')
 	exit(1)
 
+
+
+
+
+
+def create_missing_value_filler():
+	time = np.linspace(0,100,1000)
+	vals = np.zeros_like(time)
+	return time,vals
 
 def mkdirdepth(filename):
 	folder=os.path.dirname(filename)
@@ -188,12 +198,6 @@ print('Finished downloading {} shots in {} seconds'.format(len(shot_numbers),tim
 
 # pool.close()
 # pool.join()
-
-
-def create_missing_value_filler():
-	time = np.linspace(0,100,1.0)
-	vals = np.zeros_like(time)
-	return time,vals
 
 
 
