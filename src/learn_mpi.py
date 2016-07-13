@@ -102,7 +102,7 @@ def concatenate_sublists(superlist):
 
 def mpi_make_predictions(conf,shot_list,loader):
 
-    builder = ModelBuilder(conf) 
+    builder = model_builder.ModelBuilder(conf) 
 
     y_prime = []
     y_gold = []
