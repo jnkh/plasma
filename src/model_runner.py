@@ -206,8 +206,8 @@ def make_predictions_gpu(conf,shot_list,loader):
         y_p = loader.batch_output_to_array(y_p)
         y = loader.batch_output_to_array(y)
         #cut arrays back
-        y_p = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y_p)]
-        y = [arr[:shot_lengths[i]] for (i,arr) in enumerate(y)]
+        y_p = [arr[:shot_lengths[j]] for (j,arr) in enumerate(y_p)]
+        y = [arr[:shot_lengths[j]] for (j,arr) in enumerate(y)]
 
         # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
         pbar.add(1.0*len(shot_sublist))
