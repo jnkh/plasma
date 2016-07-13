@@ -213,7 +213,7 @@ def mpi_make_predictions(conf,shot_list,loader):
 
 
 def mpi_make_predictions_and_evaluate(conf,shot_list,loader):
-    y_prime,y_gold,disruptive = mpi_make_predictions_gpu(conf,shot_list,loader)
+    y_prime,y_gold,disruptive = mpi_make_predictions(conf,shot_list,loader)
     analyzer = PerformanceAnalyzer(conf=conf)
     roc_area = analyzer.get_roc_area(y_prime,y_gold,disruptive)
     loss = get_loss_from_list(y_prime,y_gold,conf['data']['target'].loss)
@@ -247,8 +247,8 @@ disruptive_test= []
 # y_prime_train,y_gold_train,disruptive_train = make_predictions(conf,shot_list_train,loader)
 # y_prime_test,y_gold_test,disruptive_test = make_predictions(conf,shot_list_test,loader)
 
-y_prime_train,y_gold_train,disruptive_train = mpi_make_predictions_gpu(conf,shot_list_train,loader)
-y_prime_test,y_gold_test,disruptive_test = mpi_make_predictions_gpu(conf,shot_list_test,loader)
+y_prime_train,y_gold_train,disruptive_train = mpi_make_predictions(conf,shot_list_train,loader)
+y_prime_test,y_gold_test,disruptive_test = mpi_make_predictions(conf,shot_list_test,loader)
 
 
 if task_index == 0:
