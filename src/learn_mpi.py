@@ -25,7 +25,7 @@ from functools import partial
 import itertools
 import socket
 sys.setrecursionlimit(10000)
-from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all
+from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all,backend
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
 #from mpi_launch_tensorflow import get_mpi_task_index 
@@ -36,7 +36,7 @@ num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 
-if mpi_model.backend != 'tf':
+if backend != 'tf' and backend != 'tensorflow':
     base_compile_dir = '/scratch/jk7/tmp/{}-{}'.format(socket.gethostname(),task_index)
     os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
     import theano
