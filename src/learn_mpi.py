@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from functools import partial
 import itertools
 import socket
-
+sys.setrecursionlimit(10000)
 from mpi_model import MPIModel,MPISGD,MPIAdam,print_unique,print_all
 
 #import keras sequentially because it otherwise reads from ~/.keras/keras.json with too many threads.
