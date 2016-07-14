@@ -37,6 +37,7 @@ NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
 base_compile_dir = '/scratch/jk7/tmp/{}-{}'.format(socket.gethostname(),task_index)
 os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
+print(os.environ)
 import theano
 #import keras
 for i in range(num_workers):
@@ -161,7 +162,6 @@ def mpi_make_predictions(conf,shot_list,loader):
         if task_index == 0:
             pbar.add(1.0*len(shot_sublist))
 
-    print_unique('\nFinished Predictions Overall')
     y_prime_global = y_prime_global[:len(shot_list)]
     y_gold_global = y_gold_global[:len(shot_list)]
     disruptive_global = disruptive_global[:len(shot_list)]
@@ -216,37 +216,15 @@ def mpi_train(conf,shot_list_train,shot_list_validate,loader):
         roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
         print_all('roc_area, loss = {}, {}'.format(roc_area,loss))
 
-        roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
-        print_all('roc_area, loss = {}, {}'.format(roc_area,loss))
+        validation_losses.append(loss)
+        validation_roc.append(roc_area)
 
-        if task_index == 0:
+        print('=========Summary========')
+        # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+        print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+        print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
 
-            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
-            validation_losses.append(loss)
-            validation_roc.append(roc_area)
-
-            print('=========Summary========')
-            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
-            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
-            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
-
-            # plot_losses(conf,[training_losses],builder,name='training')
-            # plot_losses(conf,[validation_losses,validation_roc],builder,name='training_validation_roc')
-            print('...done')
-
-        if task_index == 0:
-
-            roc_area,loss = make_predictions_and_evaluate_gpu(conf,shot_list_validate,loader)
-            validation_losses.append(loss)
-            validation_roc.append(roc_area)
-
-            print('=========Summary========')
-            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
-            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
-            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
-            print('done')
-
-  
+ 
 
 
 
