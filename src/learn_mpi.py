@@ -35,9 +35,11 @@ task_index = comm.Get_rank()
 num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
-base_compile_dir = '/scratch/jk7/tmp/{}-{}'.format(socket.gethostname(),task_index)
-os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
-import theano
+
+if mpi_model.backend != 'tf':
+    base_compile_dir = '/scratch/jk7/tmp/{}-{}'.format(socket.gethostname(),task_index)
+    os.environ['THEANO_FLAGS'] = 'device=gpu{},floatX=float32,base_compiledir={}'.format(MY_GPU,base_compile_dir)#,mode=NanGuardMode'
+    import theano
 #import keras
 for i in range(num_workers):
   comm.Barrier()
