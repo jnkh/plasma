@@ -4,12 +4,32 @@ base_path = '/tigress/jk7/'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path
 signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
                 'jpf/da/c2-loca', # Mode Lock Amplitude [A]
                 'jpf/db/b5r-ptot>out', #Radiated Power [W]
-                'jpf/df/g1r-lid:003', #Density [m^-2]
                 'jpf/gs/bl-li<s', #Plasma Internal Inductance
                 'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W] Might cause a lot of false positives!
                 'jpf/gs/bl-ptot<s', #total input power [W]
-                'jpf/gs/bl-wmhd<s'] #unkown
+                'jpf/gs/bl-wmhd<s'] #total stored diamagnetic energy
 
+#density signals [m^-2]
+#4 vertical channels and 4 horizontal channels
+signals_dirs += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]
+
+
+
+#radiation signals
+#vertical signals, don't use signal 16 and 23
+# signals_dirs += ['jpf/db/b5vr-pbol:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
+# signals_dirs += ['jpf/db/b5hr-pbol:{:03d}'.format(i) for i in range(1,24)]
+
+
+#ece temperature profiles
+#temperature of channel i vs time
+# signals_dirs += ['ppf/kk3/te{:02d}'.format(i) for i in range(1,97)]
+#radial position of channel i mapped onto midplane vs time
+# signals_dirs += ['ppf/kk3/rc{:02d}'.format(i) for i in range(1,97)]
+
+
+####radial position of channel i vs time
+####signal_paths += ['ppf/kk3/ra{:02d}'.format(i) for i in range(1,97)]
 target = t.HingeTarget
 
 conf = {
