@@ -376,10 +376,14 @@ class Preprocessor(object):
         signals = []
         times = []
         conf = self.conf
+
+        disruptive = t_disrupt >= 0
+
         signal_prepath = conf['paths']['signal_prepath']
         signals_dirs = conf['paths']['signals_dirs']
         current_index = conf['data']['current_index']
         current_thresh = conf['data']['current_thresh']
+        current_end_thresh = conf['data']['current_end_thresh']
         for (i,dirname) in enumerate(signals_dirs):
             data = loadtxt(get_individual_shot_file(signal_prepath+dirname + '/',shot))
             t = data[:,0]
@@ -387,19 +391,29 @@ class Preprocessor(object):
             t_min = max(t_min,t[0])
             t_max = min(t_max,t[-1])
             if i == current_index:
+                #throw out shots that never reach curren threshold
                 if not (any(abs(sig) > current_thresh)):
                     valid = False
                     print('Shot {} does not exceed current threshold... invalid.'.format(shot))
                 else:
+                    #begin shot once current reaches threshold
                     index_thresh = argwhere(abs(sig) > current_thresh)[0][0]
                     t_thresh = t[index_thresh]
+                    #end shot once current drops below current_end_thresh
+                    if not disruptive:
+                        acceptable_region = zeros_like(sig,dtype=bool)
+                        acceptable_region[index_thresh:] = True
+                        index_end_thresh = argwhere(logical_and(abs(sig) < current_end_thresh,acceptable_region))[0][0]
+                        t_end_thresh = t[index_end_thresh]
+                        assert(t_thresh < t_end_thresh < t_max)
+                        t_max = t_end_thresh
             signals.append(sig)
             times.append(t)
         if not valid:
             t_thresh = t_min
         assert(t_thresh >= t_min)
         assert(t_disrupt <= t_max)
-        if t_disrupt >= 0:
+        if disruptive:
             assert(t_thresh < t_disrupt)
             t_max = t_disrupt
         t_min = t_thresh

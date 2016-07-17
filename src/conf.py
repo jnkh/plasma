@@ -44,6 +44,7 @@ conf = {
         'T_max' : 1000.0,
         'T_warning' : 1.0, #The shortest works best so far: less overfitting. log TTd prediction also works well. 0.5 better than 0.2
         'current_thresh' : 750000,
+        'current_end_thresh' : 10000,
         'window_decay' : 2, #the characteristic decay length of the decaying moving average window
         'window_size' : 10, #the width of the actual window
         'target' : target,
