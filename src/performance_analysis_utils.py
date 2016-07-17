@@ -464,11 +464,18 @@ class PerformanceAnalyzer():
         labels = [r' $I_{plasma}$ [A]',
         r' Mode L. A. [A]',
         r' $P_{radiated}$ [W]',
-        r' $\rho_{plasma}$ [m^-2]',
         r' $L_{plasma,internal}$',
         r'$\frac{d}{dt} E_{D}$ [W]',
         r' $P_{input}$ [W]',
-        r'$E_{D}$']
+        r'$E_{D}$',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        r' $\rho_{plasma}$ [m^-2]',
+        ]
 
         if(shot.previously_saved(self.shots_dir)):
             shot.restore(self.shots_dir)
