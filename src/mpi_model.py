@@ -25,7 +25,7 @@ task_index = comm.Get_rank()
 num_workers = comm.Get_size()
 NUM_GPUS = 4
 MY_GPU = task_index % NUM_GPUS
-backend = 'tf'
+backend = 'theano'
 
 if backend == 'tf':
   os.environ['CUDA_VISIBLE_DEVICES'] = '{}'.format(MY_GPU)#,mode=NanGuardMode'
