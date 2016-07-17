@@ -25,7 +25,7 @@ conf = {
         'processed_prepath' : base_path + 'data/processed_shots/',
         'normalizer_path' : base_path + 'data/normalization/normalization.npz',
         'results_prepath' : base_path + 'data/results/',
-        'model_save_path' : './tmp/'
+        'model_save_path' : base_path + 'data/model_checkpoints/tmp/'
    },
 
    'data': {
