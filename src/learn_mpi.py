@@ -125,6 +125,8 @@ def mpi_make_predictions(conf,shot_list,loader):
     y_prime_global = []
     y_gold_global = []
     disruptive_global = []
+    if task_index != 0:
+        loader.verbose = False
 
 
 
@@ -143,7 +145,6 @@ def mpi_make_predictions(conf,shot_list,loader):
             y = [arr[:shot_lengths[j]] for (j,arr) in enumerate(y)]
 
             # print('Shots {}/{}'.format(i*num_at_once + j*1.0*len(shot_sublist)/len(X_list),len(shot_list_train)))
-            loader.verbose=False#True during the first iteration
             y_prime += y_p
             y_gold += y
             disruptive += disr
@@ -220,10 +221,11 @@ def mpi_train(conf,shot_list_train,shot_list_validate,loader):
         validation_losses.append(loss)
         validation_roc.append(roc_area)
 
-        print('=========Summary========')
-        # print('Training Loss: {:.3e}'.format(training_losses[-1]))
-        print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
-        print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
+        if task_index == 0:
+            print('=========Summary========')
+            # print('Training Loss: {:.3e}'.format(training_losses[-1]))
+            print('Validation Loss: {:.3e}'.format(validation_losses[-1]))
+            print('Validation ROC: {:.4f}'.format(validation_roc[-1]))
 
  
 
