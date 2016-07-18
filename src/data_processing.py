@@ -24,7 +24,6 @@ from scipy.signal import exponential,correlate
 import pathos.multiprocessing as mp
 
 
-
 #######NORMALIZATION##########
 
 class Stats(object):
@@ -113,7 +112,7 @@ class Normalizer(object):
         shot.ttd = shot.ttd[:-T_min_warn]
 
     def apply_mask(self,shot):
-        mask = self.conf['paths']['signals_mask']
+        mask = self.conf['paths']['signals_masks']
         indices = np.concatenate([indices_sublist for i,indices_sublist in enumerate(self.get_indices_list()) if mask[i]])
         shot.signals = shot.signals[:,indices]
 

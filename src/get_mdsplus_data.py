@@ -16,6 +16,8 @@ import Queue
 import os
 import errno
 
+from jet_signals import signals_dirs, download_masks
+#currently need to change above import when switching machines
 
 
 prepath = '/p/datad/jkatesha/data/'#'/tigress/jk7/data/'
@@ -38,58 +40,11 @@ if machine == 'nstx':
 elif machine == 'jet':
 	shot_numbers_files = ['CWall_clear.txt','CFC_unint.txt','BeWall_clear.txt','ILW_unint.txt']
 	server_path = 'mdsplus.jet.efda.org'
-
-	#plasma current, locked mode, output power
-	signal_paths = ['jpf/da/c2-ipla',
-	'jpf/da/c2-loca',
-	'jpf/db/b5r-ptot>out']
-
-
-
-	#internal inductance, time derivative of stored energy, input power, total diamagnetic energy
-	signal_paths += ['jpf/gs/bl-li<s',
-	'jpf/gs/bl-fdwdt<s',
-	'jpf/gs/bl-ptot<s',
-	'jpf/gs/bl-wmhd<s']
-
-
-
-	
-	#density signals
-	#4 vertical channels and 4 horizontal channels
-	signal_paths += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(1,9)]
-
-
-
-	#radiation signals
-	#vertical signals, don't use signal 16 and 23
-	signal_paths += ['jpf/db/b5vr-pbol:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
-	signal_paths += ['jpf/db/b5hr-pbol:{:03d}'.format(i) for i in range(1,24)]
-
-
-	#ece temperature profiles
-	#temperature of channel i vs time
-	signal_paths += ['ppf/kk3/te{:02d}'.format(i) for i in range(1,97)]
-
-	#radial position of channel i vs time
-	#signal_paths += ['ppf/kk3/ra{:02d}'.format(i) for i in range(1,97)]
-
-	#radial position of channel i mapped onto midplane vs time
-	signal_paths += ['ppf/kk3/rc{:02d}'.format(i) for i in range(1,97)]
-
-
-
-
-
-
-
+	#unroll 2D list and apply download mask
+	signal_paths = [signal for i,group in enumerate(signals_dirs) for j,signal in enumerate(group) if download_masks[i][j]]
 else:
 	print('unkown machine. exiting')
 	exit(1)
-
-
-
-
 
 
 def create_missing_value_filler():

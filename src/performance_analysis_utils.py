@@ -4,6 +4,8 @@ import os
 from pprint import pprint
 from data_processing import VarNormalizer as Normalizer 
 
+from jet_signals import signals_dirs, plot_masks, group_labels
+#currently need to change above import when switching machines
 
 
 class PerformanceAnalyzer():
@@ -462,29 +464,20 @@ class PerformanceAnalyzer():
             nn.train()
             self.normalizer = nn
 
-        labels = [r' $I_{plasma}$ [A]',
-        r' Mode L. A. [A]',
-        r' $P_{radiated}$ [W]',
-        r' $L_{plasma,internal}$',
-        r'$\frac{d}{dt} E_{D}$ [W]',
-        r' $P_{input}$ [W]',
-        r'$E_{D}$',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        r' $\rho_{plasma}$ [m^-2]',
-        ]
-
         if(shot.previously_saved(self.shots_dir)):
             shot.restore(self.shots_dir)
             t_disrupt = shot.t_disrupt
             is_disruptive =  shot.is_disruptive
             if normalize:
                 self.normalizer.apply(shot)
-            signals = shot.signals
+            #is shot.signals a 1D list?
+            signals = []
+            labels = []
+            for i, group in enumerate(signals_dirs):
+                for j,signal in enumerate(group):
+                    if plot_masks[i][j]:
+                        signals += any(signal in shot.signals)
+                        label += group_label[i]
 
             if is_disruptive:
                 print('disruptive')
