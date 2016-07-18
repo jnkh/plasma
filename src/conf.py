@@ -13,7 +13,7 @@ signals_dirs = [['jpf/da/c2-ipla'], # Plasma Current [A]
 #4 vertical channels and 4 horizontal channels
 signals_dirs += [['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]]
 
-
+signals_mask = [True for sig_list in signals_dirs]
 
 #radiation signals
 #vertical signals, don't use signal 16 and 23
@@ -38,6 +38,7 @@ conf = {
         #'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
+        'signals_mask' : signals_mask,
         'shot_files' : ['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : ['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',

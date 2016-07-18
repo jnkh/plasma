@@ -141,8 +141,8 @@ class MeanVarNormalizer(Normalizer):
         stats = Stats()
         if shot.valid:
             indices_list = self.get_indices_list()
-            stats.means = np.array([np.mean(shot.signals[:,indices]) for indices in indices_list])
-            stats.stds = np.array([np.std(shot.signals[:,indices]) for indices in indices_list])
+            stats.means = np.reshape(np.array([np.mean(shot.signals[:,indices]) for indices in indices_list]),(1,len(indices_list)))
+            stats.stds = np.reshape(np.array([np.std(shot.signals[:,indices]) for indices in indices_list]),(1,len(indices_list)))
             stats.is_disruptive = shot.is_disruptive
         else:
             print('Warning: shot {} not valid, omitting'.format(shot.number))
@@ -169,7 +169,7 @@ class MeanVarNormalizer(Normalizer):
         means = median(self.means,axis=0)
         stds = median(self.stds,axis=0)
         for (i,indices) in enumerate(self.get_indices_list()):
-            shot.signals[:,indices] = (shot.signals[:,indices] - means[i])/stds[i]
+            shot.signals[:,indices] = (shot.signals[:,indices] - means[0,i])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
     def save_stats(self):
@@ -196,7 +196,7 @@ class VarNormalizer(MeanVarNormalizer):
         assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         stds = median(self.stds,axis=0)
         for (i,indices) in enumerate(self.get_indices_list()):
-            shot.signals[:,indices] = (shot.signals[:,indices])/stds[i]
+            shot.signals[:,indices] = (shot.signals[:,indices])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
     def __str__(self):
