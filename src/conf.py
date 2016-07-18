@@ -14,6 +14,7 @@ signals_dirs = [['jpf/da/c2-ipla'], # Plasma Current [A]
 signals_dirs += [['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]]
 
 signals_mask = [True for sig_list in signals_dirs]
+signals_mask[4] = False
 
 #radiation signals
 #vertical signals, don't use signal 16 and 23
@@ -54,7 +55,7 @@ conf = {
         'recompute' : False,
         'recompute_normalization' : False,
         #'recompute_minmax' : False
-        'num_signals' : sum([len(subl) for subl in signals_dirs]),
+        'num_signals' : sum([len(subl) for i,subl in enumerate(signals_dirs) if signals_mask[i]])
         'current_index' : 0,
         'plotting' : False,
         #train/validate split

@@ -112,6 +112,12 @@ class Normalizer(object):
         shot.signals = shot.signals[:-T_min_warn]
         shot.ttd = shot.ttd[:-T_min_warn]
 
+    def apply_mask(self,shot):
+        mask = self.conf['paths']['signals_mask']
+        indices = np.concatenate([indices_sublist for i,indices_sublist in enumerate(self.get_indices_list) if mask[i]])
+        shot.signals = shot.signals[:,indices]
+        shot.ttd = shot.ttd[:,indices]
+
 
     def train_on_single_shot(self,shot):
         assert isinstance(shot,Shot), 'should be instance of shot'
@@ -178,6 +184,7 @@ class MeanVarNormalizer(Normalizer):
             shot.signals[:,indices] = (shot.signals[:,indices] - means[0,i])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
         self.cut_end_of_shot(shot)
+        self.apply_mask(shot)
 
 
     def save_stats(self):
@@ -207,6 +214,7 @@ class VarNormalizer(MeanVarNormalizer):
             shot.signals[:,indices] = (shot.signals[:,indices])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
         self.cut_end_of_shot(shot)
+        self.apply_mask(shot)
 
     def __str__(self):
         stds = median(self.stds,axis=0)
@@ -273,6 +281,7 @@ class MinMaxNormalizer(Normalizer):
         shot.signals = (shot.signals - self.minimums)/(self.maximums - self.minimums)
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
         self.cut_end_of_shot(shot)
+        self.apply_mask(shot)
 
     def save_stats(self):
         # standard_deviations = dat['standard_deviations']
