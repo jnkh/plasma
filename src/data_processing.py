@@ -181,7 +181,7 @@ class MeanVarNormalizer(Normalizer):
         means = median(self.means,axis=0)
         stds = median(self.stds,axis=0)
         for (i,indices) in enumerate(self.get_indices_list()):
-            shot.signals[:,indices] = (shot.signals[:,indices] - means[0,i])/stds[0,i]
+            shot.signals[:,indices] = (shot.signals[:,indices] - means[i])/stds[i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
         self.cut_end_of_shot(shot)
         self.apply_mask(shot)
@@ -211,7 +211,7 @@ class VarNormalizer(MeanVarNormalizer):
         assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         stds = median(self.stds,axis=0)
         for (i,indices) in enumerate(self.get_indices_list()):
-            shot.signals[:,indices] = (shot.signals[:,indices])/stds[0,i]
+            shot.signals[:,indices] = (shot.signals[:,indices])/stds[i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
         self.cut_end_of_shot(shot)
         self.apply_mask(shot)
