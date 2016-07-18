@@ -57,7 +57,7 @@ conf = {
         'recompute' : False,
         'recompute_normalization' : False,
         #'recompute_minmax' : False
-        'num_signals' : sum([sum([1 for predicate in subl if predicate]) for subl in enumerate(signals_mask)]),
+        'num_signals' : sum([sum([1 for predicate in subl if predicate]) for subl in signals_mask]),
         'current_index' : 0,
         'plotting' : False,
         #train/validate split
