@@ -50,6 +50,7 @@ conf = {
    },
 
    'data': {
+        'T_min_warn' : 30, #number of miliseconds (multiples of dt) before disruption that aren't used for training.
         'recompute' : False,
         'recompute_normalization' : False,
         #'recompute_minmax' : False

@@ -107,6 +107,12 @@ class Normalizer(object):
         print(self)
 
 
+    def cut_end_of_shot(self,shot):
+        T_min_warn = self.conf['data']['T_min_warn']
+        shot.signals = shot.signals[:-T_min_warn]
+        shot.ttd = shot.ttd[:-T_min_warn]
+
+
     def train_on_single_shot(self,shot):
         assert isinstance(shot,Shot), 'should be instance of shot'
         processed_prepath = self.conf['paths']['processed_prepath']
@@ -171,6 +177,8 @@ class MeanVarNormalizer(Normalizer):
         for (i,indices) in enumerate(self.get_indices_list()):
             shot.signals[:,indices] = (shot.signals[:,indices] - means[0,i])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
+        self.cut_end_of_shot(shot)
+
 
     def save_stats(self):
         # standard_deviations = dat['standard_deviations']
@@ -198,6 +206,7 @@ class VarNormalizer(MeanVarNormalizer):
         for (i,indices) in enumerate(self.get_indices_list()):
             shot.signals[:,indices] = (shot.signals[:,indices])/stds[0,i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
+        self.cut_end_of_shot(shot)
 
     def __str__(self):
         stds = median(self.stds,axis=0)
@@ -263,6 +272,7 @@ class MinMaxNormalizer(Normalizer):
         assert(self.minimums is not None and self.maximums is not None) 
         shot.signals = (shot.signals - self.minimums)/(self.maximums - self.minimums)
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
+        self.cut_end_of_shot(shot)
 
     def save_stats(self):
         # standard_deviations = dat['standard_deviations']
