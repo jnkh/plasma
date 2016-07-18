@@ -116,7 +116,6 @@ class Normalizer(object):
         mask = self.conf['paths']['signals_mask']
         indices = np.concatenate([indices_sublist for i,indices_sublist in enumerate(self.get_indices_list()) if mask[i]])
         shot.signals = shot.signals[:,indices]
-        shot.ttd = shot.ttd[:,indices]
 
 
     def train_on_single_shot(self,shot):
