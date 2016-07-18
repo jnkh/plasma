@@ -259,7 +259,7 @@ class MPIModel():
       curr_loss = self.mpi_average_scalars(1.0*loss,num_replicas)
       loss_averager.add_val(curr_loss)
       ave_loss = loss_averager.get_val()
-      eta = self.estimate_remaining_time(t2 - t_start,num_so_far,num_total)
+      eta = self.estimate_remaining_time(t0 - t_start,num_so_far,num_total)
       write_str = '\r[{}] step: {} [ETA: {:.2f}s] [{:.2f}/{}], loss: {:.5f} [{:.5f}] | '.format(self.task_index,step,eta,1.0*num_so_far,num_total,ave_loss,curr_loss)
       print_unique(write_str + write_str_0)
       step += 1
@@ -269,7 +269,8 @@ class MPIModel():
 
 
   def estimate_remaining_time(self,time_so_far,work_so_far,work_total):
-    total_time = 1.0*time_so_far*work_total/work_so_far
+    eps = 1e-6
+    total_time = 1.0*time_so_far*work_total/(work_so_far + eps)
     return total_time - time_so_far
 
   def get_effective_lr(self,num_replicas):
