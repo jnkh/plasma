@@ -211,7 +211,6 @@ def mpi_train(conf,shot_list_train,shot_list_validate,loader):
 
 
         roc_area,loss = mpi_make_predictions_and_evaluate(conf,shot_list_validate,loader)
-        print_all('roc_area, loss = {}, {}'.format(roc_area,loss))
 
         validation_losses.append(loss)
         validation_roc.append(roc_area)

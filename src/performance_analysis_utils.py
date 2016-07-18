@@ -159,7 +159,8 @@ class PerformanceAnalyzer():
             exit(1) 
 
         acceptable = zeros_like(truth,dtype=bool)
-        acceptable[-acceptable_timesteps:] = True
+        if acceptable_timesteps > 0:
+            acceptable[-acceptable_timesteps:] = True
         return acceptable
 
 
