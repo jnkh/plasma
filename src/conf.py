@@ -55,7 +55,7 @@ conf = {
         'recompute' : False,
         'recompute_normalization' : False,
         #'recompute_minmax' : False
-        'num_signals' : sum([len(subl) for i,subl in enumerate(signals_dirs) if signals_mask[i]])
+        'num_signals' : sum([len(subl) for i,subl in enumerate(signals_dirs) if signals_mask[i]]),
         'current_index' : 0,
         'plotting' : False,
         #train/validate split
