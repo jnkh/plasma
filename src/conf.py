@@ -13,8 +13,10 @@ signals_dirs = [['jpf/da/c2-ipla'], # Plasma Current [A]
 #4 vertical channels and 4 horizontal channels
 signals_dirs += [['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]]
 
-signals_mask = [True for sig_list in signals_dirs]
-signals_mask[4] = False
+signals_mask = [[True]*len(sig_list) for sig_list in signals_dirs]
+signals_mask[4] = [True]
+signals_mask[7] = [False]*len(signals_dirs[7])
+signals_mask[7][1] = True
 
 #radiation signals
 #vertical signals, don't use signal 16 and 23
