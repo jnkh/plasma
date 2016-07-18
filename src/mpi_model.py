@@ -265,6 +265,7 @@ class MPIModel():
       step += 1
       if epoch_end:
         self.epoch += 1
+        print_unique('\nEpoch {} finished in {:.2f} seconds.\n'.format(self.epoch,t2 - t_start))
         break
 
 

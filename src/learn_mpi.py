@@ -59,7 +59,7 @@ from conf import conf
 from pprint import pprint
 if task_index == 0:
     pprint(conf)
-from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader
+from data_processing import Shot, ShotList, Normalizer, Preprocessor, Loader,concatenate_sublists
 from performance_analysis_utils import PerformanceAnalyzer
 import model_builder
 from model_runner import make_predictions_gpu,make_predictions_and_evaluate_gpu, get_loss_from_list
@@ -99,11 +99,6 @@ print("...done")
 
 
 shot_list_train,shot_list_validate,shot_list_test = guarantee_preprocessed.load_shotlists(conf)
-
-
-
-def concatenate_sublists(superlist):
-    return list(itertools.chain.from_iterable(superlist))
 
 
 def mpi_make_predictions(conf,shot_list,loader):

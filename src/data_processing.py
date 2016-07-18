@@ -14,6 +14,7 @@ import os.path
 import time,sys
 import random as rnd
 import abc
+import itertools
 
 from pylab import *
 import numpy as np
@@ -118,6 +119,10 @@ class Normalizer(object):
     def previously_saved_stats(self):
         return os.path.isfile(self.path)
 
+    def get_indices_list(self):
+        return get_signal_slices(self.conf['paths']['signals_dirs'])
+
+
 
 
 
@@ -135,8 +140,9 @@ class MeanVarNormalizer(Normalizer):
     def extract_stats(self,shot):
         stats = Stats()
         if shot.valid:
-            stats.means = np.reshape(np.mean(shot.signals,0),(1,shot.signals.shape[1]))
-            stats.stds = np.reshape(np.std(shot.signals,0),(1,shot.signals.shape[1]))
+            indices_list = self.get_indices_list()
+            stats.means = np.array([np.mean(shot.signals[:,indices]) for indices in indices_list])
+            stats.stds = np.array([np.std(shot.signals[:,indices]) for indices in indices_list])
             stats.is_disruptive = shot.is_disruptive
         else:
             print('Warning: shot {} not valid, omitting'.format(shot.number))
@@ -162,7 +168,8 @@ class MeanVarNormalizer(Normalizer):
         assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         means = median(self.means,axis=0)
         stds = median(self.stds,axis=0)
-        shot.signals = (shot.signals - means)/stds
+        for (i,indices) in enumerate(self.get_indices_list()):
+            shot.signals[:,indices] = (shot.signals[:,indices] - means[i])/stds[i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
     def save_stats(self):
@@ -188,7 +195,8 @@ class VarNormalizer(MeanVarNormalizer):
     def apply(self,shot):
         assert self.means is not None and self.stds is not None, "self.means or self.stds not initialized"
         stds = median(self.stds,axis=0)
-        shot.signals = shot.signals/stds
+        for (i,indices) in enumerate(self.get_indices_list()):
+            shot.signals[:,indices] = (shot.signals[:,indices])/stds[i]
         shot.ttd = self.remapper(shot.ttd,self.conf['data']['T_warning'])
 
     def __str__(self):
@@ -368,6 +376,10 @@ class Preprocessor(object):
         return shot 
 
 
+    def get_individual_channel_dirs(self):
+        signals_dirs = self.conf['paths']['signals_dirs']
+
+
     def get_signals_and_times_from_file(self,shot,t_disrupt):
         valid = True
         t_min = -1
@@ -380,7 +392,7 @@ class Preprocessor(object):
         disruptive = t_disrupt >= 0
 
         signal_prepath = conf['paths']['signal_prepath']
-        signals_dirs = conf['paths']['signals_dirs']
+        signals_dirs = concatenate_sublists(conf['paths']['signals_dirs'])
         current_index = conf['data']['current_index']
         current_thresh = conf['data']['current_thresh']
         current_end_thresh = conf['data']['current_end_thresh']
@@ -1172,6 +1184,20 @@ def train_test_split_all(x,frac,shuffle_data=True):
     for item in x:
         groups.append((item[mask],item[~mask]))
     return groups
+
+
+def concatenate_sublists(superlist):
+    return list(itertools.chain.from_iterable(superlist))
+
+def get_signal_slices(signals_superlist):
+    indices_superlist = []
+    signals_so_far = 0
+    for sublist in signals_superlist:
+        indices_sublist = signals_so_far + np.array(range(len(sublist)))
+        signals_so_far += len(sublist)
+        indices_superlist.append(indices_sublist)
+    return indices_superlist
+
 
 
 ######################################################

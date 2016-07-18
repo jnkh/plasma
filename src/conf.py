@@ -1,17 +1,17 @@
 import targets as t
 #paths#
 base_path = '/tigress/jk7/'#'/p/datad/jkatesha/'#'/p/datad/jkatesha/' #base_path = '../'
-signals_dirs = ['jpf/da/c2-ipla', # Plasma Current [A]
-                'jpf/da/c2-loca', # Mode Lock Amplitude [A]
-                'jpf/db/b5r-ptot>out', #Radiated Power [W]
-                'jpf/gs/bl-li<s', #Plasma Internal Inductance
-                'jpf/gs/bl-fdwdt<s', #Stored Diamagnetic Energy (time derivative) [W] Might cause a lot of false positives!
-                'jpf/gs/bl-ptot<s', #total input power [W]
-                'jpf/gs/bl-wmhd<s'] #total stored diamagnetic energy
+signals_dirs = [['jpf/da/c2-ipla'], # Plasma Current [A]
+                ['jpf/da/c2-loca'], # Mode Lock Amplitude [A]
+                ['jpf/db/b5r-ptot>out'], #Radiated Power [W]
+                ['jpf/gs/bl-li<s'], #Plasma Internal Inductance
+                ['jpf/gs/bl-fdwdt<s'], #Stored Diamagnetic Energy (time derivative) [W] Might cause a lot of false positives!
+                ['jpf/gs/bl-ptot<s'], #total input power [W]
+                ['jpf/gs/bl-wmhd<s']] #total stored diamagnetic energy
 
 #density signals [m^-2]
 #4 vertical channels and 4 horizontal channels
-signals_dirs += ['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]
+signals_dirs += [['jpf/df/g1r-lid:{:03d}'.format(i) for i in range(2,9)]]
 
 
 
@@ -52,7 +52,7 @@ conf = {
         'recompute' : False,
         'recompute_normalization' : False,
         #'recompute_minmax' : False
-        'num_signals' : len(signals_dirs),
+        'num_signals' : sum([len(subl) for subl in signals_dirs]),
         'current_index' : 0,
         'plotting' : False,
         #train/validate split
