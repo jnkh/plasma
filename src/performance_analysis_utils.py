@@ -7,7 +7,7 @@ from data_processing import VarNormalizer as Normalizer
 
 
 class PerformanceAnalyzer():
-    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 30,T_max_warn = 1000, verbose = False,pred_ttd=False,conf=None):
+    def __init__(self,results_dir=None,shots_dir=None,i = 0,T_min_warn = 0,T_max_warn = 1000, verbose = False,pred_ttd=False,conf=None):
         self.T_min_warn = T_min_warn
         self.T_max_warn = T_max_warn
         self.verbose = verbose

@@ -13,7 +13,7 @@ save_figure = True
 pred_ttd = False
 
 T_max_warn = 1000
-T_min_warn = 30
+T_min_warn = 0
 
 verbose=False
 results_dir = '/p/datad/jkatesha/data/results/'
