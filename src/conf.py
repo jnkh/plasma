@@ -18,6 +18,11 @@ signals_mask[4] = [True]
 signals_mask[7] = [False]*len(signals_dirs[7])
 signals_mask[7][1] = True
 
+
+positivity_mask = [[True]*len(sig_list) for sig_list in signals_dirs]
+positivity_mask[0] = [False]
+positivity_mask[4] = [False]
+
 #radiation signals
 #vertical signals, don't use signal 16 and 23
 # signals_dirs += ['jpf/db/b5vr-pbol:{:03d}'.format(i) for i in range(1,28) if (i != 16 and i != 23)]
@@ -42,6 +47,7 @@ conf = {
         'signal_prepath' : base_path + 'data/signal_data/jet/',
         'signals_dirs' : signals_dirs,
         'signals_mask' : signals_mask,
+        'positivity_mask' : positivity_mask,
         'shot_files' : ['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt'],#['short_list.txt'],#['CWall_clear.txt','CFC_unint.txt'],#['mixed_list1.txt',long_list_C.txt','short_list.txt','BeWall_clear.txt']
         'shot_files_test' : ['BeWall_clear.txt','ILW_unint.txt'] ,#[],#['BeWall_clear.txt','ILW_unint.txt'],
         'shot_list_dir' : base_path + 'data/shot_lists/',
@@ -107,7 +113,7 @@ conf = {
         'batch_size' : 256, #100
         'max_patch_length' : 100000, #THIS WAS THE CULPRIT FOR NO TRAINING! Lower than 1000 performs very poorly
         'num_shots_at_once' :  200, #How many shots are we loading at once?
-        'num_epochs' : 10,
+        'num_epochs' : 20,
         'use_mock_data' : False,
         'data_parallel' : False,
    },
