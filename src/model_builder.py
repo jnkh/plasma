@@ -92,7 +92,9 @@ class ModelBuilder():
 		
 		batch_input_shape=(batch_size,length, num_signals)
 		model = Sequential()
-		# model.add(TimeDistributed(Dense(num_signals,bias=True),batch_input_shape=batch_input_shape))
+                #Create layer for 7 density channels
+#                num_density_channels = 7
+ #               model.add(TimeDistributed(Dense(num_density_channels,bias=True),batch_input_shape=batch_input_shape))
 		for _ in range(model_conf['rnn_layers']):
 			model.add(rnn_model(rnn_size, return_sequences=return_sequences,batch_input_shape=batch_input_shape,
 			 stateful=stateful,W_regularizer=l2(regularization),U_regularizer=l2(regularization),

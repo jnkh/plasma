@@ -338,6 +338,8 @@ class Preprocessor(object):
         train_frac = conf['training']['train_frac']
         use_shots_train = int(round(train_frac*use_shots))
         use_shots_test = int(round((1-train_frac)*use_shots))
+#        print(use_shots_train)
+#        print(use_shots_test) #each print out 100,000
         if len(shot_files_test) > 0:
             return self.preprocess_from_files(shot_list_dir,shot_files_train,use_shots_train) + \
                self.preprocess_from_files(shot_list_dir,shot_files_test,use_shots_test)
@@ -351,20 +353,17 @@ class Preprocessor(object):
         shot_list.load_from_files(shot_list_dir,shot_files)
 
         shot_list_picked = shot_list.random_sublist(use_shots)
+
         #empty
         used_shots = ShotList()
 
         pool = mp.Pool()
-
         print('running in parallel on {} processes'.format(pool._processes))
         start_time = time.time()
         for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,shot_list_picked)):
-        # for (i,shot) in enumerate(pool.imap_unordered(self.preprocess_single_file,[1,2,3])):
             sys.stdout.write('\r{}/{}'.format(i,len(shot_list_picked)))
             used_shots.append_if_valid(shot)
 
-        pool.close()
-        pool.join()
         print('Finished Preprocessing {} files in {} seconds'.format(len(shot_list_picked),time.time()-start_time))
         print('Omitted {} shots of {} total.'.format(len(shot_list_picked) - len(used_shots),len(shot_list_picked)))
         print('{}/{} disruptive shots'.format(used_shots.num_disruptive(),len(used_shots)))

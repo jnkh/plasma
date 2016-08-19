@@ -16,8 +16,8 @@ T_max_warn = 1000
 T_min_warn = 0
 
 verbose=False
-results_dir = '/p/datad/jkatesha/data/results/'
-shots_dir = '/p/datad/jkatesha/data/processed_shots/'
+results_dir = '/p/datad/kfelker/data/results/'
+shots_dir = '/p/datad/kfelker/data/processed_shots/'
 
 analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose, pred_ttd=pred_ttd) 

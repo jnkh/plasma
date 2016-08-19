@@ -36,6 +36,9 @@ gs_inductance = ['bl-li<s'] #Plasma Internal Inductance
 gs_fdwdt = ['bl-fdwdt<s'] #Stored Diamagnetic Energy (time derivative)
 gs_power_in = ['bl-ptot<s'] #Total input power [W]
 gs_wmhd = ['bl-wmhd<s'] #Stored Diamagnetic Energy (total)
+gs_gwdens = ['bl-gwdens<s'] #Greenwald density
+gs_torb0 = ['bl-torb0<s'] #Toroidal field on axis
+gs_minrad = ['bl-minrad<s'] #Minor radius
 
 #### ECE temperature profiles ####
 kk3 = []
@@ -45,7 +48,8 @@ kk3 += ['te{:02d}'.format(i) for i in range(1,97)]
 kk3 += ['ra{:02d}'.format(i) for i in range(1,97)]
 #Radial position of channel i mapped onto midplane vs time
 kk3 += ['rc{:02d}'.format(i) for i in range(1,97)]
-
+#General information (PPF)
+kk3 += ['gen']
 
 ###################################
 # Signal subsystems and groupings #
@@ -59,7 +63,10 @@ jpf = [da_current,
        gs_inductance,
        gs_fdwdt,
        gs_power_in,
-       gs_wmhd] 
+       gs_wmhd,
+       gs_gwdens,
+       gs_torb0,
+       gs_minrad] 
 
 ppf = [kk3]
 
@@ -72,7 +79,11 @@ jpf_str = ['da', #magnetic diagnostic, essential subs
            'gs', #general services, essential subsys 
            'gs',
            'gs',
+           'gs',
+           'gs',
+           'gs',
            'gs']
+           
 ppf_str = ['kk3'] 
 subsys_str = [jpf_str, ppf_str]
 
@@ -97,7 +108,6 @@ for i in range(0,len(signal_type)): #jpf or ppf
 # for i, group in enumerate(signals_dirs):
 #     for j, signal in enumerate(group):
 #         print(i,j,signal)
-
  
 ##################################################
 #             USER SELECTIONS                    #
@@ -110,13 +120,18 @@ for i in range(0,len(signal_type)): #jpf or ppf
 
 #Default pass to get_mdsplus_data.py: download all above signals
 download_masks = [[True]*len(sig_list) for sig_list in signals_dirs]
+download_masks[3] = [False]*len(signals_dirs[3]) #download all radiation signals
+download_masks[-1][-1] = [False] # enable/disable ppf/kk3/gen (only one column)
 
 #######################################
 # Select signals for training/testing #
 #######################################
 
 #Default pass to conf.py: train with all above signals, minus gs_fdwdt
-signals_masks = [[True]*len(sig_list) for sig_list in signals_dirs]
+#signals_masks = [[True]*len(sig_list) for sig_list in signals_dirs]
+signals_masks = [[False]*len(sig_list) for sig_list in signals_dirs]
+signals_masks[1] = [True]
+signals_masks[0] = [True] #need to turn the current on for thresholding signal start/end
 
 #One way for user to disable a signal_group: know the exact index
 signals_masks[6] = [False] #Disable time-derivative of stored diamagnetic energy
@@ -129,6 +144,8 @@ for i, group in enumerate(signals_dirs):
         if 'ra' in signal:
             signals_masks[i][j] = False 
 
+
+#num_signals = sum([group.count(True) for i,group in enumerate(jet_signals.signals_masks)]
 ###########################################
 # Select signals for performance analysis #
 ###########################################
@@ -136,13 +153,15 @@ for i, group in enumerate(signals_dirs):
 #User selects these by signal name
 plot_masks = [[False]*len(sig_list) for sig_list in signals_dirs]
 #Default: 8 golden 0D signals, and all density channels
-plot_masks[0][0] = True
 plot_masks[1][0] = True
-plot_masks[2][0] = True
-plot_masks[4] = [True]*len(signals_dirs[4]) #density
-plot_masks[5][0] = True
-plot_masks[7][0] = True
-plot_masks[8][0] = True
+plot_masks[0][0] = True
+
+# plot_masks[1][0] = True
+# plot_masks[2][0] = True
+# plot_masks[4] = [True]*len(signals_dirs[4]) #density
+# plot_masks[5][0] = True
+# plot_masks[7][0] = True
+# plot_masks[8][0] = True
 #LaTeX strings for performance analysis, sorted in lists by signal_group
 group_labels = [[[r' $I_{plasma}$ [A]'],
               [r' Mode L. A. [A]'],

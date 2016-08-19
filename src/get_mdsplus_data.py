@@ -20,9 +20,9 @@ from jet_signals import signals_dirs, download_masks
 #currently need to change above import when switching machines
 
 
-prepath = '/p/datad/jkatesha/data/'#'/tigress/jk7/data/'
+prepath = '/p/datad2/'
 shot_numbers_path = 'shot_lists/'
-save_path = 'signal_data1'
+save_path = 'signal_data'
 machine = 'jet'#'nstx'#'jet'#'nstx'
 
 
@@ -95,6 +95,7 @@ def save_shot(shot_num_queue,c,signal_paths,save_prepath,machine):
 							missing_values += 1
 							print('Signal {}, shot {} missing. Filling with zeros'.format(signal_path,shot_num))
 							time,data = create_missing_value_filler()
+#					data_two_column = vstack((data)).transpose()							
 					data_two_column = vstack((time,data)).transpose()
 					try: #can lead to race condition
 						mkdirdepth(save_path_full)
