@@ -4,7 +4,7 @@ import os
 from pprint import pprint
 from data_processing import VarNormalizer as Normalizer 
 
-from jet_signals import signals_dirs, plot_masks, group_labels
+from jet_signals import signals_dirs, signals_masks, plot_masks, group_labels
 #currently need to change above import when switching machines
 
 
@@ -470,21 +470,25 @@ class PerformanceAnalyzer():
             is_disruptive =  shot.is_disruptive
             if normalize:
                 self.normalizer.apply(shot)
-            #is shot.signals a 1D list?
-            signals = []
+            #shot.signals is a 2D numpy array with the rows containing the unlabeled timeseries data
+            signals = np.empty((len(shot.signals),0)) #None
+
             labels = []
+            signals_index = 0
             for i, group in enumerate(signals_dirs):
-                for j,signal in enumerate(group):
-                    if plot_masks[i][j]:
-                        signals += any(signal in shot.signals)
-                        label += group_label[i]
+                for j,signal_name in enumerate(group):
+                    if signals_masks[i][j]: #signal was used in training/testing
+                        if plot_masks[i][j]: #subset of signals to be plotted
+                            labels += group_labels[i]
+                            signals = np.column_stack((signals,shot.signals.T[signals_index]))
+                        signals_index += 1
 
             if is_disruptive:
                 print('disruptive')
             else:
                 print('non disruptive')
 
-            f,axarr = subplots(len(signals.T)+1,1,sharex=True,figsize=(13,13))
+            f,axarr = subplots(len(signals.T)+1,1,sharex=True,figsize=(13,13))#, squeeze=False)
             title(prediction_type)
             for (i,sig) in enumerate(signals.T):
                 ax = axarr[i]
@@ -494,7 +498,6 @@ class PerformanceAnalyzer():
                 setp(ax.get_yticklabels(),fontsize=7)
                 f.subplots_adjust(hspace=0)
                 print('min: {}, max: {}'.format(min(sig), max(sig)))
-
             ax = axarr[-1] 
             if self.pred_ttd:
                 ax.semilogy((-truth+0.0001)[::-1],label='ground truth')
