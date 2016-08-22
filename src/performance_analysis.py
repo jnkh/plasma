@@ -6,7 +6,7 @@ from matplotlib import pyplot
 import os
 
 from performance_analysis_utils import *
-
+from conf import conf
 mode = 'test'
 file_num = 0
 save_figure = True
@@ -16,8 +16,8 @@ T_max_warn = 1000
 T_min_warn = 0
 
 verbose=False
-results_dir = '/p/datad/kfelker/data/results/'
-shots_dir = '/p/datad/kfelker/data/processed_shots/'
+results_dir = conf['paths']['results_prepath']
+shots_dir = conf['paths']['processed_prepath']
 
 analyzer = PerformanceAnalyzer(results_dir=results_dir,shots_dir=shots_dir,i = file_num,
 T_min_warn = T_min_warn,T_max_warn = T_max_warn, verbose = verbose, pred_ttd=pred_ttd) 
