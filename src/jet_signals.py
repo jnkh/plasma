@@ -130,7 +130,7 @@ download_masks[-1][-1] = [False] # enable/disable ppf/kk3/gen (only one column)
 #Default pass to conf.py: train with all above signals, minus gs_fdwdt
 #signals_masks = [[True]*len(sig_list) for sig_list in signals_dirs]
 signals_masks = [[False]*len(sig_list) for sig_list in signals_dirs]
-signals_masks[1] = [True]
+signals_masks[2] = [True]
 signals_masks[0] = [True] #need to turn the current on for thresholding signal start/end
 
 #One way for user to disable a signal_group: know the exact index
@@ -153,7 +153,7 @@ for i, group in enumerate(signals_dirs):
 #User selects these by signal name
 plot_masks = [[False]*len(sig_list) for sig_list in signals_dirs]
 #Default: 8 golden 0D signals, and all density channels
-plot_masks[1][0] = True
+plot_masks[2][0] = True
 plot_masks[0][0] = True
 
 # plot_masks[1][0] = True
@@ -163,7 +163,7 @@ plot_masks[0][0] = True
 # plot_masks[7][0] = True
 # plot_masks[8][0] = True
 #LaTeX strings for performance analysis, sorted in lists by signal_group
-group_labels = [[[r' $I_{plasma}$ [A]'],
+group_labels = [[r' $I_{plasma}$ [A]'],
               [r' Mode L. A. [A]'],
               [r' $P_{radiated}$ [W]'], #0d radiation, db/
               [r' $P_{radiated}$ [W]'],#1d radiation, db/
@@ -172,6 +172,5 @@ group_labels = [[[r' $I_{plasma}$ [A]'],
               [r'$\frac{d}{dt} E_{D}$ [W]'],
               [r' $P_{input}$ [W]'],
               [r'$E_{D}$'],
-              ],
-
-          [r'ECE unit?']]
+#ppf signal labels
+                [r'ECE unit?']]

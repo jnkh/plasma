@@ -479,7 +479,7 @@ class PerformanceAnalyzer():
                 for j,signal_name in enumerate(group):
                     if signals_masks[i][j]: #signal was used in training/testing
                         if plot_masks[i][j]: #subset of signals to be plotted
-                            labels += group_labels[i]
+                            labels += group_labels[i] #original object was 2D by PPFvs.JPF x signal group
                             signals = np.column_stack((signals,shot.signals.T[signals_index]))
                         signals_index += 1
 
